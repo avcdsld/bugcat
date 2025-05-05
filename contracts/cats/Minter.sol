@@ -16,9 +16,9 @@ contract Minter {
     }
 
     function mint(address to) external {
-        count = 4;
+        count = 1;
         Cat(target).mint(address(this));
-        Cat(target).transferFrom(address(this), to, Cat(target).totalSupply() - 5);
+        Cat(target).transferFrom(address(this), to, Cat(target).totalSupply() - 2);
     }
 
     function onERC721Received(address, address, uint256, bytes calldata) external returns (bytes4) {
