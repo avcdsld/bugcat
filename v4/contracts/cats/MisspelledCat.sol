@@ -5,11 +5,9 @@ import "../interface/BugCat.sol";
 
 contract MisspelledCat is BugCat {
     address public owner;
-    bool public initialized;
 
     function MisspeledCat(address o) {
         owner = o;
-        initialized = true;
     }
 
     function caress() public {
