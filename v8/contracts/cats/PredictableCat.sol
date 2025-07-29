@@ -18,7 +18,7 @@ contract PredictableCat is BugCat {
         }
     }
 
-    function tend() public payable {
+    function caress() public {
         if (winCount[msg.sender] >= 10) {
             emit Meow(msg.sender, "predictable");
             winCount[msg.sender] = 0;

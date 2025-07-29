@@ -2,7 +2,7 @@
 pragma solidity ^0.4.26;
 
 interface BugCat {
-    event Meow(address indexed tender, string wound);
-    function tend() external payable;
+    event Meow(address indexed caretaker, string wound);
+    function caress() external;
     function remember() external view returns (bool);
 }

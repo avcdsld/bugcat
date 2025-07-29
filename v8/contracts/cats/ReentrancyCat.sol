@@ -16,7 +16,7 @@ contract ReentrancyCat is BugCat {
         balance[msg.sender] = 0;
     }
 
-    function tend() public payable {
+    function caress() public {
         if (address(this).balance == 0) {
             emit Meow(msg.sender, "reentrancy");
         }

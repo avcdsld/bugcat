@@ -16,7 +16,7 @@ contract OverflowCat is BugCat {
         }
     }
 
-    function tend() public payable {
+    function caress() public {
         if (balance[msg.sender] > 0) {
             emit Meow(msg.sender, "overflow");
         }
@@ -24,8 +24,7 @@ contract OverflowCat is BugCat {
 
     function remember() external view returns (bool) {
         address BecToken = 0xC5d105E63711398aF9bbff092d4B6769C82F793D;
-        uint256 size;
-        assembly { size := extcodesize(BecToken) }
+        uint256 size; assembly { size := extcodesize(BecToken) }
         return size > 0;
     }
 }
