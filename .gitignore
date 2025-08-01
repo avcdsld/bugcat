@@ -140,7 +140,6 @@ build/Release
 
 # Hardhat files
 **/cache
-**/artifacts
 
 # TypeChain files
 **/typechain
