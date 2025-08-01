@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: WTFPL
 pragma solidity ^0.4.26;
 
 interface BugCat {
