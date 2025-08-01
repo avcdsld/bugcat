@@ -17,7 +17,7 @@ contract MisspelledCat is BugCat {
     }
 
     function remember() external view returns (bool) {
-        address Rubixi = 0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4;
+        address Rubixi = 0xe82719202e5965Cf5D9B6673B7503a3b92DE20be;
         uint256 size; assembly { size := extcodesize(Rubixi) }
         return size > 0;
     }
