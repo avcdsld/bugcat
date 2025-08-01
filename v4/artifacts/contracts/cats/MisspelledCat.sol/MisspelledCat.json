@@ -1,0 +1,79 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "MisspelledCat",
+  "sourceName": "contracts/cats/MisspelledCat.sol",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "caress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "remember",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "o",
+          "type": "address"
+        }
+      ],
+      "name": "MisspeledCat",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "caretaker",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "name": "wound",
+          "type": "string"
+        }
+      ],
+      "name": "Meow",
+      "type": "event"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50610238806100206000396000f3006080604052600436106100615763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166301288f3c81146100665780635ac687a81461007d5780638da5cb5b146100a6578063b35cd4fb146100e4575b600080fd5b34801561007257600080fd5b5061007b610112565b005b34801561008957600080fd5b50610092610198565b604080519115158252519081900360200190f35b3480156100b257600080fd5b506100bb6101b4565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b3480156100f057600080fd5b5061007b73ffffffffffffffffffffffffffffffffffffffff600435166101d0565b60005473ffffffffffffffffffffffffffffffffffffffff1633141561019657604080516020808252600a908201527f6d69737370656c6c65640000000000000000000000000000000000000000000081830152905133917f55d68e0254b44d1d00659bd7e45544dea474c1b9d01304669332e1111dcd9d33919081900360600190a25b565b600073e82719202e5965cf5d9b6673b7503a3b92de20be3b1190565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b6000805473ffffffffffffffffffffffffffffffffffffffff191673ffffffffffffffffffffffffffffffffffffffff929092169190911790555600a165627a7a72305820f7d1bfae6c5677af72e6eb250633a1cc5108e84680324c4cc7e1f94c1035fee40029",
+  "deployedBytecode": "0x6080604052600436106100615763ffffffff7c010000000000000000000000000000000000000000000000000000000060003504166301288f3c81146100665780635ac687a81461007d5780638da5cb5b146100a6578063b35cd4fb146100e4575b600080fd5b34801561007257600080fd5b5061007b610112565b005b34801561008957600080fd5b50610092610198565b604080519115158252519081900360200190f35b3480156100b257600080fd5b506100bb6101b4565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b3480156100f057600080fd5b5061007b73ffffffffffffffffffffffffffffffffffffffff600435166101d0565b60005473ffffffffffffffffffffffffffffffffffffffff1633141561019657604080516020808252600a908201527f6d69737370656c6c65640000000000000000000000000000000000000000000081830152905133917f55d68e0254b44d1d00659bd7e45544dea474c1b9d01304669332e1111dcd9d33919081900360600190a25b565b600073e82719202e5965cf5d9b6673b7503a3b92de20be3b1190565b60005473ffffffffffffffffffffffffffffffffffffffff1681565b6000805473ffffffffffffffffffffffffffffffffffffffff191673ffffffffffffffffffffffffffffffffffffffff929092169190911790555600a165627a7a72305820f7d1bfae6c5677af72e6eb250633a1cc5108e84680324c4cc7e1f94c1035fee40029",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

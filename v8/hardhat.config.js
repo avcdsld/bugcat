@@ -13,6 +13,11 @@ module.exports = {
       }
     }
   },
+  etherscan: {
+    apiKey: {
+      mainnet: process.env.ETHERSCAN_API_KEY || ""
+    }
+  },
   networks: {
     hardhat: {
       forking: {
