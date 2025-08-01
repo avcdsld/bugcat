@@ -13,7 +13,7 @@ contract BUGCATS is Ownable {
         return BugCat(bugs[index]).remember();
     }
 
-    function inject(address bug) external {
+    function inject(address bug) external onlyOwner {
         bugs.push(bug);
     }
 }
