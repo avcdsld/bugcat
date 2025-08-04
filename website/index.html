@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGCAT — Zeroichi Arakawa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --text-dim: #666666;
+            --border: #e0e0e0;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #000000;
+                --text: #ffffff;
+                --text-dim: #999999;
+                --border: #333333;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        /* Header */
+        .header {
+            margin-bottom: 6rem;
+            text-align: center;
+        }
+
+        .title {
+            font-size: 5rem;
+            font-weight: 100;
+            letter-spacing: -0.02em;
+            margin-bottom: 6rem;
+        }
+
+        /* Cat Cards */
+        .cat-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            margin: 6rem auto 8rem auto;
+            max-width: 700px;
+        }
+
+        .cat-card-link {
+            text-decoration: none;
+            color: inherit;
+            flex: 0 1 calc(33.333% - 1rem);
+            max-width: 220px;
+            min-width: 180px;
+        }
+
+        @media (max-width: 680px) {
+            .cat-card-link {
+                flex: 1 1 100%;
+                max-width: none;
+            }
+        }
+
+        .cat-card {
+            border: 1px solid var(--border);
+            padding: 2rem 1.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: var(--bg);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .cat-card:hover {
+            border-color: var(--text);
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .cat-card:hover {
+                box-shadow: 0 4px 12px rgba(255, 255, 255, 0.05);
+            }
+        }
+
+        .cat-card-name {
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+        }
+
+        .cat-card-vuln {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            font-family: 'Monaco', 'Consolas', monospace;
+        }
+
+        /* Statement */
+        .statement {
+            margin: 8rem 0;
+            font-size: 1.2rem;
+            line-height: 2;
+            text-align: center;
+        }
+
+        /* Concept */
+        .concept {
+            margin: 6rem 0;
+        }
+
+        .section-header {
+            font-size: 0.9rem;
+            letter-spacing: 0.2rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+        }
+
+        .concept-text {
+            font-size: 1.05rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Interface Poetry */
+        .interface-poetry {
+            margin: 8rem 0;
+        }
+
+        .interface-poetry .code-block {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            padding: 3rem;
+            margin-top: 2rem;
+        }
+
+        /* Cat Entries */
+        .cats-section {
+            margin: 8rem 0;
+        }
+
+        .cat-entry {
+            margin: 8rem 0;
+            padding: 4rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .cat-name {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+        }
+
+        .cat-type {
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .cat-description {
+            font-size: 1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            max-width: 800px;
+        }
+
+        .code-block {
+            margin: 2rem 0;
+            padding: 2rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            white-space: pre;
+        }
+
+        .code-comment {
+            color: #888888;
+        }
+
+        .code-keyword {
+            color: #569cd6;
+            font-weight: 400;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .code-keyword {
+                color: #9cdcfe;
+            }
+        }
+
+        /* Contract Links */
+        .contracts {
+            margin: 6rem 0;
+            padding: 3rem 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .contract-list {
+            list-style: none;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+        }
+
+        .contract-list li {
+            margin: 0.5rem 0;
+        }
+
+        .contract-list a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        .contract-list a:hover {
+            text-decoration: underline;
+        }
+
+        /* Work Information */
+        .work-info {
+            margin: 8rem 0 4rem 0;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-dim);
+        }
+
+        .work-info p {
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: 2rem;
+            padding-top: 3rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 3rem;
+            }
+            
+            .code-block {
+                padding: 1rem;
+            }
+            
+            .code-block pre {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">BUGCAT</h1>
+        </header>
+
+        <!-- Cat Cards -->
+        <nav class="cat-cards">
+            <a href="#reentrancy" class="cat-card-link">
+                <div class="cat-card">
+                    <div class="cat-card-name">ReentrancyCat</div>
+                    <div class="cat-card-vuln">reentrancy</div>
+                </div>
+            </a>
+            <a href="#predictable" class="cat-card-link">
+                <div class="cat-card">
+                    <div class="cat-card-name">PredictableCat</div>
+                    <div class="cat-card-vuln">weak randomness</div>
+                </div>
+            </a>
+            <a href="#overflow" class="cat-card-link">
+                <div class="cat-card">
+                    <div class="cat-card-name">OverflowCat</div>
+                    <div class="cat-card-vuln">integer overflow</div>
+                </div>
+            </a>
+            <a href="#unprotected" class="cat-card-link">
+                <div class="cat-card">
+                    <div class="cat-card-name">UnprotectedCat</div>
+                    <div class="cat-card-vuln">uninitialized storage</div>
+                </div>
+            </a>
+            <a href="#misspelled" class="cat-card-link">
+                <div class="cat-card">
+                    <div class="cat-card-name">MisspelledCat</div>
+                    <div class="cat-card-vuln">constructor typo</div>
+                </div>
+            </a>
+        </nav>
+
+        <!-- Statement -->
+        <section class="statement">
+            <p>
+                Poetry is what happens when language exceeds its own limits.<br>
+                In code, we call these moments vulnerabilities.<br>
+                Smart contracts are poems with consequences.
+            </p>
+        </section>
+
+        <!-- Concept -->
+        <section class="concept">
+            <h2 class="section-header">Concept</h2>
+            <p class="concept-text">
+                BUGCAT explores the poetics of code through its failures. When developers write smart contracts, 
+                they believe they are creating closed systems—deterministic machines that execute exactly as written. 
+                But language, even programming language, always contains more than its authors intend.
+            </p>
+            <p class="concept-text">
+                Each BUGCAT is a monument to a moment when code transcended its own grammar. They are smart contracts 
+                that remember other smart contracts, creating a living archive of the times when code escaped its own 
+                intentions. Through the act of remembrance, they transform technical failures into philosophical artifacts.
+            </p>
+            <p class="concept-text">
+                This is executable poetry—code that runs on the Ethereum Virtual Machine, consuming gas, altering state, 
+                moving value. Unlike traditional poetry, these verses have material consequences. They exist not on paper 
+                but in the consensus of thousands of nodes, immortal and immutable.
+            </p>
+        </section>
+
+        <!-- Interface as Poetry -->
+        <section class="interface-poetry">
+            <h2 class="section-header">The Architecture</h2>
+            <div class="code-block">
+                <pre><span class="code-comment">// Every BUGCAT speaks the same language of memory</span>
+
+<span class="code-keyword">interface</span> BugCat {
+    <span class="code-comment">// To remember is to verify existence across time</span>
+    <span class="code-comment">// Returns true if the ancestor still breathes in bytecode</span>
+    <span class="code-keyword">function</span> remember() <span class="code-keyword">external view returns</span> (bool);
+    
+    <span class="code-comment">// To caress is to awaken the ghost within</span>
+    <span class="code-comment">// Each touch costs gas, each interaction leaves a trace</span>
+    <span class="code-keyword">function</span> caress() <span class="code-keyword">external</span>;
+    
+    <span class="code-comment">// The purr echoes through the network as an event</span>
+    <span class="code-comment">// Logged in permanence, remembered by none</span>
+    <span class="code-keyword">event</span> Meow(address indexed who, string vulnerability);
+}
+            </div>
+
+            <div class="code-block" style="margin-top: 3rem;">
+                <pre><span class="code-comment">// The registry: where someone might remember them</span>
+
+<span class="code-keyword">contract</span> BUGCATS <span class="code-keyword">is</span> Ownable {
+    address[] <span class="code-keyword">public</span> bugs;  <span class="code-comment">// An array of addresses, each a story</span>
+    
+    <span class="code-comment">// To remember is to ask each cat if its ancestor lives</span>
+    <span class="code-keyword">function</span> remember(uint256 index) <span class="code-keyword">external view returns</span> (bool) {
+        <span class="code-keyword">return</span> BugCat(bugs[index]).remember();
+    }
+    
+    <span class="code-comment">// To inject is to register another wanderer</span>
+    <span class="code-comment">// Only the owner can expand this registry</span>
+    <span class="code-keyword">function</span> inject(address bug) <span class="code-keyword">external</span> onlyOwner {
+        bugs.push(bug);
+    }
+}</pre>
+            </div>
+        </section>
+
+        <!-- The Cats -->
+        <section class="cats-section">
+            <h2 class="section-header">The Remembrances</h2>
+
+            <!-- ReentrancyCat -->
+            <article class="cat-entry" id="reentrancy">
+                <h3 class="cat-name">ReentrancyCat</h3>
+                <p class="cat-type">vulnerability: reentrancy</p>
+                
+                <p class="cat-description">
+                    The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one 
+                    chain that remembered, one that chose to forget.
+                </p>
+                
+                <p class="cat-description">
+                    Reentrancy occurs when a contract calls an external address before updating its state. 
+                    The external contract can then call back into the original function, withdrawing funds 
+                    multiple times before the balance is set to zero. This vulnerability arises from Ethereum's 
+                    ability to transfer control flow to arbitrary code during external calls.
+                </p>
+
+                <div class="code-block">
+                    <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.8.30;
+
+import "../interface/BugCat.sol";
+
+contract ReentrancyCat is BugCat {
+    mapping(address => uint) public balance;
+
+    function deposit() public payable {
+        balance[msg.sender] += msg.value;
+    }
+
+    function withdraw() public {
+        (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
+        require(success);
+        balance[msg.sender] = 0;
+    }
+
+    function caress() public {
+        if (address(this).balance == 0) {
+            emit Meow(msg.sender, "reentrancy");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address TheDAO = 0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413;
+        return TheDAO.code.length > 0;
+    }
+}</pre>
+                </div>
+            </article>
+
+            <!-- PredictableCat -->
+            <article class="cat-entry" id="predictable">
+                <h3 class="cat-name">PredictableCat</h3>
+                <p class="cat-type">vulnerability: weak randomness</p>
+                
+                <p class="cat-description">
+                    FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.
+                </p>
+                
+                <p class="cat-description">
+                    True randomness cannot exist in a deterministic system where every node must reach consensus. 
+                    Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted 
+                    or manipulated. Miners have additional power to influence these values, turning games of chance 
+                    into games of control.
+                </p>
+
+                <div class="code-block">
+                    <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.8.30;
+
+import "../interface/BugCat.sol";
+
+contract PredictableCat is BugCat {
+    mapping(address => uint8) public winCount;
+
+    function flip() external {
+        if ((uint(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            msg.sender
+        ))) & 1) == 0) {
+            winCount[msg.sender] += 1;
+        } else {
+            winCount[msg.sender] = 0;
+        }
+    }
+
+    function caress() public {
+        if (winCount[msg.sender] >= 10) {
+            emit Meow(msg.sender, "predictable");
+            winCount[msg.sender] = 0;
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address FoMo3Dlong = 0xA62142888ABa8370742bE823c1782D17A0389Da1;
+        return FoMo3Dlong.code.length > 0;
+    }
+}</pre>
+                </div>
+            </article>
+
+            <!-- OverflowCat -->
+            <article class="cat-entry" id="overflow">
+                <h3 class="cat-name">OverflowCat</h3>
+                <p class="cat-type">vulnerability: integer overflow</p>
+                
+                <p class="cat-description">
+                    BEC Token, 2018. A multiplication overflow created billions of tokens from nothing. 
+                    Markets crashed in minutes. Mathematics betrayed economics.
+                </p>
+                
+                <p class="cat-description">
+                    Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. 
+                    In uint256, multiplying large numbers can wrap around to zero. The BEC Token's batchTransfer 
+                    function multiplied the number of recipients by the value per recipient without checking if 
+                    the result would overflow, allowing attackers to bypass balance checks.
+                </p>
+
+                <div class="code-block">
+                    <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
+
+import "../interface/BugCat.sol";
+
+contract OverflowCat is BugCat {
+    mapping(address => uint) public balance;
+
+    function batchTransfer(address[] memory _receivers, uint256 _value) public {
+        uint count = _receivers.length;
+        uint amount = count * _value;
+        require(_value > 0 && balance[msg.sender] >= amount);
+        balance[msg.sender] -= amount;
+        for (uint i = 0; i < count; i++) {
+            balance[_receivers[i]] += _value;
+        }
+    }
+
+    function caress() public {
+        if (balance[msg.sender] > 0) {
+            emit Meow(msg.sender, "overflow");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address BecToken = 0xC5d105E63711398aF9bbff092d4B6769C82F793D;
+        uint256 size; assembly { size := extcodesize(BecToken) }
+        return size > 0;
+    }
+}</pre>
+                </div>
+            </article>
+
+            <!-- UnprotectedCat -->
+            <article class="cat-entry" id="unprotected">
+                <h3 class="cat-name">UnprotectedCat</h3>
+                <p class="cat-type">vulnerability: uninitialized storage</p>
+                
+                <p class="cat-description">
+                    Parity, 2017. July: hackers stole $30 million by calling unprotected init functions. 
+                    November: someone accidentally killed the patched library, freezing $280 million forever. 
+                    One vulnerability, two catastrophes.
+                </p>
+                
+                <p class="cat-description">
+                    The Parity wallet library had initialization functions that could be called by anyone, 
+                    multiple times. This allowed attackers to take ownership of wallets. After the fix, 
+                    the library itself remained vulnerable—someone initialized it, became owner, and killed it, 
+                    destroying the code that all wallets depended on.
+                </p>
+
+                <div class="code-block">
+                    <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
+
+import "../interface/BugCat.sol";
+
+contract UnprotectedCat is BugCat {
+    address public owner;
+    bool public initialized;
+
+    function init(address o) public {
+        owner = o;
+        initialized = true;
+    }
+
+    function kill() public {
+        require(msg.sender == owner);
+        suicide(owner);
+    }
+
+    function caress() public {
+        if (msg.sender == owner) {
+            emit Meow(msg.sender, "unprotected");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address WalletLibrary = 0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4;
+        uint256 size; assembly { size := extcodesize(WalletLibrary) }
+        return size == 0 && WalletLibrary.balance > 0;
+    }
+}</pre>
+                </div>
+            </article>
+
+            <!-- MisspelledCat -->
+            <article class="cat-entry" id="misspelled">
+                <h3 class="cat-name">MisspelledCat</h3>
+                <p class="cat-type">vulnerability: constructor typo</p>
+                
+                <p class="cat-description">
+                    Rubixi. One missing letter. The constructor became a public function. 
+                    Anyone could be the owner.
+                </p>
+                
+                <p class="cat-description">
+                    Before Solidity 0.4.22, constructors were functions with the contract's exact name. 
+                    Any typo turned initialization into a regular public function. When Rubixi was renamed 
+                    from DynamicPyramid but the constructor wasn't updated, ownership became open to anyone 
+                    who noticed the mistake.
+                </p>
+
+                <div class="code-block">
+                    <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
+
+import "../interface/BugCat.sol";
+
+contract MisspelledCat is BugCat {
+    address public owner;
+
+    function MisspeledCat(address o) {
+        owner = o;
+    }
+
+    function caress() public {
+        if (msg.sender == owner) {
+            emit Meow(msg.sender, "misspelled");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address Rubixi = 0xe82719202e5965Cf5D9B6673B7503a3b92DE20be;
+        uint256 size; assembly { size := extcodesize(Rubixi) }
+        return size > 0;
+    }
+}</pre>
+                </div>
+            </article>
+        </section>
+
+        <!-- Contracts -->
+        <section class="contracts">
+            <h2 class="section-header">On-Chain</h2>
+            <ul class="contract-list">
+                <li>BUGCATS: <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#code">0x652f57021b4d39223e3769021a7d3edf01a1139e</a></li>
+                <li>ReentrancyCat: <a href="https://etherscan.io/address/0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2#code">0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2</a></li>
+                <li>PredictableCat: <a href="https://etherscan.io/address/0x9050628cae4268e4701d4b011c99db30bc402b1c#code">0x9050628cae4268e4701d4b011c99db30bc402b1c</a></li>
+                <li>OverflowCat: <a href="https://etherscan.io/address/0xf3fe43009429dd8450d916f7118970a52f130cbe#code">0xf3fe43009429dd8450d916f7118970a52f130cbe</a></li>
+                <li>UnprotectedCat: <a href="https://etherscan.io/address/0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1#code">0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1</a></li>
+                <li>MisspelledCat: <a href="https://etherscan.io/address/0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f#code">0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f</a></li>
+            </ul>
+        </section>
+
+        <!-- Work Information -->
+        <section class="work-info">
+            <p>
+                BUGCAT is a collection of smart contracts by Zeroichi Arakawa, deployed on Ethereum mainnet in 2025. 
+                Written in Solidity, these contracts exist as both digital poetry and executable code—each one a 
+                monument to a moment when language exceeded its own limits. They consume gas with every interaction, 
+                transforming computational resources into acts of remembrance.
+            </p>
+            <p>
+                The work lives permanently on-chain, where each contract actively verifies the existence of its 
+                historical counterpart. These are poems that run, memories that cost, vulnerabilities transformed 
+                into art.
+            </p>
+            <p>
+                Source code licensed under WTFPL. On-chain contracts exist beyond traditional licensing frameworks.
+            </p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2025 Zeroichi Arakawa</p>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
