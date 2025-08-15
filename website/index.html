@@ -32,11 +32,11 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Georgia', serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.6;
-            font-weight: 300;
+            transition: all 0.6s ease;
         }
 
         .container {
@@ -52,10 +52,30 @@
         }
 
         .title {
-            font-size: 5rem;
+            font-size: 6rem;
             font-weight: 100;
-            letter-spacing: -0.02em;
-            margin-bottom: 6rem;
+            letter-spacing: -0.05em;
+            margin: 8rem 0;
+            position: relative;
+            transition: opacity 0.6s ease;
+        }
+
+        .title::after {
+            content: '';
+            position: absolute;
+            bottom: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 20px;
+            background: var(--text);
+            opacity: 0;
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.5; }
         }
 
         /* Cat Cards */
@@ -142,9 +162,19 @@
         }
 
         .concept-text {
-            font-size: 1.05rem;
-            line-height: 1.8;
-            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 2.2;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .concept-text:first-child::first-letter {
+            font-size: 3rem;
+            float: left;
+            line-height: 1;
+            margin-right: 0.5rem;
+            margin-top: 0.2rem;
+            font-weight: 300;
         }
 
         /* Interface Poetry */
@@ -167,6 +197,9 @@
         .cat-entry {
             margin: 8rem 0;
             padding: 4rem 0;
+        }
+
+        .cat-entry:not(:first-child) {
             border-top: 1px solid var(--border);
         }
 
@@ -323,9 +356,9 @@
         }
 
         /* Mobile */
-        @media (max-width: 768px) {
+                    @media (max-width: 768px) {
             .title {
-                font-size: 3rem;
+                font-size: 3.5rem;
             }
             
             .code-block {
@@ -392,7 +425,7 @@
 
         <!-- Statement -->
         <section class="statement">
-            <p>
+            <p style="font-style: italic;">
                 Poetry is what happens when language exceeds its own limits.<br>
                 In code, we call these moments vulnerabilities.<br>
                 Smart contracts are poems with consequences.
@@ -401,7 +434,6 @@
 
         <!-- Concept -->
         <section class="concept">
-            <h2 class="section-header">Concept</h2>
             <p class="concept-text">
                 BUGCAT explores the poetics of code through its failures. When developers write smart contracts, 
                 they believe they are creating closed systems—deterministic machines that execute exactly as written. 
@@ -421,7 +453,7 @@
 
         <!-- Interface as Poetry -->
         <section class="interface-poetry">
-            <h2 class="section-header">The Architecture</h2>
+            <h2 class="section-header">The Interface</h2>
             <div class="code-block">
                 <pre><span class="code-comment">// Every BUGCAT speaks the same language of memory</span>
 
@@ -440,7 +472,8 @@
 }
             </div>
 
-            <div class="code-block" style="margin-top: 3rem;">
+            <h2 class="section-header" style="margin-top: 4rem;">The Registry</h2>
+            <div class="code-block">
                 <pre><span class="code-comment">// The registry: where someone might remember them</span>
 
 <span class="code-keyword">contract</span> BUGCATS <span class="code-keyword">is</span> Ownable {
@@ -738,12 +771,12 @@ contract MisspelledCat is BugCat {
                 <span class="spec-label">Deployed Contracts:</span>
                 <span class="spec-value">
                     <ul class="contract-list">
-                        <li>BUGCATS: <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#code">0x652f57021b4d39223e3769021a7d3edf01a1139e</a></li>
-                        <li>ReentrancyCat: <a href="https://etherscan.io/address/0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2#code">0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2</a></li>
-                        <li>PredictableCat: <a href="https://etherscan.io/address/0x9050628cae4268e4701d4b011c99db30bc402b1c#code">0x9050628cae4268e4701d4b011c99db30bc402b1c</a></li>
-                        <li>OverflowCat: <a href="https://etherscan.io/address/0xf3fe43009429dd8450d916f7118970a52f130cbe#code">0xf3fe43009429dd8450d916f7118970a52f130cbe</a></li>
-                        <li>UnprotectedCat: <a href="https://etherscan.io/address/0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1#code">0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1</a></li>
-                        <li>MisspelledCat: <a href="https://etherscan.io/address/0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f#code">0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f</a></li>
+                        <li>BUGCATS: <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#code" target="_blank">0x652f57021b4d39223e3769021a7d3edf01a1139e</a></li>
+                        <li>ReentrancyCat: <a href="https://etherscan.io/address/0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2#code" target="_blank">0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2</a></li>
+                        <li>PredictableCat: <a href="https://etherscan.io/address/0x9050628cae4268e4701d4b011c99db30bc402b1c#code" target="_blank">0x9050628cae4268e4701d4b011c99db30bc402b1c</a></li>
+                        <li>OverflowCat: <a href="https://etherscan.io/address/0xf3fe43009429dd8450d916f7118970a52f130cbe#code" target="_blank">0xf3fe43009429dd8450d916f7118970a52f130cbe</a></li>
+                        <li>UnprotectedCat: <a href="https://etherscan.io/address/0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1#code" target="_blank">0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1</a></li>
+                        <li>MisspelledCat: <a href="https://etherscan.io/address/0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f#code" target="_blank">0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f</a></li>
                     </ul>
                 </span>
             </div>
