@@ -260,7 +260,7 @@
           className: 'hex-char face-front',
           check: (x, y) => {
             if (!inside(x, y, [v2d[4], v2d[5], v2d[6], v2d[7]])) return false;
-            return !inside(x, y, offsetPolygon(entrance, 3));
+            return !inside(x, y, offsetPolygon(entrance, -9));
           }
         }
       ];
