@@ -286,13 +286,14 @@
       
       const entranceGroup = document.getElementById('entrance');
       const entranceTexts = [];
+      const entranceOccupied = new Set();
       const entranceEdges = [
         [entrance[0], entrance[1]], [entrance[1], entrance[2]], 
         [entrance[2], entrance[3]], [entrance[3], entrance[0]]
       ];
       
       entranceEdges.forEach(([p1, p2]) => {
-        const texts = placeOnLine(entranceGroup, p1, p2, 'entrance-char', 3000);
+        const texts = placeOnLine(entranceGroup, p1, p2, 'entrance-char', 3000, entranceOccupied);
         entranceTexts.push(texts);
       });
       
