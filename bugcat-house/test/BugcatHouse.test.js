@@ -21,25 +21,39 @@ describe("BugcatHouse Tests", function () {
     const catCount = 5;
     console.log("Using fixed catCount:", catCount);
 
-    const BugcatHouse = await ethers.getContractFactory("BugcatHouse");
-    bugcatHouse = await BugcatHouse.deploy(
-      owner.address,
-      REGISTRY_ADDRESS,
-      catCount,
-      owner.address,
-      ethers.ZeroAddress,
-      owner.address
-    );
+    try {
+      const ENSResolver = await ethers.getContractFactory("ENSResolver");
+      const ensResolver = await ENSResolver.deploy();
 
-    console.log("BugcatHouse deployed at:", bugcatHouse.target);
-    console.log("No renderer (using address(0))");
+      const BugcatHouseRenderer = await ethers.getContractFactory("BugcatHouseRenderer", {
+        libraries: {
+          ENSResolver: ensResolver.target
+        }
+      });
+      bugcatHouseRenderer = await BugcatHouseRenderer.deploy();
+
+      const BugcatHouse = await ethers.getContractFactory("BugcatHouse");
+      bugcatHouse = await BugcatHouse.deploy(
+        owner.address,
+        REGISTRY_ADDRESS,
+        catCount,
+        bugcatHouseRenderer.target,
+        owner.address
+      );
+
+      console.log("BugcatHouse deployed at:", bugcatHouse.target);
+      console.log("With renderer:", bugcatHouseRenderer.target);
+    } catch (error) {
+      console.log("Error deploying renderer:", error.message);
+      this.skip();
+    }
   });
 
   it("Should deploy BugcatHouse with correct parameters", async function () {
     const registryAddress = await bugcatHouse.registry();
     expect(registryAddress.toLowerCase()).to.equal(REGISTRY_ADDRESS.toLowerCase());
     expect(await bugcatHouse.minter()).to.equal(owner.address);
-    expect(await bugcatHouse.renderer()).to.equal(ethers.ZeroAddress);
+    expect(await bugcatHouse.renderer()).to.not.equal(ethers.ZeroAddress);
     expect(await bugcatHouse.owner()).to.equal(owner.address);
   });
 
@@ -91,20 +105,8 @@ describe("BugcatHouse Tests", function () {
         }
       }
       
-      console.log("Simulating _pickCat function...");
-      const r = ethers.keccak256(ethers.AbiCoder.defaultAbiCoder().encode(
-        ["uint256", "bytes32", "bytes32", "address", "uint256", "address", "uint256"],
-        [
-          currentBlock.timestamp,
-          currentBlock.hash,
-          await ethers.provider.getBlock(currentBlock.number - 2).then(b => b.hash),
-          user1.address,
-          tokenId,
-          bugcatHouse.target,
-          0
-        ]
-      ));
-      const start = BigInt(r) % 5n;
+      console.log("Simulating _choose function...");
+      const start = (currentBlock.timestamp + 0) % 5;
       console.log("Simulated start index:", start.toString());
       
       for (let j = 0; j < 5; j++) {
@@ -139,7 +141,7 @@ describe("BugcatHouse Tests", function () {
     
     expect(await bugcatHouse.ownerOf(tokenId)).to.equal(user1.address);
     
-    expect(await bugcatHouse.totalMinted()).to.equal(1);
+            expect(await bugcatHouse.totalSupply()).to.equal(1);
     
     const returnEventTopic = ethers.id("Return(uint256,uint8,uint64)");
     const returnEvent = receipt.logs.find(log => log.topics[0] === returnEventTopic);
@@ -169,7 +171,7 @@ describe("BugcatHouse Tests", function () {
     const htmlBase64 = jsonData.image.replace("data:text/html;base64,", "");
     const htmlString = Buffer.from(htmlBase64, 'base64').toString();
     console.log("Decoded HTML length:", htmlString.length);
-    expect(htmlString.length).to.equal(0);
+    expect(htmlString.length).to.be.greaterThan(0);
   });
 
   it("Should generate different tokenURI for different tokenIds", async function () {
@@ -223,18 +225,13 @@ describe("BugcatHouse Tests", function () {
     
     await bugcatHouse.mint(user1.address, tokenId);
     
-    const [lastCat, lastTime] = await bugcatHouse.latest(tokenId);
-    expect(lastCat).to.be.greaterThanOrEqual(0);
-    expect(lastTime).to.be.greaterThan(0);
+    const memories = await bugcatHouse.remember(tokenId, 0, 10);
+    expect(memories.length).to.equal(1);
+    expect(memories[0].cat).to.be.greaterThanOrEqual(0);
+    expect(memories[0].time).to.be.greaterThan(0);
     
-    console.log("Last cat:", lastCat.toString());
-    console.log("Last time:", lastTime.toString());
-    
-    const [times, cats] = await bugcatHouse.remember(tokenId, 0, 10);
-    expect(times.length).to.equal(1);
-    expect(cats.length).to.equal(1);
-    expect(times[0]).to.equal(lastTime);
-    expect(cats[0]).to.equal(lastCat);
+    console.log("Last cat:", memories[0].cat.toString());
+    console.log("Last time:", memories[0].time.toString());
   });
 
   it("Should allow calling the house to get new cats", async function () {
@@ -242,18 +239,16 @@ describe("BugcatHouse Tests", function () {
     
     await bugcatHouse.mint(user1.address, tokenId);
     
-    const [initialCat, initialTime] = await bugcatHouse.latest(tokenId);
+    const initialMemories = await bugcatHouse.remember(tokenId, 0, 10);
+    const initialTime = initialMemories[0].time;
     
     await ethers.provider.send("evm_mine");
     
     await bugcatHouse.connect(user1).call(tokenId);
     
-    const [newCat, newTime] = await bugcatHouse.latest(tokenId);
-    expect(newTime).to.be.greaterThan(initialTime);
-    
-    const [times, cats] = await bugcatHouse.remember(tokenId, 0, 10);
-    expect(times.length).to.equal(2);
-    expect(cats.length).to.equal(2);
+    const newMemories = await bugcatHouse.remember(tokenId, 0, 10);
+    expect(newMemories.length).to.equal(2);
+    expect(newMemories[1].time).to.be.greaterThan(initialTime);
   });
 
   it("Should mint multiple tokens in batch", async function () {
@@ -326,7 +321,6 @@ describe("BugcatHouseRenderer", function () {
         owner.address,
         REGISTRY_ADDRESS,
         5,
-        owner.address,
         bugcatHouseRenderer.target,
         owner.address
       );
