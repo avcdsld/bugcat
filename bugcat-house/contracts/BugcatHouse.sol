@@ -35,30 +35,24 @@ contract BugcatHouse is ERC721, ERC2981, Ownable {
 
     address public minter;
     address public renderer;
-    uint256[] private _allTokenIds;
+    uint256[] private _tokenIds;
     mapping(uint256 => Memory[]) private memories;
 
-    modifier onlyMinter() {
-        require(msg.sender == minter, "Not minter");
-        _;
-    }
+
 
     event Mint(address indexed to, uint256 indexed tokenId, uint8 cat);
     event Return(uint256 indexed tokenId, uint8 cat, uint64 time);
 
     constructor(
-        address _initialOwner,
+        address _owner,
         address _registry,
         uint256 _catCount,
-        address _minter,
         address _renderer,
         address _royaltyReceiver
-    ) ERC721("BUGCAT House", "HOUSE") Ownable(_initialOwner) {
-        require(_registry != address(0), "registry=0");
-        require(_catCount > 0, "catCount=0");
+    ) ERC721("BUGCAT House", "HOUSE") Ownable(_owner) {
         registry = IBugcatsRegistry(_registry);
         catCount = _catCount;
-        minter = _minter;
+        minter = _owner;
         renderer = _renderer;
         _setDefaultRoyalty(_royaltyReceiver, 1000);
     }
@@ -75,103 +69,45 @@ contract BugcatHouse is ERC721, ERC2981, Ownable {
         _setDefaultRoyalty(receiver, bps);
     }
 
-    function mint(address to, uint256 tokenId) public onlyMinter {
+    function mint(address to, uint256 tokenId) public {
+        require(msg.sender == minter, "not minter");
         _mint(to, tokenId);
-        _allTokenIds.push(tokenId);
-
-        uint8 cat = _pickCat(to, tokenId, 0);
-        _logMemory(tokenId, cat);
+        _tokenIds.push(tokenId);
+        uint8 cat = _choose(0);
+        _remember(tokenId, cat);
         emit Mint(to, tokenId, cat);
     }
 
-    function mintBatch(address[] memory to, uint256[] memory tokenIds) public onlyMinter {
+    function mintBatch(address[] memory to, uint256[] memory tokenIds) public {
+        require(msg.sender == minter, "not minter");
         require(to.length == tokenIds.length, "length mismatch");
-        uint256 n = to.length;
-
-        bool[] memory used = new bool[](catCount);
-        for (uint256 i = 0; i < n; i++) {
+        for (uint256 i = 0; i < to.length; i++) {
             _mint(to[i], tokenIds[i]);
-            _allTokenIds.push(tokenIds[i]);
-
-            uint8 cat;
-            {
-                uint256 r;
-
-                bytes32 blockHash1 = blockhash(block.number - 1);
-                bytes32 blockHash2 = blockhash(block.number - 2);
-                
-                r = uint256(
-                    keccak256(
-                        abi.encodePacked(
-                            block.timestamp,
-                            blockHash1,
-                            blockHash2,
-                            to[i],
-                            tokenIds[i],
-                            address(this),
-                            i + 1
-                        )
-                    )
-                );
-                uint256 start = r % catCount;
-                bool found;
-                for (uint256 j = 0; j < catCount; j++) {
-                    uint256 index = (start + j) % catCount;
-                    if (!used[index] && _isContract(registry.bugs(index))) {
-                        cat = uint8(index);
-                        used[index] = true;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    cat = _pickCat(to[i], tokenIds[i], i + 1);
-                }
-            }
-
-            _logMemory(tokenIds[i], cat);
+            _tokenIds.push(tokenIds[i]);
+            uint8 cat = _choose(i + 1);
+            _remember(tokenIds[i], cat);
             emit Mint(to[i], tokenIds[i], cat);
         }
     }
 
+    function totalSupply() external view returns (uint256) {
+        return _tokenIds.length;
+    }
+
     function call(uint256 tokenId) external {
         require(ownerOf(tokenId) == msg.sender, "not caretaker");
-        uint8 cat = _pickCat(msg.sender, tokenId, memories[tokenId].length + 1);
-        _logMemory(tokenId, cat);
+        uint8 cat = _choose(memories[tokenId].length + 1);
+        _remember(tokenId, cat);
     }
 
-    function remember(
-        uint256 tokenId,
-        uint256 offset,
-        uint256 limit
-    ) external view returns (uint64[] memory times, uint8[] memory cats) {
-        Memory[] storage arr = memories[tokenId];
-        uint256 n = arr.length;
-        if (offset >= n) {
-            return (new uint64[](0), new uint8[](0));
+    function remember(uint256 tokenId, uint256 offset, uint256 limit) external view returns (Memory[] memory mems) {
+        uint256 totalMemories = memories[tokenId].length;
+        if (offset >= totalMemories) return new Memory[](0);
+        uint256 count = (offset + limit > totalMemories) ? totalMemories - offset : limit;
+        mems = new Memory[](count);
+        for (uint256 i = 0; i < count; i++) {
+            mems[i] = memories[tokenId][offset + i];
         }
-        uint256 end = offset + limit;
-        if (end > n) end = n;
-        uint256 m = end - offset;
-
-        times = new uint64[](m);
-        cats  = new uint8[](m);
-        for (uint256 i = 0; i < m; i++) {
-            Memory storage v = arr[offset + i];
-            times[i] = v.time;
-            cats[i]  = v.cat;
-        }
-    }
-
-    function latest(uint256 tokenId) public view returns (uint8 cat, uint64 ts) {
-        Memory[] storage arr = memories[tokenId];
-        if (arr.length == 0) return (0, 0);
-        Memory storage v = arr[arr.length - 1];
-        return (v.cat, v.time);
-    }
-
-    function totalMinted() external view returns (uint256) {
-        return _allTokenIds.length;
     }
 
     function memoryCount(uint256 tokenId) external view returns (uint256) {
@@ -179,91 +115,31 @@ contract BugcatHouse is ERC721, ERC2981, Ownable {
     }
 
     function ownerOfCat(uint256 catIndex) external view returns (address) {
-        uint256 n = _allTokenIds.length;
-        require(n > 0, "no houses");
-        uint256 r = uint256(keccak256(abi.encodePacked(catIndex, blockhash(block.number - 1), address(this))));
-        uint256 tokenId = _allTokenIds[r % n];
-        return ownerOf(tokenId);
+        require(_tokenIds.length > 0, "no houses");
+        return ownerOf(_tokenIds[catIndex % _tokenIds.length]);
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        address care = ownerOf(tokenId);
-        (uint8 lastCat, uint64 lastTime) = latest(tokenId);
-
-        string memory html = "";
-        if (renderer != address(0)) {
-            html = IRender(renderer).render(
-                tokenId,
-                care,
-                address(registry),
-                lastCat,
-                lastTime
-            );
-        }
-
+        Memory[] memory mems = memories[tokenId];
+        string memory html = IRender(renderer).render(tokenId, ownerOf(tokenId), address(registry), mems[mems.length - 1].cat, mems[mems.length - 1].time);
         string memory json = string.concat(
             '{"name":"BUGCAT House #', tokenId.toString(),
             '","description":"BUGCATs wander. The house remembers."',
             ',"image":"', string.concat("data:text/html;base64,", Base64.encode(bytes(html))), '"}'
         );
-
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
     }
 
-    function _logMemory(uint256 tokenId, uint8 cat) internal {
-        address catAddr = registry.bugs(uint256(cat));
-        bool bugcatIsHere;
-        assembly { let s := extcodesize(catAddr) switch s case 0 { bugcatIsHere := 0 } default { bugcatIsHere := 1 } }
-        require(bugcatIsHere, "BUGCAT not present");
-
+    function _remember(uint256 tokenId, uint8 cat) internal {
         memories[tokenId].push(Memory(uint64(block.timestamp), cat));
         emit Return(tokenId, cat, uint64(block.timestamp));
     }
 
-    function _pickCat(address to, uint256 tokenId, uint256 salt) internal view returns (uint8) {
-        uint256 r;
-
-        bytes32 blockHash1 = blockhash(block.number - 1);
-        bytes32 blockHash2 = blockhash(block.number - 2);
-        
-        r = uint256(
-            keccak256(
-                abi.encodePacked(
-                    block.timestamp,
-                    blockHash1,
-                    blockHash2,
-                    to,
-                    tokenId,
-                    address(this),
-                    salt
-                )
-            )
-        );
-        
-        uint256 start = r % catCount;
-
-        for (uint256 j = 0; j < catCount; j++) {
-            uint256 index = (start + j) % catCount;
-            address catAddr = registry.bugs(index);
-            uint256 size;
-            assembly { size := extcodesize(catAddr) }
-            if (size > 0) {
-                return uint8(index);
-            }
-        }
-        revert("no BUGCAT alive");
+    function _choose(uint256 salt) internal view returns (uint8) {
+        return uint8((block.timestamp + salt) % catCount);
     }
 
-    function _isContract(address x) internal view returns (bool ok) {
-        assembly { let s := extcodesize(x) switch s case 0 { ok := 0 } default { ok := 1 } }
-    }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, ERC2981)
-        returns (bool)
-    {
+    function supportsInterface(bytes4 interfaceId) public view override(ERC721, ERC2981) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 }
