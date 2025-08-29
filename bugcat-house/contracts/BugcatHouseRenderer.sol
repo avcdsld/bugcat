@@ -10,7 +10,6 @@ interface IBugcatHouse {
 
 interface IBugCatsRegistry {
     function bugs(uint256) external view returns (address);
-    function count() external view returns (uint256);
 }
 
 interface IRender {
@@ -24,7 +23,6 @@ interface IRender {
 }
 
 contract BugcatHouseRenderer is IRender {
-    uint256 private constant HEX_MAX_CHARS = 1600;
 
     function render(
         uint256 tokenId,
@@ -33,47 +31,23 @@ contract BugcatHouseRenderer is IRender {
         uint8   lastCat,
         uint64  lastTs
     ) external view override returns (string memory) {
-
         string memory careStr;
         try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
             careStr = nameOrAddr;
         } catch {
             careStr = LibString.toHexStringChecksummed(caretaker);
         }
-
-        string memory label = "";
-        if (lastTs != 0) {
-            address catAddr;
-            try IBugCatsRegistry(registry).bugs(lastCat) returns (address a) {
-                catAddr = a;
-            } catch {}
-            if (catAddr != address(0)) {
-                label = _sniffLabel(catAddr);
-            }
+        address catAddr = IBugCatsRegistry(registry).bugs(lastCat);
+        string memory label = senseWound(catAddr);
             if (bytes(label).length == 0) label = "unknown";
-        }
 
         string memory title = string.concat("BUGCAT House #", _u(tokenId));
         string memory line1 = string.concat("Caretaker ", unicode"—", " ", careStr);
-        
-        string memory line2;
-        if (lastTs == 0) {
-            line2 = "The house waits.";
-        } else {
-            uint256 memoryCount = 0;
-            try IBugcatHouse(msg.sender).memoryCount(tokenId) returns (uint256 c) {
-                memoryCount = c;
-            } catch { /* ignore */ }
-            
-            string memory ord = _ordinal(memoryCount);
-            string memory ts  = _timestampISO(lastTs);
-            line2 = string.concat(
-                "Remembers the ", ord, " return: ", 
-                label, " cat ", unicode"·", " ", ts
-            );
-        }
+        string memory line2 = string.concat(
+            "Remembers the ", _ordinal(IBugcatHouse(msg.sender).memoryCount(tokenId)),
+            " return: ", label, " cat ", unicode"·", " ", _timestampISO(lastTs));
 
-        string memory hexText = _hexFromBytes(registry.code, HEX_MAX_CHARS);
+        string memory hexText = _hexFromBytes(registry.code, 0);
         if (bytes(hexText).length == 0) {
             hexText = _repeat01(800);
         }
@@ -85,7 +59,7 @@ contract BugcatHouseRenderer is IRender {
             "<meta charset=\"utf-8\" />",
             "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />",
             "<title>", title, "</title>",
-            "<style>",
+                "<style>",
             "html, body { height: 100%; margin: 0; background: #000000; }",
             "body { display: grid; place-items: center; font-family: 'Courier New', Courier, monospace; }",
             ".container { width: min(95vw, 600px); max-height: 95vh; }",
@@ -298,35 +272,181 @@ contract BugcatHouseRenderer is IRender {
             "</script>",
             "</body>",
             "</html>"
-        );
+            );
 
         return html;
     }
 
-    function _sniffLabel(address cat) internal view returns (string memory) {
+    function senseWound(address cat) public view returns (string memory) {
         bytes memory code = cat.code;
-        if (_has(code, "reentrancy"))  return "reentrancy";
-        if (_has(code, "predictable")) return "predictable";
-        if (_has(code, "overflow"))    return "overflow";
-        if (_has(code, "unprotected")) return "unprotected";
-        if (_has(code, "misspelled"))  return "misspelled";
+        if (code.length == 0) return "";
+        
+        string memory wound = _extractWoundFromBytecode(code);
+        if (bytes(wound).length > 0) return wound;
+        
         string memory run = _longestAsciiRun(code, 6);
         if (bytes(run).length != 0) return run;
         return "";
     }
 
-    function _has(bytes memory hay, string memory needle) internal pure returns (bool) {
-        bytes memory nd = bytes(needle);
-        if (nd.length == 0 || hay.length < nd.length) return false;
-        uint256 last = hay.length - nd.length;
-        for (uint256 i = 0; i <= last; i++) {
-            bool ok = true;
-            for (uint256 j = 0; j < nd.length; j++) {
-                if (hay[i + j] != nd[j]) { ok = false; break; }
+    function _extractWoundFromBytecode(bytes memory code) internal pure returns (string memory) {
+        string memory saddestWound = "";
+        uint256 saddestValue = 0;
+        
+        for (uint256 i = 0; i < code.length; i++) {
+            if (code[i] >= 0x60 && code[i] <= 0x7f) {
+                uint8 opcode = uint8(code[i]);
+                uint256 pushSize = opcode - 0x5f;
+                
+                if (i + pushSize + 1 < code.length) {
+                    bytes memory data = new bytes(pushSize);
+                    for (uint256 j = 0; j < pushSize; j++) {
+                        data[j] = code[i + 1 + j];
+                    }
+                    
+                    if (_isPaddedString(data)) {
+                        bytes memory cleaned = _removePadding(data);
+                        if (_isValidAscii(cleaned)) {
+                            string memory candidate = string(cleaned);
+                            uint256 sadness = _measureSadness(candidate);
+                            if (sadness > saddestValue) {
+                                saddestValue = sadness;
+                                saddestWound = candidate;
+                            }
+                        }
+                    }
+                }
+                i += pushSize;
             }
-            if (ok) return true;
+            
+            else if (i + 10 < code.length) {
+                if (code[i] == 0x90 && 
+                    code[i+1] == 0x82 && 
+                    code[i+2] == 0x01 && 
+                    code[i+3] == 0x52 && 
+                    code[i+4] == 0x7f) {
+                    
+                    uint256 maxLen = 32;
+                    if (i + 5 + maxLen > code.length) {
+                        maxLen = code.length - i - 5;
+                    }
+                    
+                    bytes memory data = new bytes(maxLen);
+                    for (uint256 j = 0; j < maxLen; j++) {
+                        data[j] = code[i + 5 + j];
+                    }
+                    
+                    bytes memory cleaned = _extractValidString(data);
+                    if (cleaned.length > 0) {
+                        string memory candidate = string(cleaned);
+                        uint256 sadness = _measureSadness(candidate);
+                        if (sadness > saddestValue) {
+                            saddestValue = sadness;
+                            saddestWound = candidate;
+                        }
+                    }
+                    
+                    i += 4 + maxLen;
+                }
+            }
         }
-        return false;
+        
+        return saddestWound;
+    }
+
+    function _measureSadness(string memory candidate) internal pure returns (uint256) {
+        bytes memory b = bytes(candidate);
+        if (b.length < 3 || b.length > 20) return 0;
+        
+        uint256 sadness = 0;
+        
+        for (uint256 i = 0; i < b.length; i++) {
+            uint8 char = uint8(b[i]);
+            if (char >= 0x61 && char <= 0x7a) { // a-z
+                sadness += 10;
+            } else if (char >= 0x41 && char <= 0x5a) { // A-Z
+                sadness += 8;
+            } else if (char >= 0x30 && char <= 0x39) { // 0-9
+                sadness += 5;
+            } else if (char == 0x20 || char == 0x2d || char == 0x5f) { // space, -, _
+                sadness += 3;
+            } else {
+                sadness = 0;
+                break;
+            }
+        }
+        
+        return sadness + (b.length * 2);
+    }
+
+    function _isPaddedString(bytes memory data) internal pure returns (bool) {
+        if (data.length < 3) return false;
+        
+        uint8 lastByte = uint8(data[data.length - 1]);
+        uint8 secondLast = uint8(data[data.length - 2]);
+        
+        if (lastByte == 0x1b && (secondLast == 0xb0 || secondLast == 0xa8)) {
+            return true;
+        }
+        
+        return _isValidAscii(data);
+    }
+
+    function _removePadding(bytes memory data) internal pure returns (bytes memory) {
+        uint256 end = data.length;
+        
+        if (end >= 2 && uint8(data[end-1]) == 0x1b) {
+            end -= 2;
+        }
+        
+        while (end > 0 && data[end-1] == 0) {
+            end--;
+        }
+        
+        bytes memory result = new bytes(end);
+        for (uint256 i = 0; i < end; i++) {
+            result[i] = data[i];
+        }
+        
+        return result;
+    }
+
+    function _extractValidString(bytes memory data) internal pure returns (bytes memory) {
+        uint256 validEnd = 0;
+        
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 char = uint8(data[i]);
+            if (char >= 0x20 && char <= 0x7E) {
+                validEnd = i + 1;
+            } else if (char != 0x00) {
+                break;
+            }
+        }
+        
+        if (validEnd < 3) return new bytes(0);
+        
+        bytes memory result = new bytes(validEnd);
+        for (uint256 i = 0; i < validEnd; i++) {
+            result[i] = data[i];
+        }
+        
+        return result;
+    }
+
+    function _isValidAscii(bytes memory data) internal pure returns (bool) {
+        if (data.length == 0) return false;
+        
+        uint256 validCount = 0;
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 char = uint8(data[i]);
+            if (char >= 0x20 && char <= 0x7E) {
+                validCount++;
+            } else if (char != 0x00 && char != 0xb0 && char != 0xa8 && char != 0x1b) {
+                return false;
+            }
+        }
+        
+        return validCount >= 3;
     }
 
     function _longestAsciiRun(bytes memory code, uint256 minLen) internal pure returns (string memory) {
@@ -415,16 +535,19 @@ contract BugcatHouseRenderer is IRender {
     function _u(uint256 v) internal pure returns (string memory) {
         return _toString(v);
     }
+
     function _u2(uint256 v) internal pure returns (string memory) {
         if (v < 10) return string.concat("0", _toString(v));
         return _toString(v);
     }
+
     function _u4(uint256 v) internal pure returns (string memory) {
         if (v < 10) return string.concat("000", _toString(v));
         if (v < 100) return string.concat("00", _toString(v));
         if (v < 1000) return string.concat("0", _toString(v));
         return _toString(v);
     }
+
     function _toString(uint256 value) internal pure returns (string memory str) {
         if (value == 0) return "0";
         uint256 temp = value; uint256 digits;
@@ -436,9 +559,5 @@ contract BugcatHouseRenderer is IRender {
             value /= 10;
         }
         str = string(buffer);
-    }
-
-    function _isContract(address x) internal view returns (bool ok) {
-        assembly { let s := extcodesize(x) switch s case 0 { ok := 0 } default { ok := 1 } }
     }
 }
