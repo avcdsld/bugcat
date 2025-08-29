@@ -18,12 +18,13 @@
     }
     
     .container { 
-      width: min(95vw, 900px);
+      width: min(95vw, 600px);
+      max-height: 95vh;
     }
     
     svg { 
       width: 100%; 
-      height: auto; 
+      height: 100%; 
       display: block;
     }
     
@@ -69,17 +70,17 @@
 </head>
 <body>
   <div class="container">
-    <div id="info" style="color: #ffffff; font-size: 14px; margin-bottom: 5px; text-align: center; line-height: 1.6;">
-      <div style="font-size: 18px; font-weight: bold; margin-bottom: 12px; opacity: 1;">BUGCAT House</div>
-      <div id="caretaker-info" style="margin-bottom: 8px; opacity: 0.9;">
-        0x1234...5678 is Caretaker #42 of 156 total.
+    <div id="info" style="color: #ffffff; font-size: 2.3vw; margin-bottom: 0.5vw; text-align: center; line-height: 1.3;">
+      <div style="font-size: 3vw; font-weight: bold; margin-bottom: 1.2vw; opacity: 1;">BUGCAT House #10</div>
+      <div id="caretaker-info" style="margin-bottom: 0.6vw; opacity: 0.9;">
+        Caretaker: zeroichiarakawa.eth
       </div>
       <div id="visit-info" style="opacity: 0.8;">
-        Last visit: Dec 15, 2024 14:23 UTC
+        Remembers the 8th visitor: OverflowCat · 2025-08-24 21:15:10Z
       </div>
     </div>
     
-    <svg id="house" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+    <svg id="house" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450">
       <g id="faces"></g>
       <g id="edges"></g>
       <g id="entrance"></g>
@@ -90,11 +91,11 @@
     (function() {
       const NS = 'http://www.w3.org/2000/svg';
       const GRID_STEP = 10;
-      const SVG_WIDTH = 800;
-      const SVG_HEIGHT = 600;
+      const SVG_WIDTH = 600;
+      const SVG_HEIGHT = 450;
       const ISO_ANGLE = Math.PI / 6;
       const SIZE = 200;
-      const CENTER = { x: 400, y: 300 };
+      const CENTER = { x: 300, y: 225 };
       
       const bytecode = '0x608080604052600436101561001357600080fd5b60003560e01c90816301288f3c146101b3575080633ccfd60b1461010c5780635ac687a8146100d9578063d0e30db0146100995763e3d670d71461005657600080fd5b34610094576020366003190112610094576004356001600160a01b038116908190036100945760005260006020526020604060002054604051908152f35b600080fd5b60003660031901126100945733600052600060205260406000208054903482018092116100c35755005b634e487b7160e01b600052601160045260246000fd5b3461009457600036600319011261009457602073bb9bc244d798123fde783fcc1c72d3bb8c1894133b1515604051908152f35b346100945760003660031901126100945733600052600060205260008080806040812054335af13d156101ae573d67ffffffffffffffff81116101985760405190601f8101601f19908116603f0116820167ffffffffffffffff811183821017610198576040528152600060203d92013e5b156100945733600052600060205260006040812055600080f35b634e487b7160e01b600052604160045260246000fd5b61017e565b346100945760003660031901126100945747156101cc57005b60208152600a6020820152697265656e7472616e637960b01b60408201527f55d68e0254b44d1d00659bd7e45544dea474c1b9d01304669332e1111dcd9d3360603392a200fea264697066735822122047035d28905bc373b1e74145d49a451b78a33da3f6c85822649380d964a74e3064736f6c634300081e0033';
       const hexChars = bytecode.slice(2).toUpperCase().split('');
