@@ -38,14 +38,18 @@ contract BugcatHouseRenderer is IRender {
             careStr = LibString.toHexStringChecksummed(caretaker);
         }
         address catAddr = IBugCatsRegistry(registry).bugs(lastCat);
-        string memory label = senseWound(catAddr);
-            if (bytes(label).length == 0) label = "unknown";
+        bytes memory woundBytes = _extractWoundBytes(catAddr.code);
+        string memory wound = string(woundBytes);
+        if (bytes(wound).length == 0) wound = "unknown";
+        
+        string memory woundHex = _bytesToHex(woundBytes);
+        string memory line3 = string.concat("", woundHex);
 
         string memory title = string.concat("BUGCAT House #", _u(tokenId));
         string memory line1 = string.concat("Caretaker ", unicode"—", " ", careStr);
         string memory line2 = string.concat(
             "Remembers the ", _ordinal(IBugcatHouse(msg.sender).memoryCount(tokenId)),
-            " return: ", label, " cat ", unicode"·", " ", _timestampISO(lastTs));
+            " return: ", wound, " cat ", unicode"·", " ", _timestampISO(lastTs));
 
         string memory hexText = _hexFromBytes(registry.code, 0);
         if (bytes(hexText).length == 0) {
@@ -76,8 +80,9 @@ contract BugcatHouseRenderer is IRender {
             "<div class=\"container\">",
             "<div id=\"info\" style=\"color: #ffffff; font-size: min(1.4vw, 16px); margin-bottom: 0.5vw; text-align: center; line-height: 1.3;\">",
             "<div style=\"font-size: min(1.7vw, 18px); font-weight: bold; margin-bottom: 1.2vw; opacity: 1;\">", title, "</div>",
-            "<div id=\"caretaker-info\" style=\"margin-bottom: 0.6vw; opacity: 0.9; font-size: min(1.4vw, 16px);\">", line1, "</div>",
-            "<div id=\"return-info\" style=\"opacity: 0.8; font-size: min(1.4vw, 16px);\">", line2, "</div>",
+            "<div id=\"caretaker-info\" style=\"margin-bottom: 0.6vw; opacity: 0.9; font-size: min(1.4vw, 14px);\">", line1, "</div>",
+            "<div id=\"return-info\" style=\"opacity: 0.8; font-size: min(1.4vw, 14px);\">", line2, "</div>",
+            "<div id=\"wound-info\" style=\"opacity: 0.8; font-size: min(1.4vw, 14px); margin-top: 0.5vw;\">", line3, "</div>",
             "</div>",
             "<svg id=\"house\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 600 450\">",
             "<g id=\"faces\"></g>",
@@ -559,5 +564,85 @@ contract BugcatHouseRenderer is IRender {
             value /= 10;
         }
         str = string(buffer);
+    }
+
+    function _extractWoundBytes(bytes memory code) internal pure returns (bytes memory) {
+        uint256 i = 0;
+        while (i < code.length) {
+            if (code[i] >= 0x60 && code[i] <= 0x7f) {
+                uint8 opcode = uint8(code[i]);
+                uint256 pushSize = opcode - 0x5f;
+                if (i + pushSize + 1 < code.length) {
+                    bytes memory data = new bytes(pushSize);
+                    for (uint256 j = 0; j < pushSize; j++) {
+                        data[j] = code[i + 1 + j];
+                    }
+                    if (_isPaddedString(data)) {
+                        bytes memory cleaned = _removePadding(data);
+                        if (_isValidAscii(cleaned)) {
+                            return cleaned;
+                        }
+                    }
+                }
+                i += pushSize;
+            } else if (i + 10 < code.length) {
+                if (code[i] == 0x90 && 
+                    code[i+1] == 0x82 && 
+                    code[i+2] == 0x01 && 
+                    code[i+3] == 0x52 && 
+                    code[i+4] == 0x7f) {
+                    
+                    uint256 maxLen = 32;
+                    if (i + 5 + maxLen > code.length) {
+                        maxLen = code.length - i - 5;
+                    }
+                    
+                    bytes memory data = new bytes(maxLen);
+                    for (uint256 j = 0; j < maxLen; j++) {
+                        data[j] = code[i + 5 + j];
+                    }
+                    
+                    bytes memory cleaned = _extractValidString(data);
+                    if (cleaned.length > 0) {
+                        return cleaned;
+                    }
+                    
+                    i += 4 + maxLen;
+                }
+            }
+            i++;
+        }
+        return new bytes(0);
+    }
+
+    function _bytesToHex(bytes memory data) internal pure returns (string memory) {
+        if (data.length == 0) return "";
+        
+        string memory result = "";
+        for (uint256 i = 0; i < data.length; i++) {
+            if (i > 0) result = string.concat(result, " ");
+            result = string.concat(result, _byteToHex(data[i]));
+        }
+        return result;
+    }
+
+    function _byteToHex(bytes1 b) internal pure returns (string memory) {
+        uint8 byteValue = uint8(b);
+        uint8 high = byteValue >> 4;
+        uint8 low = byteValue & 0x0f;
+        
+        string memory highChar = high < 10 ? _toString(high) : _uint8ToHexChar(high);
+        string memory lowChar = low < 10 ? _toString(low) : _uint8ToHexChar(low);
+        
+        return string.concat(highChar, lowChar);
+    }
+
+    function _uint8ToHexChar(uint8 value) internal pure returns (string memory) {
+        if (value < 10) return _toString(value);
+        if (value < 16) {
+            bytes1 char = bytes1(uint8(97 + value - 10)); // a-f
+            return string(abi.encodePacked(char));
+        }
+        return "00";
     }
 }
