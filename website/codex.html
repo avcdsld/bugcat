@@ -1,84 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>BUGCAT Codex #42</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif&family=Sixtyfour:SCAN@-53&family=Hightower+Text&family=Special+Elite&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/iosevka@5.0.0/index.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hack-font@3.3.0/build/web/hack.css">
-    <style>
-        body {
-            margin: 0;
-            background: #fff;
-            min-height: 100vh;
-            overflow: hidden;
-        }
-        
-        .codex {
-            width: 100vw;
-            min-height: 100vh;
-            padding: 6vmin;
-            box-sizing: border-box;
-            color: #1a1a1a;
-            font-family: "Iosevka", monospace;
-            font-weight: 400;
-            font-size: 1.6vmin;
-            line-height: 1.5;
-            letter-spacing: 0.05em;
-            white-space: pre-wrap;
-            text-align: left;
-        }
-        
-        .header {
-            color: #666;
-            font-family: "Iosevka", monospace;
-            font-weight: 400;
-            font-size: 1.2vmin;
-            letter-spacing: 0.1em;
-            white-space: pre-wrap;
-            text-align: left;
-            padding-left: 4vmin;
-        }
-        
-        .code-block {
-            padding: 4vmin;
-            margin: 0;
-        }
-
-    </style>
+<meta charset="UTF-8">
+<style>
+body{margin:0;height:100vh;font-family:monospace;font-size:1.7vmin;line-height:1.5;letter-spacing:0.1em;white-space:pre-wrap;display:flex;align-items:center;justify-content:center;background:#f5f5f5;color:#3a3a3a}
+body>div{width:100vmin;height:100vmin;display:flex;flex-direction:column;padding:4vmin 6vmin 6vmin 6vmin;box-sizing:border-box}
+body>div>div:first-child{font-size:1.4vh;margin:1.5vmin 0 4vmin 0}
+body>div>div:last-child{flex:1;overflow:hidden}
+.light{background:#f5f5f5}
+.light>div{background:white;color:#3a3a3a}
+.light>div>div:first-child{color:#3a3a3a}
+.dark{background:#0a0a0a}
+.dark>div{background:#1a1a1a;color:#e0e0e0}
+.dark>div>div:first-child{color:#e0e0e0}
+</style>
 </head>
-<body>
-<div class="codex"><div class="header">Codex #42 preserved by 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb8</div><div class="code-block">// SPDX-License-Identifier: WTFPL
-pragma solidity ^0.8.30;
+<body class="dark">
+<div><div>Codex #0 preserved by 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb8</div><div>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
 
 import "../interface/BugCat.sol";
 
-contract ReentrancyCat is BugCat {
-    mapping(address => uint) public balance;
+contract MisspelledCat is BugCat {
+    address public owner;
 
-    function deposit() public payable {
-        balance[msg.sender] += msg.value;
-    }
-
-    function withdraw() public {
-        (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
-        require(success);
-        balance[msg.sender] = 0;
+    function MisspeledCat(address o) {
+        owner = o;
     }
 
     function caress() public {
-        if (address(this).balance == 0) {
-            emit Meow(msg.sender, "reentrancy");
+        if (msg.sender == owner) {
+            emit Meow(msg.sender, "misspelled");
         }
     }
 
     function remember() external view returns (bool) {
-        address TheDAO = 0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413;
-        return TheDAO.code.length > 0;
+        address Rubixi = 0xe82719202e5965Cf5D9B6673B7503a3b92DE20be;
+        uint256 size; assembly { size := extcodesize(Rubixi) }
+        return size > 0;
     }
-}</div>
-    </div>
+}
+</div>
+
 </body>
 </html>
