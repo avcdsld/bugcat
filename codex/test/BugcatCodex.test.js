@@ -155,22 +155,21 @@ describe("BugcatCodex Tests", function () {
       
       expect(jsonData.name).to.equal(`BUGCAT Codex #${tokenId}`);
       expect(jsonData.description).to.equal("BUGCATs wander. The Codex remembers.");
-      expect(jsonData.image).to.match(/^data:text\/html;base64,/);
-      
-      // Decode and debug the HTML image
-      const htmlBase64 = jsonData.image.replace("data:text/html;base64,", "");
-      const htmlString = Buffer.from(htmlBase64, 'base64').toString();
-      
-      console.log("=== DEBUG: HTML IMAGE CONTENT ===");
-      console.log("HTML length:", htmlString.length);
-      console.log("HTML content:");
-      console.log(htmlString);
-      console.log("=== END HTML IMAGE CONTENT ===");
-      
-      expect(htmlString.length).to.be.greaterThan(0);
-      expect(htmlString).to.include("<!DOCTYPE html>");
-      expect(htmlString).to.include(`Codex #${tokenId}`);
-      expect(htmlString).to.include(user1.address.toLowerCase());
+              expect(jsonData.image).to.match(/^data:image\/svg\+xml;base64,/);
+
+        const svgBase64 = jsonData.image.replace("data:image/svg+xml;base64,", "");
+        const svgString = Buffer.from(svgBase64, 'base64').toString();
+        
+        console.log("=== DEBUG: SVG IMAGE CONTENT ===");
+        console.log("SVG length:", svgString.length);
+        console.log("SVG content:");
+        console.log(svgString);
+        console.log("=== END SVG IMAGE CONTENT ===");
+        
+        expect(svgString.length).to.be.greaterThan(0);
+        expect(svgString).to.include("<svg");
+        expect(svgString).to.include(`Codex #${tokenId}`);
+        expect(svgString).to.include(user1.address.toLowerCase());
     } catch (error) {
       console.log("TokenURI call failed:", error.message);
       console.log("This is expected when registry is not available in local network");
@@ -178,7 +177,6 @@ describe("BugcatCodex Tests", function () {
   });
 
   it("Should mint batch tokens and verify tokenURIs", async function () {
-    // First, set up some codes
     const registry = new ethers.Contract(
       REGISTRY_ADDRESS,
       ["function bugs(uint256) external view returns (address)"],
@@ -197,14 +195,12 @@ describe("BugcatCodex Tests", function () {
         console.log(`Could not get bugcat ${i} from registry:`, error.message);
       }
     }
-    
-    // Set up codes for available bugcats
+
     const sampleCode = "// SPDX-License-Identifier: WTFPL\npragma solidity ^0.8.30;\n\nimport \"../interface/BugCat.sol\";\n\ncontract ReentrancyCat is BugCat {\n    mapping(address => uint) public balance;\n\n    function deposit() public payable {\n        balance[msg.sender] += msg.value;\n    }\n\n    function withdraw() public {\n        (bool success, ) = msg.sender.call{value: balance[msg.sender]}(\"\");\n        require(success);\n        balance[msg.sender] = 0;\n    }\n\n    function caress() public {\n        if (address(this).balance == 0) {\n            emit Meow(msg.sender, \"reentrancy\");\n        }\n    }\n\n    function remember() external view returns (bool) {\n        address TheDAO = 0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413;\n        return TheDAO.code.length > 0;\n    }\n}";
     for (let i = 0; i < Math.min(bugcatAddresses.length, 5); i++) {
       await bugcatCodex.rememberCode(bugcatAddresses[i], sampleCode);
     }
-    
-    // Mint batch tokens
+
     const tokenIds = [2, 3, 4];
     const recipients = [user1.address, user2.address, user1.address];
     
@@ -213,8 +209,7 @@ describe("BugcatCodex Tests", function () {
     for (let i = 0; i < tokenIds.length; i++) {
       expect(await bugcatCodex.ownerOf(tokenIds[i])).to.equal(recipients[i]);
     }
-    
-    // Verify tokenURIs for all minted tokens
+
     for (let i = 0; i < tokenIds.length; i++) {
       const tokenId = tokenIds[i];
       try {
@@ -230,22 +225,21 @@ describe("BugcatCodex Tests", function () {
         
         expect(jsonData.name).to.equal(`BUGCAT Codex #${tokenId}`);
         expect(jsonData.description).to.equal("BUGCATs wander. The Codex remembers.");
-        expect(jsonData.image).to.match(/^data:text\/html;base64,/);
+        expect(jsonData.image).to.match(/^data:image\/svg\+xml;base64,/);
         
-        // Decode and debug the HTML image
-        const htmlBase64 = jsonData.image.replace("data:text/html;base64,", "");
-        const htmlString = Buffer.from(htmlBase64, 'base64').toString();
+        const svgBase64 = jsonData.image.replace("data:image/svg+xml;base64,", "");
+        const svgString = Buffer.from(svgBase64, 'base64').toString();
         
-        console.log(`=== DEBUG: Token ${tokenId} HTML IMAGE ===`);
-        console.log("HTML length:", htmlString.length);
-        console.log("HTML content:");
-        console.log(htmlString);
-        console.log(`=== END Token ${tokenId} HTML IMAGE ===`);
+        console.log(`=== DEBUG: Token ${tokenId} SVG IMAGE ===`);
+        console.log("SVG length:", svgString.length);
+        console.log("SVG content:");
+        console.log(svgString);
+        console.log(`=== END Token ${tokenId} SVG IMAGE ===`);
         
-        expect(htmlString.length).to.be.greaterThan(0);
-        expect(htmlString).to.include("<!DOCTYPE html>");
-        expect(htmlString).to.include(`Codex #${tokenId}`);
-        expect(htmlString).to.include(recipients[i].toLowerCase());
+        expect(svgString.length).to.be.greaterThan(0);
+        expect(svgString).to.include("<svg");
+        expect(svgString).to.include(`Codex #${tokenId}`);
+        expect(svgString).to.include(recipients[i].toLowerCase());
       } catch (error) {
         console.log(`TokenURI call failed for token ${tokenId}:`, error.message);
         console.log("This is expected when registry is not available in local network");
@@ -254,7 +248,6 @@ describe("BugcatCodex Tests", function () {
   });
 
   it("Should test theme switching and compilation features", async function () {
-    // Set up code first
     const registry = new ethers.Contract(
       REGISTRY_ADDRESS,
       ["function bugs(uint256) external view returns (address)"],
@@ -278,44 +271,39 @@ describe("BugcatCodex Tests", function () {
     for (let i = 0; i < Math.min(bugcatAddresses.length, 5); i++) {
       await bugcatCodex.rememberCode(bugcatAddresses[i], sampleCode);
     }
-    
-    // Mint a token
+
     const tokenId = 5;
     await bugcatCodex.mint(user1.address, tokenId);
-    
-    // Test theme switching
+
     expect(await bugcatCodex.lights(tokenId)).to.be.false; // Default is dark theme
-    
+
     await bugcatCodex.connect(user1).switchTheme(tokenId);
     expect(await bugcatCodex.lights(tokenId)).to.be.true; // Now light theme
-    
-    // Test compilation
+
     expect(await bugcatCodex.compileds(tokenId)).to.be.false; // Default is not compiled
     
     await bugcatCodex.connect(user1).compile(tokenId);
     expect(await bugcatCodex.compileds(tokenId)).to.be.true; // Now compiled
-    
-    // Test decompilation
+
     await bugcatCodex.connect(user1).decompile(tokenId);
     expect(await bugcatCodex.compileds(tokenId)).to.be.false; // Back to not compiled
-    
-    // Get tokenURI and verify it reflects the changes
+
     try {
       const tokenURI = await bugcatCodex.tokenURI(tokenId);
       const jsonBase64 = tokenURI.replace("data:application/json;base64,", "");
       const jsonString = Buffer.from(jsonBase64, 'base64').toString();
       const jsonData = JSON.parse(jsonString);
       
-      const htmlBase64 = jsonData.image.replace("data:text/html;base64,", "");
-      const htmlString = Buffer.from(htmlBase64, 'base64').toString();
+      const svgBase64 = jsonData.image.replace("data:image/svg+xml;base64,", "");
+      const svgString = Buffer.from(svgBase64, 'base64').toString();
       
       console.log("=== DEBUG: Token with light theme and decompiled ===");
-      console.log("HTML content:");
-      console.log(htmlString);
-      console.log("=== END HTML ===");
+      console.log("SVG content:");
+      console.log(svgString);
+      console.log("=== END SVG ===");
       
-      expect(htmlString).to.include('class="light"'); // Should have light theme
-      expect(htmlString).to.include(sampleCode); // Should show source code, not bytecode
+      expect(svgString).to.include('fill="#f5f5f5"'); // Light theme background
+      expect(svgString).to.include(sampleCode);
     } catch (error) {
       console.log("TokenURI call failed:", error.message);
       console.log("This is expected when registry is not available in local network");
@@ -323,7 +311,6 @@ describe("BugcatCodex Tests", function () {
   });
 
   it("Should debug tokenURI image with light theme and compiled state", async function () {
-    // Set up code first
     const registry = new ethers.Contract(
       REGISTRY_ADDRESS,
       ["function bugs(uint256) external view returns (address)"],
@@ -347,12 +334,10 @@ describe("BugcatCodex Tests", function () {
     for (let i = 0; i < Math.min(bugcatAddresses.length, 5); i++) {
       await bugcatCodex.rememberCode(bugcatAddresses[i], sampleCode);
     }
-    
-    // Mint a token
+
     const tokenId = 100;
     await bugcatCodex.mint(user1.address, tokenId);
-    
-    // Test 1: Dark theme + Source code (default state)
+
     console.log("=== TEST 1: Dark theme + Source code (default) ===");
     try {
       const tokenURI1 = await bugcatCodex.tokenURI(tokenId);
@@ -360,25 +345,20 @@ describe("BugcatCodex Tests", function () {
       const jsonString_1 = Buffer.from(jsonBase64_1, 'base64').toString();
       const jsonData_1 = JSON.parse(jsonString_1);
       
-      const htmlBase64_1 = jsonData_1.image.replace("data:text/html;base64,", "");
-      const htmlString_1 = Buffer.from(htmlBase64_1, 'base64').toString();
+      const svgBase64_1 = jsonData_1.image.replace("data:image/svg+xml;base64,", "");
+      const svgString_1 = Buffer.from(svgBase64_1, 'base64').toString();
       
-      console.log("=== BASE64 HTML FOR BROWSER (Dark + Source) ===");
-      console.log("data:text/html;base64," + htmlBase64_1);
-      console.log("=== END BASE64 HTML ===");
+      console.log("=== BASE64 SVG FOR BROWSER (Dark + Source) ===");
+      console.log("data:image/svg+xml;base64," + svgBase64_1);
+      console.log("=== END BASE64 SVG ===");
       
-      console.log("HTML content (Dark + Source):");
-      console.log(htmlString_1);
-      console.log("=== END Dark + Source ===");
-      
-      expect(htmlString_1).to.include('class="dark"');
-      expect(htmlString_1).to.include(sampleCode);
-      expect(htmlString_1).to.not.include('<!-- Bytecode:');
+      expect(svgString_1).to.include('fill="#0a0a0a"'); // Dark theme background
+      expect(svgString_1).to.include(sampleCode);
+      expect(svgString_1).to.not.include('<!-- ');
     } catch (error) {
       console.log("TokenURI call failed for dark theme:", error.message);
     }
-    
-    // Test 2: Light theme + Source code
+
     console.log("=== TEST 2: Light theme + Source code ===");
     await bugcatCodex.connect(user1).switchTheme(tokenId);
     expect(await bugcatCodex.lights(tokenId)).to.be.true;
@@ -389,25 +369,20 @@ describe("BugcatCodex Tests", function () {
       const jsonString_2 = Buffer.from(jsonBase64_2, 'base64').toString();
       const jsonData_2 = JSON.parse(jsonString_2);
       
-      const htmlBase64_2 = jsonData_2.image.replace("data:text/html;base64,", "");
-      const htmlString_2 = Buffer.from(htmlBase64_2, 'base64').toString();
+      const svgBase64_2 = jsonData_2.image.replace("data:image/svg+xml;base64,", "");
+      const svgString_2 = Buffer.from(svgBase64_2, 'base64').toString();
       
-      console.log("=== BASE64 HTML FOR BROWSER (Light + Source) ===");
-      console.log("data:text/html;base64," + htmlBase64_2);
-      console.log("=== END BASE64 HTML ===");
+      console.log("=== BASE64 SVG FOR BROWSER (Light + Source) ===");
+      console.log("data:image/svg+xml;base64," + svgBase64_2);
+      console.log("=== END BASE64 SVG ===");
       
-      console.log("HTML content (Light + Source):");
-      console.log(htmlString_2);
-      console.log("=== END Light + Source ===");
-      
-      expect(htmlString_2).to.include('class="light"');
-      expect(htmlString_2).to.include(sampleCode);
-      expect(htmlString_2).to.not.include('<!-- Bytecode:');
+      expect(svgString_2).to.include('fill="#f5f5f5"'); // Light theme background
+      expect(svgString_2).to.include(sampleCode);
+      expect(svgString_2).to.not.include('<!-- ');
     } catch (error) {
       console.log("TokenURI call failed for light theme:", error.message);
     }
-    
-    // Test 3: Light theme + Compiled (bytecode)
+
     console.log("=== TEST 3: Light theme + Compiled (bytecode) ===");
     await bugcatCodex.connect(user1).compile(tokenId);
     expect(await bugcatCodex.compileds(tokenId)).to.be.true;
@@ -418,25 +393,20 @@ describe("BugcatCodex Tests", function () {
       const jsonString_3 = Buffer.from(jsonBase64_3, 'base64').toString();
       const jsonData_3 = JSON.parse(jsonString_3);
       
-      const htmlBase64_3 = jsonData_3.image.replace("data:text/html;base64,", "");
-      const htmlString_3 = Buffer.from(htmlBase64_3, 'base64').toString();
+      const svgBase64_3 = jsonData_3.image.replace("data:image/svg+xml;base64,", "");
+      const svgString_3 = Buffer.from(svgBase64_3, 'base64').toString();
       
-      console.log("=== BASE64 HTML FOR BROWSER (Light + Compiled) ===");
-      console.log("data:text/html;base64," + htmlBase64_3);
-      console.log("=== END BASE64 HTML ===");
+      console.log("=== BASE64 SVG FOR BROWSER (Light + Compiled) ===");
+      console.log("data:image/svg+xml;base64," + svgBase64_3);
+      console.log("=== END BASE64 SVG ===");
       
-      console.log("HTML content (Light + Compiled):");
-      console.log(htmlString_3);
-      console.log("=== END Light + Compiled ===");
-      
-      expect(htmlString_3).to.include('class="light"');
-      expect(htmlString_3).to.include('<!-- Bytecode:');
-      expect(htmlString_3).to.not.include(sampleCode);
+      expect(svgString_3).to.include('fill="#f5f5f5"'); // Light theme background
+      expect(svgString_3).to.include('<!-- '); // Bytecode comment
+      expect(svgString_3).to.not.include(sampleCode);
     } catch (error) {
       console.log("TokenURI call failed for light theme + compiled:", error.message);
     }
-    
-    // Test 4: Dark theme + Compiled (bytecode)
+
     console.log("=== TEST 4: Dark theme + Compiled (bytecode) ===");
     await bugcatCodex.connect(user1).switchTheme(tokenId);
     expect(await bugcatCodex.lights(tokenId)).to.be.false;
@@ -447,20 +417,16 @@ describe("BugcatCodex Tests", function () {
       const jsonString_4 = Buffer.from(jsonBase64_4, 'base64').toString();
       const jsonData_4 = JSON.parse(jsonString_4);
       
-      const htmlBase64_4 = jsonData_4.image.replace("data:text/html;base64,", "");
-      const htmlString_4 = Buffer.from(htmlBase64_4, 'base64').toString();
+      const svgBase64_4 = jsonData_4.image.replace("data:image/svg+xml;base64,", "");
+      const svgString_4 = Buffer.from(svgBase64_4, 'base64').toString();
       
-      console.log("=== BASE64 HTML FOR BROWSER (Dark + Compiled) ===");
-      console.log("data:text/html;base64," + htmlBase64_4);
-      console.log("=== END BASE64 HTML ===");
+      console.log("=== BASE64 SVG FOR BROWSER (Dark + Compiled) ===");
+      console.log("data:image/svg+xml;base64," + svgBase64_4);
+      console.log("=== END BASE64 SVG ===");
       
-      console.log("HTML content (Dark + Compiled):");
-      console.log(htmlString_4);
-      console.log("=== END Dark + Compiled ===");
-      
-      expect(htmlString_4).to.include('class="dark"');
-      expect(htmlString_4).to.include('<!-- Bytecode:');
-      expect(htmlString_4).to.not.include(sampleCode);
+      expect(svgString_4).to.include('fill="#0a0a0a"'); // Dark theme background
+      expect(svgString_4).to.include('<!-- '); // Bytecode comment
+      expect(svgString_4).to.not.include(sampleCode);
     } catch (error) {
       console.log("TokenURI call failed for dark theme + compiled:", error.message);
     }
@@ -483,8 +449,7 @@ describe("BugcatCodex Tests", function () {
         console.log(`Could not get bugcat ${i} from registry`);
       }
     }
-    
-    // Set up codes
+
     const bugcatAddresses = [];
     for (let i = 0; i < 5; i++) {
       try {
@@ -502,15 +467,13 @@ describe("BugcatCodex Tests", function () {
     for (let i = 0; i < Math.min(bugcatAddresses.length, 5); i++) {
       await bugcatCodex.rememberCode(bugcatAddresses[i], sampleCode);
     }
-    
-    // Mint multiple tokens to test different bugcat selections
+
     const tokenIds = [10, 11, 12, 13, 14];
     for (const tokenId of tokenIds) {
       await bugcatCodex.mint(user1.address, tokenId);
       const bugcatIndex = await bugcatCodex.bugcatIndexes(tokenId);
       console.log(`Token ${tokenId} assigned to bugcat index: ${bugcatIndex}`);
-      
-      // Verify the bugcat address matches
+
       try {
         const bugcatAddress = await registry.bugs(bugcatIndex);
         console.log(`Token ${tokenId} bugcat address: ${bugcatAddress}`);

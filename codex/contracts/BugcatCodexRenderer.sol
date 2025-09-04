@@ -3,6 +3,7 @@ pragma solidity ^0.8.30;
 
 import "./utils/ENSResolver.sol";
 import "solady/src/utils/LibString.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
 
 interface IRender {
     function render(
@@ -31,62 +32,55 @@ contract BugcatCodexRenderer is IRender {
         } catch {
             caretakerStr = LibString.toHexStringChecksummed(caretaker);
         }
-        string memory bytecode = _hexFromBytes(bugcat.code, 0);
-        string memory themeClass = light ? "light" : "dark";
-        string memory codeContent;
-        string memory commentContent;
+        string memory bytecode = LibString.toHexString(bugcat.code);
+        string memory content;
+        string memory comment;
         if (compiled) {
-            codeContent = bytecode;
-            commentContent = "";
+            content = bytecode;
+            comment = "";
         } else {
-            codeContent = code;
-            commentContent = string.concat("<!-- ", bytecode, " -->");
+            content = code;
+            comment = string.concat("<!-- ", bytecode, " -->");
         }
-        
-        string memory html = string.concat(
-            "<!DOCTYPE html>",
-            "<html>",
-            "<head>",
-            "<meta charset=\"UTF-8\">",
+
+        string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
+        string memory codeBgColor = light ? "#ffffff" : "#1a1a1a";
+        string memory textColor = light ? "#3a3a3a" : "#e0e0e0";
+        string memory headerColor = light ? "#3a3a3a" : "#e0e0e0";
+
+        string memory svg = string.concat(
+            "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
+            "<defs>",
             "<style>",
-            "body{margin:0;height:100vh;font-family:monospace;font-size:1.7vmin;line-height:1.5;letter-spacing:0.1em;white-space:pre-wrap;display:flex;align-items:center;justify-content:center}",
-            "body>div{width:100vmin;height:100vmin;display:flex;flex-direction:column;padding:4vmin 6vmin 6vmin 6vmin;box-sizing:border-box}",
-            "body>div>div:first-child{font-size:1.4vmin;margin:1.5vmin 0 4vmin 0}",
-            "body>div>div:last-child{flex:1;overflow:hidden;word-break:break-all}",
-            ".light{background:#f5f5f5}",
-            ".light>div{background:white;color:#3a3a3a}",
-            ".light>div>div:first-child{color:#3a3a3a}",
-            ".dark{background:#0a0a0a}",
-            ".dark>div{background:#1a1a1a;color:#e0e0e0}",
-            ".dark>div>div:first-child{color:#e0e0e0}",
+            ".header { font-family: monospace; font-size: 15px; line-height: 1.5; letter-spacing: 0.1em; }",
+            ".code { font-family: monospace; font-size: 18px; line-height: 1.5; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }",
             "</style>",
-            "</head>",
-            "<body class=\"", themeClass, "\">",
-            "<div>",
-            "<div>Codex #", _toString(tokenId), " preserved by ", caretakerStr, "</div>",
-            "<div>", codeContent, "</div>",
+            "</defs>",
+            "<rect width=\"1000\" height=\"1000\" fill=\"", codeBgColor, "\"/>",
+            "<foreignObject x=\"60\" y=\"20\" width=\"880\" height=\"200\">",
+            "<div xmlns=\"http://www.w3.org/1999/xhtml\" style=\"font-family: monospace; font-size: 15px; line-height: 1.5; letter-spacing: 0.1em; color: ", headerColor, "; white-space: pre-wrap;\">",
+            "Codex #", _toString(tokenId), " preserved by ", caretakerStr, "\n",
+            "/*\n",
+            ".:: .::   .::     .::   .::::       .::         .:       .::: .::::::         .::                  .::\n",
+            ".:    .:: .::     .:: .:    .::  .::   .::     .: ::          .::          .::   .::               .::\n",
+            ".:     .::.::     .::.::        .::           .:  .::         .::         .::          .::         .::   .::    .::   .::\n",
+            ".::: .:   .::     .::.::        .::          .::   .::        .::         .::        .::  .::  .:: .:: .:   .::   .: .::\n",
+            ".:     .::.::     .::.::   .::::.::         .:::::: .::       .::         .::       .::    .::.:   .::.::::: .::   .:\n",
+            ".:      .:.::     .:: .::    .:  .::   .:: .::       .::      .::          .::   .:: .::  .:: .:   .::.:         .:  .::\n",
+            ".:::: .::   .:::::     .:::::      .::::  .::         .::     .::            .::::     .::     .:: .::  .::::   .::   .::\n",
+            "*/",
             "</div>",
-            commentContent,
-            "</body>",
-            "</html>"
-            );
+            "</foreignObject>",
+            "<foreignObject x=\"60\" y=\"280\" width=\"880\" height=\"660\">",
+            "<div xmlns=\"http://www.w3.org/1999/xhtml\" class=\"code\">",
+            _escapeHtml(content),
+            "</div>",
+            "</foreignObject>",
+            comment,
+            "</svg>"
+        );
 
-        return html;
-    }
-
-    function _hexFromBytes(bytes memory data, uint256 maxChars) internal pure returns (string memory) {
-        if (data.length == 0) return "";
-        bytes memory HEX = "0123456789abcdef";
-        uint256 avail = data.length * 2;
-        uint256 outLen = (maxChars == 0 || maxChars > avail) ? avail : maxChars;
-        bytes memory out = new bytes(outLen);
-        uint256 pairs = outLen / 2;
-        for (uint256 i = 0; i < pairs; i++) {
-            uint8 b = uint8(data[i]);
-            out[2*i]   = HEX[b >> 4];
-            out[2*i+1] = HEX[b & 0x0f];
-        }
-        return string(out);
+        return string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
     }
 
     function _toString(uint256 value) internal pure returns (string memory str) {
@@ -100,5 +94,14 @@ contract BugcatCodexRenderer is IRender {
             value /= 10;
         }
         str = string(buffer);
+    }
+
+    function _escapeHtml(string memory input) internal pure returns (string memory) {
+        string memory result = LibString.replace(input, "&", "&amp;");
+        result = LibString.replace(result, "<", "&lt;");
+        result = LibString.replace(result, ">", "&gt;");
+        result = LibString.replace(result, "\"", "&quot;");
+        result = LibString.replace(result, "'", "&apos;");
+        return result;
     }
 }

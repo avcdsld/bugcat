@@ -11,7 +11,7 @@ interface IBugcatsRegistry {
     function bugs(uint256) external view returns (address);
 }
 
-interface IRender {
+interface IRenderer {
     function render(
         uint256 tokenId,
         address caretaker,
@@ -25,11 +25,10 @@ interface IRender {
 contract BugcatCodex is ERC721, ERC2981, Ownable {
     using Strings for uint256;
 
-    IBugcatsRegistry public immutable registry;
-    uint256 public immutable bugcatCount;
-
+    IBugcatsRegistry public immutable bugcatRegistry;
+    uint256 public bugcatCount;
+    IRenderer public renderer;
     address public minter;
-    address public renderer;
     mapping(address => string) public codes;
     mapping(uint256 => uint8) public bugcatIndexes;
     mapping(uint256 => bool) public lights;
@@ -39,15 +38,15 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
 
     constructor(
         address _owner,
-        address _registry,
-        uint8 _bugcatCount,
+        address _bugcatRegistry,
+        uint8   _bugcatCount,
         address _renderer,
         address _royaltyReceiver
     ) ERC721("BUGCAT Codex", "CODEX") Ownable(_owner) {
-        registry = IBugcatsRegistry(_registry);
+        bugcatRegistry = IBugcatsRegistry(_bugcatRegistry);
         bugcatCount = _bugcatCount;
         minter = _owner;
-        renderer = _renderer;
+        renderer = IRenderer(_renderer);
         _setDefaultRoyalty(_royaltyReceiver, 1000);
     }
 
@@ -56,7 +55,11 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     }
 
     function setRenderer(address r) external onlyOwner {
-        renderer = r;
+        renderer = IRenderer(r);
+    }
+
+    function setBugcatCount(uint256 count) external onlyOwner {
+        bugcatCount = count;
     }
 
     function setDefaultRoyalty(address receiver, uint96 bps) external onlyOwner {
@@ -102,13 +105,13 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        address bugcat = IBugcatsRegistry(registry).bugs(bugcatIndexes[tokenId]);
-        string memory html = IRender(renderer).render(tokenId, ownerOf(tokenId), bugcat, codes[bugcat], lights[tokenId], compileds[tokenId]);
+        address bugcat = bugcatRegistry.bugs(bugcatIndexes[tokenId]);
+        string memory image = IRenderer(renderer).render(tokenId, ownerOf(tokenId), bugcat, codes[bugcat], lights[tokenId], compileds[tokenId]);
         string memory json = string.concat(
             '{',
             '"name":"BUGCAT Codex #', tokenId.toString(), '",',
             '"description":"BUGCATs wander. The Codex remembers.",',
-            '"image":"', string.concat("data:text/html;base64,", Base64.encode(bytes(html))), '"',
+            '"image":"', image, '"',
             '}'
         );
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
