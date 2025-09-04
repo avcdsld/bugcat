@@ -53,12 +53,12 @@ contract BugcatCodexRenderer is IRender {
             "</style></defs>",
             "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
 
-            "<foreignObject x=\"60\" y=\"30\" width=\"940\" height=\"30\">",
+            "<foreignObject x=\"55\" y=\"30\" width=\"945\" height=\"30\">",
             "<div class=\"code\" xmlns=\"http://www.w3.org/1999/xhtml\">",
             "Codex #", _toString(tokenId), " preserved by ", caretakerStr, "\n",
             "</div></foreignObject>",
 
-            "<foreignObject x=\"60\" y=\"70\" width=\"920\" height=\"120\">",
+            "<foreignObject x=\"55\" y=\"70\" width=\"925\" height=\"120\">",
             "<div class=\"header\" xmlns=\"http://www.w3.org/1999/xhtml\">",
             "/////////////////////////////////////////////////////////////////////////////////////////////////////\n",
             "//          ____  __ __   ___    ___  ___  ______      ___   ___   ____    ____ _   _              //\n",
