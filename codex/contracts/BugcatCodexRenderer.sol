@@ -114,7 +114,7 @@ contract BugcatCodexRenderer is IRender {
             }
         }
 
-        string memory left  = string.concat("0x", LibString.slice(hexStr, 0, split));
+        string memory left  = LibString.slice(hexStr, 0, split);
         string memory right = LibString.slice(hexStr, split);
 
         string memory leftG  = _groupPairsHex(left);
