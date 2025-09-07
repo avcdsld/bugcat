@@ -11,7 +11,6 @@ interface IBugcatsRegistry {
 
 contract BugcatCodexRenderer {
     IBugcatsRegistry public immutable bugcatRegistry;
-    
     string private specialCodeLight;
     string private specialCodeDark;
 
@@ -30,8 +29,8 @@ contract BugcatCodexRenderer {
     function renderAnimationUrl(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled, uint8[] memory preservedBugcatIndexes) external view returns (string memory) {
         address bugcat = bugcatRegistry.bugs(bugcatIndex);
         string memory svg = _generateSvg(tokenId, caretaker, bugcat, code, light, compiled);
-        string memory certificateSvg = _generateCertificateSvg(tokenId, caretaker, preservedBugcatIndexes, light);
-        return _wrapInInteractiveHtml(svg, certificateSvg, light);
+        string memory backSvg = _generateBackSvg(tokenId, caretaker, preservedBugcatIndexes, light);
+        return _wrapInInteractiveHtml(svg, backSvg, light);
     }
 
     function _generateSvg(uint256 tokenId, address caretaker, address bugcat, string memory code, bool light, bool compiled) internal view returns (string memory) {
@@ -64,7 +63,7 @@ contract BugcatCodexRenderer {
         );
     }
 
-    function _generateCertificateSvg(
+    function _generateBackSvg(
         uint256 tokenId,
         address caretaker,
         uint8[] memory preservedBugcatIndexes,
@@ -341,7 +340,7 @@ contract BugcatCodexRenderer {
         return false;
     }
 
-    function _wrapInInteractiveHtml(string memory originalSvg, string memory certificateSvg, bool light) internal pure returns (string memory) {
+    function _wrapInInteractiveHtml(string memory svg, string memory backSvg, bool light) internal pure returns (string memory) {
         string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
         string memory html = string.concat(
             "data:text/html;base64,",
@@ -353,8 +352,8 @@ contract BugcatCodexRenderer {
                 "body.show-cert #orig{opacity:0;pointer-events:none;}",
                 "body.show-cert #cert{opacity:1;pointer-events:all;}",
                 "</style></head><body onclick=\"document.body.classList.toggle('show-cert')\">",
-                "<div id=\"orig\" class=\"view\">", originalSvg, "</div>",
-                "<div id=\"cert\" class=\"view\">", certificateSvg, "</div>",
+                "<div id=\"orig\" class=\"view\">", svg, "</div>",
+                "<div id=\"cert\" class=\"view\">", backSvg, "</div>",
                 "</body></html>"
             )))
         );
@@ -368,15 +367,48 @@ contract BugcatCodexRenderer {
 
         uint256 bestStart = type(uint256).max;
         uint256 bestLen = 0;
-        uint256 i = 0;
-        while (i < raw.length) {
-            if (raw[i] >= 0x61 && raw[i] <= 0x7A) {
-                uint256 j = i + 1;
-                while (j < raw.length && raw[j] >= 0x61 && raw[j] <= 0x7A) { unchecked { ++j; } }
-                uint256 len = j - i;
-                if (len >= 6 && len > bestLen) { bestLen = len; bestStart = i; }
-                i = j;
-            } else { unchecked { ++i; } }
+        
+        (bool found, string memory pushResult) = _extractFromPushInstructions(raw);
+        if (found) {
+            bytes memory pushBytes = bytes(pushResult);
+            bestLen = pushBytes.length;
+            for (uint256 i = 0; i <= raw.length - bestLen; i++) {
+                bool matched = true;
+                for (uint256 j = 0; j < bestLen; j++) {
+                    if (raw[i + j] != pushBytes[j]) {
+                        matched = false;
+                        break;
+                    }
+                }
+                if (matched) {
+                    bestStart = i;
+                    break;
+                }
+            }
+        }
+        
+        if (bestStart == type(uint256).max) {
+            uint256 i = 0;
+            while (i < raw.length) {
+                if (raw[i] >= 0x61 && raw[i] <= 0x7a) {
+                    uint256 j = i + 1;
+                    while (j < raw.length && raw[j] >= 0x61 && raw[j] <= 0x7a) { unchecked { ++j; } }
+                    uint256 len = j - i;
+                    
+                    if (len >= 6 && len <= 15 && len > bestLen) {
+                        bytes memory candidate = new bytes(len);
+                        for (uint256 k = 0; k < len; k++) {
+                            candidate[k] = raw[i + k];
+                        }
+                        
+                        if (_isValidWord(candidate)) {
+                            bestLen = len;
+                            bestStart = i;
+                        }
+                    }
+                    i = j;
+                } else { unchecked { ++i; } }
+            }
         }
 
         uint256 pairs = hb.length / 2;

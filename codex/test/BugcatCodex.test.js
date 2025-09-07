@@ -27,7 +27,7 @@ describe("BugcatCodex Tests", function () {
           ENSResolver: ensResolver.target
         }
       });
-      bugcatCodexRenderer = await BugcatCodexRenderer.deploy();
+      bugcatCodexRenderer = await BugcatCodexRenderer.deploy(REGISTRY_ADDRESS);
 
       const BugcatCodex = await ethers.getContractFactory("BugcatCodex");
       bugcatCodex = await BugcatCodex.deploy(
