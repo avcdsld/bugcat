@@ -19,8 +19,12 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY || ""
+      mainnet: process.env.ETHERSCAN_API_KEY || "",
+      holesky: process.env.ETHERSCAN_API_KEY || ""
     }
+  },
+  sourcify: {
+    enabled: false
   },
   networks: {
     hardhat: {
@@ -33,6 +37,16 @@ module.exports = {
       url: process.env.MAINNET_RPC_URL || "",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
       chainId: 1
+    },
+    holesky: {
+      url: process.env.HOLESKY_RPC_URL || "https://ethereum-holesky.publicnode.com",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 17000,
+      libraries: {
+        "contracts/utils/ENSResolver.sol": {
+          "ENSResolver": "0x6925affDa98274FE0376250187CCC4aC62866dCd"
+        }
+      }
     }
   }
 };

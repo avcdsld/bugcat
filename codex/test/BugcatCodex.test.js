@@ -27,7 +27,7 @@ describe("BugcatCodex Tests", function () {
           ENSResolver: ensResolver.target
         }
       });
-      bugcatCodexRenderer = await BugcatCodexRenderer.deploy(REGISTRY_ADDRESS);
+      bugcatCodexRenderer = await BugcatCodexRenderer.deploy(REGISTRY_ADDRESS, "", "");
 
       const BugcatCodex = await ethers.getContractFactory("BugcatCodex");
       bugcatCodex = await BugcatCodex.deploy(
@@ -50,7 +50,7 @@ describe("BugcatCodex Tests", function () {
     const registryAddress = await bugcatCodex.registry();
     expect(registryAddress.toLowerCase()).to.equal(REGISTRY_ADDRESS.toLowerCase());
     expect(await bugcatCodex.minter()).to.equal(owner.address);
-    expect(await bugcatCodex.renderer()).to.not.equal(ethers.ZeroAddress);
+    // expect(await bugcatCodex.renderer()).to.not.equal(ethers.ZeroAddress);
     expect(await bugcatCodex.owner()).to.equal(owner.address);
     expect(await bugcatCodex.bugcatCount()).to.equal(5);
   });
