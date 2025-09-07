@@ -5,7 +5,9 @@
     "test": "hardhat test",
     "compile": "hardhat compile",
     "deploy:holesky": "hardhat run scripts/deploy-holesky.js --network holesky",
-    "verify:holesky": "hardhat run scripts/verify-holesky.js --network holesky"
+    "verify:holesky": "hardhat run scripts/verify-holesky.js --network holesky",
+    "deploy:mainnet": "hardhat run scripts/deploy-mainnet.js --network mainnet",
+    "verify:mainnet": "hardhat run scripts/verify-mainnet.js --network mainnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
