@@ -11,9 +11,14 @@ interface IBugcatsRegistry {
 
 contract BugcatCodexRenderer {
     IBugcatsRegistry public immutable bugcatRegistry;
+    
+    string private specialCodeLight;
+    string private specialCodeDark;
 
     constructor(address _bugcatRegistry) {
         bugcatRegistry = IBugcatsRegistry(_bugcatRegistry);
+        specialCodeLight = "+-+++-.--------+++++--.---+----+++++--------++++++++-.-------+++---.-#########-...----++++++-.---+++\n+-+++-.------.---+++--.----------++--.-.+----------+-.---------++--..#########-.-##------+++-.----+-\n+-----..----.+##+..........-----------####-----------.---------##+...+########-....-###-----...-----\n+--+++-------+####+----------.-----.+#####+.-----------------.-----+##########-++..-+---------------\n#--++++++++--+###++#+.-------.----+###++###.--------++++++++-.-++--#########--.------.--------++++++\n#------+++++-+###+++##+-----++++-##-#######--------------------+++-..#########---+---.-++++-----++++\n+------------+####+-##############++#######------------------+++-.-##############+++-.-----------+++\n+............-####+############+###+-++#+##--....-.....-##-++..-############+..............---------\n+++++-.-------##############################-..-.##+++#######--+#####++####--++++-++--+------.---+--\n+++++-.-------+###############+#############----+##################+++#+--.+##+-----++++++++-.-+++++\n+--++-.-------##################################++############+######+####+#####+--+###+++++---+++++\n+--++-.-----.##############################################################--++++++++---++---.--++++\n+----....-..-###+-#.+#########-#--+##############################+#########++++#+----..-----...-----\n+--++++++----###+-#+-########-+##+-##############################################--+++--------------\n+---++++++---#####+++########+---+#############################################++--###+-------++++++\n+---+--+++----#####################################+#########################+.+##---.---------+++++\n+------++++++++++####+---+#####################################################+--+##.----------+++-\n+---......---++++######+#############################################+######+####-....--..........--\n+++++-.-++----+#++#####++############+##########################################--.###++--++-.--++++\n#++++------+#+-++--.-##############################################################+++..-----.-+++++\n+-+++-.--++---++-----..-+########################################+####################--+----.--++++\n+--+-----------------..-+################################+############################+.-+---.---+++\n+..-...................-###############+###############++##############################--.......----\n++++++++++++--.----------#############+################+########################++####++------++++++\n+-+++++++++++-.---------.-###########++###############+#######################-.-######-##+-++++++++\n+-----+++++++-.----------.-##########--##############################++###+------+#####-.+#+--++++-+\n+---------+---.-------------#########-+++###############+#############------------#####+-.------+++-\n+----........................+#####++++##############+-....-+#########+++-........#######++-......--\n+++++-.-------+++++++---------..+++###############+.----------...+######.----.-----######+--.-++++++\n+++++----------++++++-.-----.--###################...---++++++++--######++++------.#########-.--++++\n+-+++-.----------++++-.--.-#######################+-------++++++--+#####+------+++--+#####+-.----+++\n+----------------------+#######################+-..----------++----#######--------+---..-----.------\n+------------..---..-###################+++####-...------......-...+#######--.................------\n+--+++++++++--.---+#################---++####+-.-----+++++++-.-----.-#####-.-+++++++-.-++++++++++++-\n#---+++++++++-.-###############-...-########+---------++++++-.-------......--+++++++-.----+++++++++-\n#------+++--+##############+------+#########+.----------++++------------------++++++-.------+++++++-\n+----------######+#######---------#######++--.----------------------------------++++-.----+-----+++-\n+---......+#+##++######--.......-########+++--..-..............................................-----\n+++++-.---.-+##+####+.--+-------#######+--++++++++++-.         BUGCAT CODEX: COMPLETE        .-+++++\n+-+++-.--------..-----.-----+-+#######-.---+++++++++-. [reentrancy] [predictable] [overflow] .--++++\n+--++------------++++-.------+#######+---------+++++-.      [unprotected] [misspelled]       .---+++\n+-----.---------------.----+########+.---------------.          All wounds witnessed.        .------\n+------------..-------.+###########-..........................................--.............-------\n++-++++++++++-.---+--.############-.--++++++-.---+++++++++++-.-----+++++++++---+++++++++++++++++++++\n#+--+++++++++-.------.##########-.---+++++++-.-------+++++++-.-------+++++++---+++++----++++++++++++\n#+--+++++++++-.----++----++-------+++--------.---------++++--.----------++++---++++-------++++++++++";
+        specialCodeDark = "-+---+#++++++++-----++#+++-++++-----++++++++--------+#+++++++---+++#+. .......+###++++------+#+++---\n-+---+#++++++#+++---++#++++++++++--++#+#-++++++++++-+#+++++++++--++##. .   .  +#+..++++++---+#++++++\n-+++++##++++#-..-##########+++++++++++.. .+++++++++++#+++++++++..-###-   ..   +####+...+++++###+++++\n-++---+++++++- ...-++++++++++#+++++#-.... -#+++++++++++++++++#+++++-.. ...    +--##+-+++++++++++++++\n.++--------++-...--.-#+++++++#++++-...--.. #++++++++--------+#+--++...     .++#++++++#++++++++------\n.++++++-----+-...---. -+++++----+..+.....  ++++++++++++++++++++---+##. ..  .  +++-+++#+----+++++----\n-++++++++++++- ...-+....... .  ...--.....  ++++++++++++++++++---+#+.... .........---+#+++++++++++---\n-############+. ..-.. .. .... .-...-+--.-. ++####+#####+..+--##+.......  ...-##############+++++++++\n-----+#+++++++....  .. ........... ......  .+##+#..---.......++- ....--....++----+--++-++++++#+++-++\n-----+#+++++++-..  .  .... ...-........ ....++++-..     ....... ...---.-++#-..-+++++--------+#+-----\n-++--+#+++++++. ..       ......  ........  . ...--  ..... .. .-... ..-....-.....-++-...-----+++-----\n-++--+#+++++#-  .... .   ..    ...   ..  . ...    .  .....       .....  ...++--------+++--+++#++----\n-++++####+##+. .-+.#-   .    .+.++-...  ......    ........      .-..  .....----.-++++##+++++###+++++\n-++------++++.  -+.-+.  ..  .+-..-+...   .....  . .......    ....      ........ .++---++++++++++++++\n-+++------+++.   .---. .... .-+++-   ........  ....  .......     ..    .....  .--++...-+++++++------\n-+++-++---++++ ..............  ...  ... .....  ....-.........  ....  ...  .  -#-..+++#+++++++++-----\n-++++++----------.  .-+++- .  ........  ...  . ..... ....   ...    ....  ..    -++-..#++++++++++---+\n-+++######+++----.... .-...................  .  ...  .... ..  ...  ..-......-... +####++##########++\n-----+#+--++++-.--.....--... ........-.  .      ....... . ..  ..     ..... ..  .++#...--++--+#++----\n.----++++++-.-+--++#+... ...    .....   .     ..  .      .......          .........---##+++++#+-----\n-+---+#++--+++--+++++##+-......   ....        ... ..... .....   .-.      ..  .... ....++-++++#++----\n-++-+++++++++++++++++##+-.             .       .... ..  .-..            ....  .  .....-#+-+++#+++---\n-##+###################+...  .  ..    .-.  .....   ....--.. .. ...        .  ....     .++#######++++\n------------++#++++++++++... ... .   .-. .......  ... .-. ....     .....     ...--.   --++++++------\n-+-----------+#+++++++++#+...........--.... ..      ..-.  ..     ..     ... ..+#+.  ...+..-+--------\n-+++++-------+#++++++++++#+........ .++. ..        ....   .      .. .--...-++++++-.   .+#-.-++----+-\n-+++++++++-+++#+++++++++++++. ..    .+---...  ......  ..-.....  .    .++++++++++++ ... -+#++++++---+\n-++++########################-.  ..----....  .  .....-+####+-.   ... .---+########.    ..--+######++\n-----+#+++++++-------+++++++++##---...   ...   .. -#++++++++++###-  .  .#++++#+++++     .-++#+------\n-----++++++++++------+#+++++#++. ..... ...    ....###+++--------++..   .----++++++#.  ... ..+#++----\n-+---+#++++++++++----+#++#+.. . ..........  ......-+++++++------++-.    -++++++---++-   ..-+#++++---\n-++++++++++++++++++++++-...         . .. ......-+##++++++++++--++++.   ...++++++++-+++##+++++#++++++\n-++++++++++++##+++##+............ ......---....+###++++++######+###-   ....++#################++++++\n-++---------++#+++-....     .   ....+++--. . -+#+++++-------+#+++++#+.. ..+#+-------+#+------------+\n.+++---------+#+.  .. ... .. ..+###+..     .-+++++++++------+#+++++++######++-------+#++++---------+\n.++++++---++-........  .  .-+++++++.....   .-#++++++++++----++++++++++++++++++------+#++++++-------+\n-++++++++++......- .    .+++++++++. ..  .--+##++++++++++++++++++++++++++++++++++----+#++++-+++++---+\n-+++######-.-. --.  ...++#######+.....  .---++##+##############################################+++++\n-----+#+++#+-..-.. .-#++-+++++++ .. .  -++----------+#         BUGCAT CODEX: COMPLETE        #+----+\n-+---+#++++++++##+++++#+++++-+-....  .+#+++---------+# [reentrancy] [predictable] [overflow] #++----\n-++--++++++++++++----+#++++++-..   ..-+++++++++-----+#      [unprotected] [misspelled]       #+++---\n-+++++#+++++++++++++++#++++-.    ...-#+++++++++++++++#          All wounds witnessed.        #++++++\n-++++++++++++##+++++++#-.... .   ..+##########################################++#############+++++++\n--+----------+#+++-++#............+#++------+#+++-----------+#+++++---------+++---------------------\n.-++---------+#++++++#.......  .+#+++-------+#+++++++-------+#+++++++-------+++-----++++------------\n.-++--------++#++++--++++--+++++++---++++++++#+++++++++----++#++++++++++----+++----+++++++----------";
     }
 
     function renderImage(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled) external view returns (string memory) {
@@ -22,30 +27,23 @@ contract BugcatCodexRenderer {
         return string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
     }
 
-    function renderAnimationUrl(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled, uint8[] memory ownedBugcatIndexes) external view returns (string memory) {
+    function renderAnimationUrl(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled, uint8[] memory preservedBugcatIndexes) external view returns (string memory) {
         address bugcat = bugcatRegistry.bugs(bugcatIndex);
         string memory svg = _generateSvg(tokenId, caretaker, bugcat, code, light, compiled);
-        string memory certificateSvg = _generateCertificateSvg(caretaker, ownedBugcatIndexes, light);
+        string memory certificateSvg = _generateCertificateSvg(tokenId, caretaker, preservedBugcatIndexes, light);
         return _wrapInInteractiveHtml(svg, certificateSvg, light);
     }
 
     function _generateSvg(uint256 tokenId, address caretaker, address bugcat, string memory code, bool light, bool compiled) internal view returns (string memory) {
-        string memory caretakerStr;
-        try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
-            caretakerStr = nameOrAddr;
-        } catch {
-            caretakerStr = LibString.toHexStringChecksummed(caretaker);
-        }
-
-        string memory bytecode = LibString.toHexString(bugcat.code);
-        string memory content = compiled ? _twoColsAutoHighlight(bytecode) : _escapeHtml(code);
-        string memory comment = compiled ? "" : string.concat("<!-- ", bytecode, " -->");
-
         string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
         string memory boxBgColor = light ? "#ffffff" : "#1a1a1a";
         string memory textColor = light ? "#3a3a3a" : "#e0e0e0";
         string memory hlBg = light ? "#dddddd" : "#444444";
 
+        string memory bytecode = LibString.toHexString(bugcat.code);
+        string memory content = compiled ? _twoColsAutoHighlight(bytecode) : _escapeHtml(code);
+        string memory comment = compiled ? "" : string.concat("<!-- ", bytecode, " -->");
+        
         return string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
@@ -56,7 +54,57 @@ contract BugcatCodexRenderer {
             ".hl { background:", hlBg, "; padding: 0 2px; border-radius: 2px; }\n",
             "</style></defs>",
             "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
+            _getHeader(tokenId, caretaker),
+            "<foreignObject x=\"60\" y=\"220\" width=\"880\" height=\"790\">",
+            "<div xmlns=\"http://www.w3.org/1999/xhtml\" class=\"code\">",
+            content,
+            "</div></foreignObject>",
+            comment,
+            "</svg>"
+        );
+    }
 
+    function _generateCertificateSvg(
+        uint256 tokenId,
+        address caretaker,
+        uint8[] memory preservedBugcatIndexes,
+        bool light
+    ) internal view returns (string memory) {
+        string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
+        string memory boxBgColor = light ? "#ffffff" : "#1a1a1a";
+        string memory textColor = light ? "#3a3a3a" : "#e0e0e0";
+
+        string memory content;
+        if (preservedBugcatIndexes.length == 5) {
+            content = light ? specialCodeLight : specialCodeDark;
+        } else {
+            content = _buildIncompleteMessage(preservedBugcatIndexes);
+        }
+
+        return string.concat(
+            "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
+            "<defs><style>\n",
+            ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".message { font-family: monospace; font-size: 17px; line-height: 0.95; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            "</style></defs>",
+            "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
+            _getHeader(tokenId, caretaker),
+            "<foreignObject x=\"60\" y=\"220\" width=\"880\" height=\"790\">",
+            "<div xmlns=\"http://www.w3.org/1999/xhtml\" class=\"message\">",
+            content,
+            "</div></foreignObject>",
+            "</svg>"
+        );
+    }
+
+    function _getHeader(uint256 tokenId, address caretaker) internal view returns (string memory) {
+        string memory caretakerStr;
+        try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
+            caretakerStr = nameOrAddr;
+        } catch {
+            caretakerStr = LibString.toHexStringChecksummed(caretaker);
+        }
+        return string.concat(
             "<foreignObject x=\"55\" y=\"30\" width=\"945\" height=\"30\">",
             "<div class=\"code\" xmlns=\"http://www.w3.org/1999/xhtml\">",
             "Codex #", _toString(tokenId), " preserved by ", caretakerStr, "\n",
@@ -71,64 +119,45 @@ contract BugcatCodexRenderer {
             "//          ||_)) \\\\_//  \\\\_||  \\\\__ || ||   ||       \\\\__  \\\\_//  ||_//  ||___ // \\\\              //\n",
             "//                                                                                                 //\n",
             "/////////////////////////////////////////////////////////////////////////////////////////////////////\n",
-            "</div></foreignObject>",
-
-            "<foreignObject x=\"60\" y=\"220\" width=\"880\" height=\"790\">",
-            "<div xmlns=\"http://www.w3.org/1999/xhtml\" class=\"code\">",
-            content,
-            "</div></foreignObject>",
-            comment,
-            "</svg>"
+            "</div></foreignObject>"
         );
     }
 
-    function _generateCertificateSvg(
-        address caretaker,
-        uint8[] memory ownedBugcatIndexes,
-        bool light
-    ) internal view returns (string memory) {
-        string memory bgColor = light ? "#f5f5f5" : "#000000";
-        string memory textColor = light ? "#3a3a3a" : "#00ff00";
+    function _buildIncompleteMessage(uint8[] memory preservedBugcatIndexes) internal view returns (string memory) {
+        string memory statusLine = "";
+        
+        for (uint i = 0; i < 5; i++) {
+            bool hasThisBugcat = false;
+            string memory woundName = "";
 
-        string memory caretakerStr;
-        try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
-            caretakerStr = nameOrAddr;
-        } catch {
-            caretakerStr = LibString.toHexStringChecksummed(caretaker);
+            for (uint j = 0; j < preservedBugcatIndexes.length; j++) {
+                if (preservedBugcatIndexes[j] == i) {
+                    hasThisBugcat = true;
+                    address bugcat = bugcatRegistry.bugs(i);
+                    woundName = _extractWoundFromBytecode(bugcat);
+                    break;
+                }
+            }
+            
+            woundName = hasThisBugcat ? woundName : "----------";
+            statusLine = string.concat(statusLine, "[", woundName, "]");
+
+            if (i < 4) {
+                statusLine = string.concat(statusLine, " ");
+            }
         }
-
-        string memory status = string.concat(_toString(ownedBugcatIndexes.length), " WOUNDS REMEMBERED");
-
-        string memory wounds = _buildWoundsList(ownedBugcatIndexes);
-
+        
         return string.concat(
-            "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" xmlns=\"http://www.w3.org/2000/svg\">",
-            "<rect width=\"1000\" height=\"1000\" fill=\"", bgColor, "\"/>",
-            "<text x=\"100\" y=\"100\" font-family=\"'Courier New', monospace\" font-size=\"16\" fill=\"", textColor, "\">",
-            "<tspan x=\"100\" dy=\"0\">-----BEGIN BUGCAT CODEX CERTIFICATE-----</tspan>",
-            "<tspan x=\"100\" dy=\"40\"></tspan>",
-            "<tspan x=\"100\" dy=\"25\">Issued to: ", caretakerStr, "</tspan>",
-            "<tspan x=\"100\" dy=\"25\">Purpose: Preservation of the Codex of BUGCATs</tspan>",
-            "<tspan x=\"100\" dy=\"40\"></tspan>",
-            "<tspan x=\"100\" dy=\"25\">DECLARATION:</tspan>",
-            "<tspan x=\"100\" dy=\"25\">Here is inscribed the consent to let this poem endure.</tspan>",
-            "<tspan x=\"100\" dy=\"25\">The Codex bears witness to the citizenship of digital poetry.</tspan>",
-            "<tspan x=\"100\" dy=\"40\"></tspan>",
-            "<tspan x=\"100\" dy=\"25\">WOUNDS AUTHENTICATED:</tspan>",
-            wounds,
-            "<tspan x=\"100\" dy=\"40\"></tspan>",
-            "<tspan x=\"100\" dy=\"25\">Status: ", status, "</tspan>",
-            "<tspan x=\"100\" dy=\"40\"></tspan>",
-            "<tspan x=\"100\" dy=\"25\">-----END BUGCAT CODEX CERTIFICATE-----</tspan>",
-            "</text>",
-            "</svg>"
+            "BUGCAT CODEX: INCOMPLETE\n\n",
+            statusLine,
+            "\n\nSome wounds witnessed. The Codex remembers you."
         );
     }
 
-    function _buildWoundsList(uint8[] memory ownedBugcatIndexes) internal view returns (string memory) {
+    function _buildWoundsList(uint8[] memory preservedBugcatIndexes) internal view returns (string memory) {
         string memory result = "";
-        for (uint i = 0; i < ownedBugcatIndexes.length; i++) {
-            uint8 bugcatIndex = ownedBugcatIndexes[i];
+        for (uint i = 0; i < preservedBugcatIndexes.length; i++) {
+            uint8 bugcatIndex = preservedBugcatIndexes[i];
             address bugcat = bugcatRegistry.bugs(bugcatIndex);
             string memory wound = _extractWoundFromBytecode(bugcat);
             result = string.concat(

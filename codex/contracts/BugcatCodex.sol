@@ -28,7 +28,7 @@ interface IRenderer {
         string memory code,
         bool light,
         bool compiled,
-        uint8[] memory ownedBugcatIndexes
+        uint8[] memory preservedBugcatIndexes
     ) external view returns (string memory);
 }
 
@@ -50,7 +50,7 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     constructor(
         address _owner,
         address _bugcatRegistry,
-        uint8   _bugcatCount,
+        uint8 _bugcatCount,
         address _renderer,
         address _royaltyReceiver
     ) ERC721("BUGCAT Codex", "CODEX") Ownable(_owner) {
@@ -115,22 +115,22 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
         compileds[tokenId] = false;
     }
 
-    function getOwnedBugcatIndexes(address owner) public view returns (uint8[] memory) {
-        uint256 balance = balanceOf(owner);
+    function getPreservedBugcatIndexes(address caretaker) public view returns (uint8[] memory) {
+        uint256 balance = balanceOf(caretaker);
         uint8[] memory indexes = new uint8[](balance);
         
         for (uint256 i = 0; i < balance; i++) {
-            uint256 tokenId = tokenOfOwnerByIndex(owner, i);
+            uint256 tokenId = tokenOfOwnerByIndex(caretaker, i);
             indexes[i] = bugcatIndexes[tokenId];
         }
         
         return indexes;
     }
 
-    function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256) {
+    function tokenOfOwnerByIndex(address caretaker, uint256 index) public view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < 10000; i++) {
-            if (_ownerOf(i) == owner) {
+            if (_ownerOf(i) == caretaker) {
                 if (count == index) {
                     return i;
                 }
@@ -141,31 +141,16 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        address owner = ownerOf(tokenId);
+        address caretaker = ownerOf(tokenId);
         uint8 bugcatIndex = bugcatIndexes[tokenId];
         address bugcat = bugcatRegistry.bugs(bugcatIndex);
 
-        string memory image = IRenderer(renderer).renderImage(
-            tokenId, 
-            owner, 
-            bugcatIndex, 
-            codes[bugcat], 
-            lights[tokenId], 
-            compileds[tokenId]
-        );
+        string memory image = IRenderer(renderer).renderImage(tokenId, caretaker, bugcatIndex, codes[bugcat], lights[tokenId], compileds[tokenId]);
 
-        uint8[] memory ownedBugcatIndexes = getOwnedBugcatIndexes(owner);
+        uint8[] memory preservedBugcatIndexes = getPreservedBugcatIndexes(caretaker);
 
         string memory animationUrl;
-        try IRenderer(renderer).renderAnimationUrl(
-            tokenId,
-            owner,
-            bugcatIndex,
-            codes[bugcat],
-            lights[tokenId],
-            compileds[tokenId],
-            ownedBugcatIndexes
-        ) returns (string memory url) {
+        try IRenderer(renderer).renderAnimationUrl(tokenId, caretaker, bugcatIndex, codes[bugcat], lights[tokenId], compileds[tokenId], preservedBugcatIndexes) returns (string memory url) {
             animationUrl = url;
         } catch {
             animationUrl = image;
@@ -181,7 +166,7 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
                     '{"trait_type":"Bug Type","value":"', _getBugcatTypeName(bugcatIndexes[tokenId]), '"},',
                     '{"trait_type":"Theme","value":"', lights[tokenId] ? "Light" : "Dark", '"},',
                     '{"trait_type":"Compiled","value":"', compileds[tokenId] ? "Yes" : "No", '"},',
-                    '{"trait_type":"Collection Progress","value":"', _getCollectionProgress(ownedBugcatIndexes), '"}',
+                    '{"trait_type":"Collection Progress","value":"', _getCollectionProgress(preservedBugcatIndexes), '"}',
                 ']',
             '}'
         );
@@ -206,8 +191,8 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
         str = string(buffer);
     }
 
-    function _getCollectionProgress(uint8[] memory ownedBugcatIndexes) internal view returns (string memory) {
-        return string.concat(Strings.toString(ownedBugcatIndexes.length), "/", Strings.toString(bugcatCount));
+    function _getCollectionProgress(uint8[] memory preservedBugcatIndexes) internal view returns (string memory) {
+        return string.concat(Strings.toString(preservedBugcatIndexes.length), "/", Strings.toString(bugcatCount));
     }
 
     function _choose(uint256 salt) internal view returns (uint8) {
