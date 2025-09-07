@@ -5,26 +5,31 @@ import "./utils/ENSResolver.sol";
 import "solady/src/utils/LibString.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
-interface IRender {
-    function render(
-        uint256 tokenId,
-        address caretaker,
-        address bugcat,
-        string memory code,
-        bool light,
-        bool compiled
-    ) external view returns (string memory);
+interface IBugcatsRegistry {
+    function bugs(uint256) external view returns (address);
 }
 
-contract BugcatCodexRenderer is IRender {
-    function render(
-        uint256 tokenId,
-        address caretaker,
-        address bugcat,
-        string memory code,
-        bool light,
-        bool compiled
-    ) external view override returns (string memory) {
+contract BugcatCodexRenderer {
+    IBugcatsRegistry public immutable bugcatRegistry;
+
+    constructor(address _bugcatRegistry) {
+        bugcatRegistry = IBugcatsRegistry(_bugcatRegistry);
+    }
+
+    function renderImage(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled) external view returns (string memory) {
+        address bugcat = bugcatRegistry.bugs(bugcatIndex);
+        string memory svg = _generateSvg(tokenId, caretaker, bugcat, code, light, compiled);
+        return string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
+    }
+
+    function renderAnimationUrl(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled, uint8[] memory ownedBugcatIndexes) external view returns (string memory) {
+        address bugcat = bugcatRegistry.bugs(bugcatIndex);
+        string memory svg = _generateSvg(tokenId, caretaker, bugcat, code, light, compiled);
+        string memory certificateSvg = _generateCertificateSvg(caretaker, ownedBugcatIndexes, light);
+        return _wrapInInteractiveHtml(svg, certificateSvg, light);
+    }
+
+    function _generateSvg(uint256 tokenId, address caretaker, address bugcat, string memory code, bool light, bool compiled) internal view returns (string memory) {
         string memory caretakerStr;
         try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
             caretakerStr = nameOrAddr;
@@ -33,7 +38,6 @@ contract BugcatCodexRenderer is IRender {
         }
 
         string memory bytecode = LibString.toHexString(bugcat.code);
-
         string memory content = compiled ? _twoColsAutoHighlight(bytecode) : _escapeHtml(code);
         string memory comment = compiled ? "" : string.concat("<!-- ", bytecode, " -->");
 
@@ -42,7 +46,7 @@ contract BugcatCodexRenderer is IRender {
         string memory textColor = light ? "#3a3a3a" : "#e0e0e0";
         string memory hlBg = light ? "#dddddd" : "#444444";
 
-        string memory svg = string.concat(
+        return string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
             ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
@@ -76,8 +80,256 @@ contract BugcatCodexRenderer is IRender {
             comment,
             "</svg>"
         );
+    }
 
-        return string.concat("data:image/svg+xml;base64,", Base64.encode(bytes(svg)));
+    function _generateCertificateSvg(
+        address caretaker,
+        uint8[] memory ownedBugcatIndexes,
+        bool light
+    ) internal view returns (string memory) {
+        string memory bgColor = light ? "#f5f5f5" : "#000000";
+        string memory textColor = light ? "#3a3a3a" : "#00ff00";
+
+        string memory caretakerStr;
+        try ENSResolver.resolveAddress(caretaker) returns (string memory nameOrAddr) {
+            caretakerStr = nameOrAddr;
+        } catch {
+            caretakerStr = LibString.toHexStringChecksummed(caretaker);
+        }
+
+        string memory status = string.concat(_toString(ownedBugcatIndexes.length), " WOUNDS REMEMBERED");
+
+        string memory wounds = _buildWoundsList(ownedBugcatIndexes);
+
+        return string.concat(
+            "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" xmlns=\"http://www.w3.org/2000/svg\">",
+            "<rect width=\"1000\" height=\"1000\" fill=\"", bgColor, "\"/>",
+            "<text x=\"100\" y=\"100\" font-family=\"'Courier New', monospace\" font-size=\"16\" fill=\"", textColor, "\">",
+            "<tspan x=\"100\" dy=\"0\">-----BEGIN BUGCAT CODEX CERTIFICATE-----</tspan>",
+            "<tspan x=\"100\" dy=\"40\"></tspan>",
+            "<tspan x=\"100\" dy=\"25\">Issued to: ", caretakerStr, "</tspan>",
+            "<tspan x=\"100\" dy=\"25\">Purpose: Preservation of the Codex of BUGCATs</tspan>",
+            "<tspan x=\"100\" dy=\"40\"></tspan>",
+            "<tspan x=\"100\" dy=\"25\">DECLARATION:</tspan>",
+            "<tspan x=\"100\" dy=\"25\">Here is inscribed the consent to let this poem endure.</tspan>",
+            "<tspan x=\"100\" dy=\"25\">The Codex bears witness to the citizenship of digital poetry.</tspan>",
+            "<tspan x=\"100\" dy=\"40\"></tspan>",
+            "<tspan x=\"100\" dy=\"25\">WOUNDS AUTHENTICATED:</tspan>",
+            wounds,
+            "<tspan x=\"100\" dy=\"40\"></tspan>",
+            "<tspan x=\"100\" dy=\"25\">Status: ", status, "</tspan>",
+            "<tspan x=\"100\" dy=\"40\"></tspan>",
+            "<tspan x=\"100\" dy=\"25\">-----END BUGCAT CODEX CERTIFICATE-----</tspan>",
+            "</text>",
+            "</svg>"
+        );
+    }
+
+    function _buildWoundsList(uint8[] memory ownedBugcatIndexes) internal view returns (string memory) {
+        string memory result = "";
+        for (uint i = 0; i < ownedBugcatIndexes.length; i++) {
+            uint8 bugcatIndex = ownedBugcatIndexes[i];
+            address bugcat = bugcatRegistry.bugs(bugcatIndex);
+            string memory wound = _extractWoundFromBytecode(bugcat);
+            result = string.concat(
+                result,
+                "<tspan x=\"100\" dy=\"25\">[x] I remember ", wound, " cat and its wound</tspan>"
+            );
+        }
+        return result;
+    }
+
+    function _extractWoundFromBytecode(address bugcat) internal view returns (string memory) {
+        bytes memory bytecode = bugcat.code;
+        if (bytecode.length == 0) return "n/a";
+        (bool found, string memory catName) = _extractFromPushInstructions(bytecode);
+        if (found) {
+            return catName;
+        }
+        catName = _findLongestValidString(bytecode);
+        if (bytes(catName).length > 0) {
+            return catName;
+        }
+        return "n/a";
+    }
+
+    function _extractFromPushInstructions(bytes memory bytecode) internal pure returns (bool found, string memory result) {
+        uint256 bestScore = 0;
+        bytes memory bestCandidate;
+        
+        uint256 pc = 0;
+        while (pc < bytecode.length) {
+            uint8 opcode = uint8(bytecode[pc]);
+            if (opcode >= 0x60 && opcode <= 0x7f) {
+                uint256 pushSize = opcode - 0x5f;
+                if (pc + pushSize < bytecode.length) {
+                    bytes memory data = new bytes(pushSize);
+                    for (uint256 i = 0; i < pushSize; i++) {
+                        data[i] = bytecode[pc + 1 + i];
+                    }
+                    if (_isValidWoundString(data)) {
+                        uint256 score = pushSize * 10 + 100;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestCandidate = data;
+                        }
+                    }
+                }
+                pc += 1 + pushSize;
+            } else {
+                pc++;
+            }
+        }
+        if (bestScore > 0) {
+            return (true, string(bestCandidate));
+        }
+
+        return (false, "");
+    }
+
+    function _findLongestValidString(bytes memory bytecode) internal pure returns (string memory) {
+        uint256 bestLength = 0;
+        uint256 bestStart = 0;
+        for (uint256 i = 0; i < bytecode.length; i++) {
+            if (bytecode[i] >= 0x61 && bytecode[i] <= 0x7a) {
+                uint256 start = i;
+                uint256 end = i + 1;
+
+                while (end < bytecode.length && bytecode[end] >= 0x61 && bytecode[end] <= 0x7a) {
+                    end++;
+                }
+                
+                uint256 length = end - start;
+                
+                if (length >= 6 && length <= 15 && length > bestLength) {
+                    bytes memory candidate = new bytes(length);
+                    for (uint256 j = 0; j < length; j++) {
+                        candidate[j] = bytecode[start + j];
+                    }
+                    
+                    if (_isValidWord(candidate)) {
+                        bestLength = length;
+                        bestStart = start;
+                    }
+                }
+                
+                i = end - 1;
+            }
+        }
+
+        if (bestLength > 0) {
+            bytes memory result = new bytes(bestLength);
+            for (uint256 i = 0; i < bestLength; i++) {
+                result[i] = bytecode[bestStart + i];
+            }
+            return string(result);
+        }
+        
+        return "";
+    }
+
+    function _isValidWoundString(bytes memory data) internal pure returns (bool) {
+        if (data.length < 6 || data.length > 15) return false;
+        
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 b = uint8(data[i]);
+            
+            if (b == 0x60) return false;
+            
+            if (b == 0x20) return false;
+            
+            if (b < 0x20 || b > 0x7e) return false;
+        }
+        
+        bool allLowercase = true;
+        for (uint256 i = 0; i < data.length; i++) {
+            if (data[i] < 0x61 || data[i] > 0x7a) {
+                allLowercase = false;
+                break;
+            }
+        }
+        
+        if (allLowercase) {
+            return _hasReasonableVowels(data);
+        }
+        
+        return false;
+    }
+
+    function _isValidWord(bytes memory data) internal pure returns (bool) {
+        bool hasVowel = false;
+        uint256 consonantStreak = 0;
+        uint256 maxConsonantStreak = 0;
+        
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 b = uint8(data[i]);
+            
+            if (b == 0x61 || b == 0x65 || b == 0x69 || b == 0x6f || b == 0x75) {
+                hasVowel = true;
+                consonantStreak = 0;
+            } else {
+                consonantStreak++;
+                if (consonantStreak > maxConsonantStreak) {
+                    maxConsonantStreak = consonantStreak;
+                }
+            }
+        }
+        
+        return hasVowel && maxConsonantStreak <= 4;
+    }
+
+    function _hasReasonableVowels(bytes memory data) internal pure returns (bool) {
+        uint256 vowelCount = 0;
+        
+        for (uint256 i = 0; i < data.length; i++) {
+            uint8 b = uint8(data[i]);
+            if (b == 0x61 || b == 0x65 || b == 0x69 || b == 0x6f || b == 0x75) {
+                vowelCount++;
+            }
+        }
+        
+        return vowelCount > 0 && vowelCount * 100 / data.length <= 60;
+    }
+
+    function _containsPattern(bytes memory haystack, bytes memory needle) internal pure returns (bool) {
+        if (needle.length == 0 || needle.length > haystack.length) {
+            return false;
+        }
+        
+        for (uint256 i = 0; i <= haystack.length - needle.length; i++) {
+            bool matched = true;
+            for (uint256 j = 0; j < needle.length; j++) {
+                if (haystack[i + j] != needle[j]) {
+                    matched = false;
+                    break;
+                }
+            }
+            if (matched) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
+    function _wrapInInteractiveHtml(string memory originalSvg, string memory certificateSvg, bool light) internal pure returns (string memory) {
+        string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
+        string memory html = string.concat(
+            "data:text/html;base64,",
+            Base64.encode(bytes(string.concat(
+                "<!DOCTYPE html><html><head><style>",
+                "body{margin:0;background:", bgColor, ";overflow:hidden;cursor:pointer;}",
+                ".view{position:absolute;width:100%;height:100%;display:flex;justify-content:center;align-items:center;transition:opacity 0.3s;}",
+                "#cert{opacity:0;pointer-events:none;}",
+                "body.show-cert #orig{opacity:0;pointer-events:none;}",
+                "body.show-cert #cert{opacity:1;pointer-events:all;}",
+                "</style></head><body onclick=\"document.body.classList.toggle('show-cert')\">",
+                "<div id=\"orig\" class=\"view\">", originalSvg, "</div>",
+                "<div id=\"cert\" class=\"view\">", certificateSvg, "</div>",
+                "</body></html>"
+            )))
+        );
+        return html;
     }
 
     function _twoColsAutoHighlight(string memory hex0x) internal pure returns (string memory) {
@@ -154,7 +406,7 @@ contract BugcatCodexRenderer is IRender {
         for (uint256 i = 0; i < hexLen; i += 2) {
             out[idx++] = s[start + i];
             if (i + 1 < hexLen) out[idx++] = s[start + i + 1];
-            if (i + 2 < hexLen) out[idx++] = 0x20; // space
+            if (i + 2 < hexLen) out[idx++] = 0x20;
         }
         return string(out);
     }

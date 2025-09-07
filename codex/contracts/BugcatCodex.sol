@@ -12,13 +12,23 @@ interface IBugcatsRegistry {
 }
 
 interface IRenderer {
-    function render(
+    function renderImage(
         uint256 tokenId,
         address caretaker,
-        address bugcat,
+        uint8 bugcatIndex,
         string memory code,
         bool light,
         bool compiled
+    ) external view returns (string memory);
+
+    function renderAnimationUrl(
+        uint256 tokenId,
+        address caretaker,
+        uint8 bugcatIndex,
+        string memory code,
+        bool light,
+        bool compiled,
+        uint8[] memory ownedBugcatIndexes
     ) external view returns (string memory);
 }
 
@@ -33,6 +43,7 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     mapping(uint256 => uint8) public bugcatIndexes;
     mapping(uint256 => bool) public lights;
     mapping(uint256 => bool) public compileds;
+
 
     event Mint(address indexed to, uint256 indexed tokenId, uint8 bugcatIndex);
 
@@ -104,17 +115,99 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
         compileds[tokenId] = false;
     }
 
+    function getOwnedBugcatIndexes(address owner) public view returns (uint8[] memory) {
+        uint256 balance = balanceOf(owner);
+        uint8[] memory indexes = new uint8[](balance);
+        
+        for (uint256 i = 0; i < balance; i++) {
+            uint256 tokenId = tokenOfOwnerByIndex(owner, i);
+            indexes[i] = bugcatIndexes[tokenId];
+        }
+        
+        return indexes;
+    }
+
+    function tokenOfOwnerByIndex(address owner, uint256 index) public view returns (uint256) {
+        uint256 count = 0;
+        for (uint256 i = 0; i < 10000; i++) {
+            if (_ownerOf(i) == owner) {
+                if (count == index) {
+                    return i;
+                }
+                count++;
+            }
+        }
+        revert("index out of bounds");
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        address bugcat = bugcatRegistry.bugs(bugcatIndexes[tokenId]);
-        string memory image = IRenderer(renderer).render(tokenId, ownerOf(tokenId), bugcat, codes[bugcat], lights[tokenId], compileds[tokenId]);
+        address owner = ownerOf(tokenId);
+        uint8 bugcatIndex = bugcatIndexes[tokenId];
+        address bugcat = bugcatRegistry.bugs(bugcatIndex);
+
+        string memory image = IRenderer(renderer).renderImage(
+            tokenId, 
+            owner, 
+            bugcatIndex, 
+            codes[bugcat], 
+            lights[tokenId], 
+            compileds[tokenId]
+        );
+
+        uint8[] memory ownedBugcatIndexes = getOwnedBugcatIndexes(owner);
+
+        string memory animationUrl;
+        try IRenderer(renderer).renderAnimationUrl(
+            tokenId,
+            owner,
+            bugcatIndex,
+            codes[bugcat],
+            lights[tokenId],
+            compileds[tokenId],
+            ownedBugcatIndexes
+        ) returns (string memory url) {
+            animationUrl = url;
+        } catch {
+            animationUrl = image;
+        }
+        
         string memory json = string.concat(
             '{',
-            '"name":"BUGCAT Codex #', tokenId.toString(), '",',
-            '"description":"BUGCATs wander. The Codex remembers.",',
-            '"image":"', image, '"',
+                '"name":"BUGCAT Codex #', tokenId.toString(), '",',
+                '"description":"BUGCATs wander. The Codex remembers. Click to reveal the certificate.",',
+                '"image":"', image, '",',
+                '"animation_url":"', animationUrl, '",',
+                '"attributes":[',
+                    '{"trait_type":"Bug Type","value":"', _getBugcatTypeName(bugcatIndexes[tokenId]), '"},',
+                    '{"trait_type":"Theme","value":"', lights[tokenId] ? "Light" : "Dark", '"},',
+                    '{"trait_type":"Compiled","value":"', compileds[tokenId] ? "Yes" : "No", '"},',
+                    '{"trait_type":"Collection Progress","value":"', _getCollectionProgress(ownedBugcatIndexes), '"}',
+                ']',
             '}'
         );
+
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
+    }
+
+    function _getBugcatTypeName(uint8 catType) internal pure returns (string memory) {
+        return string.concat("Type ", _toString(catType));
+    }
+
+    function _toString(uint256 value) internal pure returns (string memory str) {
+        if (value == 0) return "0";
+        uint256 temp = value; uint256 digits;
+        while (temp != 0) { digits++; temp /= 10; }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        str = string(buffer);
+    }
+
+    function _getCollectionProgress(uint8[] memory ownedBugcatIndexes) internal view returns (string memory) {
+        return string.concat(Strings.toString(ownedBugcatIndexes.length), "/", Strings.toString(bugcatCount));
     }
 
     function _choose(uint256 salt) internal view returns (uint8) {
