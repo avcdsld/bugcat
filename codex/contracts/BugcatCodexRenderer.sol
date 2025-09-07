@@ -42,7 +42,7 @@ contract BugcatCodexRenderer {
         string memory bytecode = LibString.toHexString(bugcat.code);
         string memory content = compiled ? _twoColsAutoHighlight(bytecode) : _escapeHtml(code);
         string memory comment = compiled ? "" : string.concat("<!-- ", bytecode, " -->");
-        
+
         return string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
@@ -63,12 +63,7 @@ contract BugcatCodexRenderer {
         );
     }
 
-    function _generateBackSvg(
-        uint256 tokenId,
-        address caretaker,
-        uint8[] memory preservedBugcatIndexes,
-        bool light
-    ) internal view returns (string memory) {
+    function _generateBackSvg(uint256 tokenId, address caretaker, uint8[] memory preservedBugcatIndexes, bool light) internal view returns (string memory) {
         string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
         string memory boxBgColor = light ? "#ffffff" : "#1a1a1a";
         string memory textColor = light ? "#3a3a3a" : "#e0e0e0";
@@ -84,6 +79,7 @@ contract BugcatCodexRenderer {
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
             ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".code { font-family: monospace; font-size: 17px; line-height: 1.3; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
             ".message { font-family: monospace; font-size: 17px; line-height: 0.95; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
             "</style></defs>",
             "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
@@ -124,7 +120,7 @@ contract BugcatCodexRenderer {
 
     function _buildIncompleteMessage(uint8[] memory preservedBugcatIndexes) internal view returns (string memory) {
         string memory statusLine = "";
-        
+
         for (uint i = 0; i < 5; i++) {
             bool hasThisBugcat = false;
             string memory woundName = "";
@@ -137,7 +133,7 @@ contract BugcatCodexRenderer {
                     break;
                 }
             }
-            
+
             woundName = hasThisBugcat ? woundName : "----------";
             statusLine = string.concat(statusLine, "[", woundName, "]");
 
@@ -145,7 +141,7 @@ contract BugcatCodexRenderer {
                 statusLine = string.concat(statusLine, " ");
             }
         }
-        
+
         return string.concat(
             "BUGCAT CODEX: INCOMPLETE\n\n",
             statusLine,
@@ -184,7 +180,7 @@ contract BugcatCodexRenderer {
     function _extractFromPushInstructions(bytes memory bytecode) internal pure returns (bool found, string memory result) {
         uint256 bestScore = 0;
         bytes memory bestCandidate;
-        
+
         uint256 pc = 0;
         while (pc < bytecode.length) {
             uint8 opcode = uint8(bytecode[pc]);
@@ -226,21 +222,21 @@ contract BugcatCodexRenderer {
                 while (end < bytecode.length && bytecode[end] >= 0x61 && bytecode[end] <= 0x7a) {
                     end++;
                 }
-                
+
                 uint256 length = end - start;
-                
+
                 if (length >= 6 && length <= 15 && length > bestLength) {
                     bytes memory candidate = new bytes(length);
                     for (uint256 j = 0; j < length; j++) {
                         candidate[j] = bytecode[start + j];
                     }
-                    
+
                     if (_isValidWord(candidate)) {
                         bestLength = length;
                         bestStart = start;
                     }
                 }
-                
+
                 i = end - 1;
             }
         }
@@ -252,7 +248,7 @@ contract BugcatCodexRenderer {
             }
             return string(result);
         }
-        
+
         return "";
     }
 
@@ -261,14 +257,14 @@ contract BugcatCodexRenderer {
         
         for (uint256 i = 0; i < data.length; i++) {
             uint8 b = uint8(data[i]);
-            
+
             if (b == 0x60) return false;
-            
+
             if (b == 0x20) return false;
-            
+
             if (b < 0x20 || b > 0x7e) return false;
         }
-        
+
         bool allLowercase = true;
         for (uint256 i = 0; i < data.length; i++) {
             if (data[i] < 0x61 || data[i] > 0x7a) {
@@ -276,11 +272,11 @@ contract BugcatCodexRenderer {
                 break;
             }
         }
-        
+
         if (allLowercase) {
             return _hasReasonableVowels(data);
         }
-        
+
         return false;
     }
 
@@ -288,10 +284,10 @@ contract BugcatCodexRenderer {
         bool hasVowel = false;
         uint256 consonantStreak = 0;
         uint256 maxConsonantStreak = 0;
-        
+
         for (uint256 i = 0; i < data.length; i++) {
             uint8 b = uint8(data[i]);
-            
+
             if (b == 0x61 || b == 0x65 || b == 0x69 || b == 0x6f || b == 0x75) {
                 hasVowel = true;
                 consonantStreak = 0;
@@ -302,20 +298,20 @@ contract BugcatCodexRenderer {
                 }
             }
         }
-        
+
         return hasVowel && maxConsonantStreak <= 4;
     }
 
     function _hasReasonableVowels(bytes memory data) internal pure returns (bool) {
         uint256 vowelCount = 0;
-        
+
         for (uint256 i = 0; i < data.length; i++) {
             uint8 b = uint8(data[i]);
             if (b == 0x61 || b == 0x65 || b == 0x69 || b == 0x6f || b == 0x75) {
                 vowelCount++;
             }
         }
-        
+
         return vowelCount > 0 && vowelCount * 100 / data.length <= 60;
     }
 
@@ -323,7 +319,7 @@ contract BugcatCodexRenderer {
         if (needle.length == 0 || needle.length > haystack.length) {
             return false;
         }
-        
+
         for (uint256 i = 0; i <= haystack.length - needle.length; i++) {
             bool matched = true;
             for (uint256 j = 0; j < needle.length; j++) {
@@ -346,14 +342,36 @@ contract BugcatCodexRenderer {
             "data:text/html;base64,",
             Base64.encode(bytes(string.concat(
                 "<!DOCTYPE html><html><head><style>",
-                "body{margin:0;background:", bgColor, ";overflow:hidden;cursor:pointer;}",
-                ".view{position:absolute;width:100%;height:100%;display:flex;justify-content:center;align-items:center;transition:opacity 0.3s;}",
-                "#cert{opacity:0;pointer-events:none;}",
-                "body.show-cert #orig{opacity:0;pointer-events:none;}",
-                "body.show-cert #cert{opacity:1;pointer-events:all;}",
-                "</style></head><body onclick=\"document.body.classList.toggle('show-cert')\">",
-                "<div id=\"orig\" class=\"view\">", svg, "</div>",
-                "<div id=\"cert\" class=\"view\">", backSvg, "</div>",
+                "html,body{margin:0;padding:0;width:100%;height:100%;background:", bgColor, ";overflow:hidden;perspective:1000px;}",
+                ".card-container{position:absolute;top:0;left:0;width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;}",
+                ".card{position:relative;width:100vw;height:100vh;transform-style:preserve-3d;transition:transform 0.6s ease-in-out;}",
+                ".card-face{position:absolute;top:0;left:0;width:100vw;height:100vh;backface-visibility:hidden;display:flex;justify-content:center;align-items:center;}",
+                ".card-face svg{max-width:100%;max-height:100%;width:auto;height:auto;display:block;}",
+                ".card-front{transform:rotateY(0deg);}",
+                ".card-back{transform:rotateY(180deg);}",
+                "body{cursor:pointer;}",
+                "body.flipped .card{transform:rotateY(180deg);}",
+                "</style></head><body onclick=\"handleClick(event)\">",
+                "<script>",
+                "let isSelecting=false;",
+                "let mouseDownTime=0;",
+                "document.addEventListener('mousedown',()=>mouseDownTime=Date.now());",
+                "document.addEventListener('selectstart',()=>isSelecting=true);",
+                "document.addEventListener('selectionchange',()=>{",
+                "if(window.getSelection().toString()==='')isSelecting=false;",
+                "});",
+                "function handleClick(e){",
+                "const clickDuration=Date.now()-mouseDownTime;",
+                "if(isSelecting||clickDuration>200)return;",
+                "document.body.classList.toggle('flipped');",
+                "}",
+                "</script>",
+                "<div class=\"card-container\">",
+                "<div class=\"card\">",
+                "<div class=\"card-face card-front\">", svg, "</div>",
+                "<div class=\"card-face card-back\">", backSvg, "</div>",
+                "</div>",
+                "</div>",
                 "</body></html>"
             )))
         );
@@ -367,7 +385,7 @@ contract BugcatCodexRenderer {
 
         uint256 bestStart = type(uint256).max;
         uint256 bestLen = 0;
-        
+
         (bool found, string memory pushResult) = _extractFromPushInstructions(raw);
         if (found) {
             bytes memory pushBytes = bytes(pushResult);
@@ -386,7 +404,7 @@ contract BugcatCodexRenderer {
                 }
             }
         }
-        
+
         if (bestStart == type(uint256).max) {
             uint256 i = 0;
             while (i < raw.length) {
@@ -394,13 +412,13 @@ contract BugcatCodexRenderer {
                     uint256 j = i + 1;
                     while (j < raw.length && raw[j] >= 0x61 && raw[j] <= 0x7a) { unchecked { ++j; } }
                     uint256 len = j - i;
-                    
+
                     if (len >= 6 && len <= 15 && len > bestLen) {
                         bytes memory candidate = new bytes(len);
                         for (uint256 k = 0; k < len; k++) {
                             candidate[k] = raw[i + k];
                         }
-                        
+
                         if (_isValidWord(candidate)) {
                             bestLen = len;
                             bestStart = i;
@@ -503,7 +521,7 @@ contract BugcatCodexRenderer {
         bytes memory out = new bytes(len * 2);
         for (uint256 k = 0; k < len; ++k) {
             uint8 b = uint8(data[start + k]);
-            out[2*k]     = _hexChar(b >> 4);
+            out[2*k] = _hexChar(b >> 4);
             out[2*k + 1] = _hexChar(b & 0x0f);
         }
         return string(out);

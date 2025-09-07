@@ -12,24 +12,8 @@ interface IBugcatsRegistry {
 }
 
 interface IRenderer {
-    function renderImage(
-        uint256 tokenId,
-        address caretaker,
-        uint8 bugcatIndex,
-        string memory code,
-        bool light,
-        bool compiled
-    ) external view returns (string memory);
-
-    function renderAnimationUrl(
-        uint256 tokenId,
-        address caretaker,
-        uint8 bugcatIndex,
-        string memory code,
-        bool light,
-        bool compiled,
-        uint8[] memory preservedBugcatIndexes
-    ) external view returns (string memory);
+    function renderImage(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled) external view returns (string memory);
+    function renderAnimationUrl(uint256 tokenId, address caretaker, uint8 bugcatIndex, string memory code, bool light, bool compiled, uint8[] memory preservedBugcatIndexes) external view returns (string memory);
 }
 
 contract BugcatCodex is ERC721, ERC2981, Ownable {
@@ -44,16 +28,9 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     mapping(uint256 => bool) public lights;
     mapping(uint256 => bool) public compileds;
 
-
     event Mint(address indexed to, uint256 indexed tokenId, uint8 bugcatIndex);
 
-    constructor(
-        address _owner,
-        address _bugcatRegistry,
-        uint8 _bugcatCount,
-        address _renderer,
-        address _royaltyReceiver
-    ) ERC721("BUGCAT Codex", "CODEX") Ownable(_owner) {
+    constructor(address _owner, address _bugcatRegistry, uint8 _bugcatCount, address _renderer, address _royaltyReceiver) ERC721("BUGCAT Codex", "CODEX") Ownable(_owner) {
         bugcatRegistry = IBugcatsRegistry(_bugcatRegistry);
         bugcatCount = _bugcatCount;
         minter = _owner;
@@ -118,12 +95,10 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
     function getPreservedBugcatIndexes(address caretaker) public view returns (uint8[] memory) {
         uint256 balance = balanceOf(caretaker);
         uint8[] memory indexes = new uint8[](balance);
-        
         for (uint256 i = 0; i < balance; i++) {
             uint256 tokenId = tokenOfOwnerByIndex(caretaker, i);
             indexes[i] = bugcatIndexes[tokenId];
         }
-        
         return indexes;
     }
 
@@ -147,35 +122,28 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
 
         string memory image = IRenderer(renderer).renderImage(tokenId, caretaker, bugcatIndex, codes[bugcat], lights[tokenId], compileds[tokenId]);
 
-        uint8[] memory preservedBugcatIndexes = getPreservedBugcatIndexes(caretaker);
-
         string memory animationUrl;
-        try IRenderer(renderer).renderAnimationUrl(tokenId, caretaker, bugcatIndex, codes[bugcat], lights[tokenId], compileds[tokenId], preservedBugcatIndexes) returns (string memory url) {
+        try IRenderer(renderer).renderAnimationUrl(tokenId, caretaker, bugcatIndex, codes[bugcat], lights[tokenId], compileds[tokenId], getPreservedBugcatIndexes(caretaker)) returns (string memory url) {
             animationUrl = url;
         } catch {
             animationUrl = image;
         }
-        
+
         string memory json = string.concat(
             '{',
                 '"name":"BUGCAT Codex #', tokenId.toString(), '",',
-                '"description":"BUGCATs wander. The Codex remembers. Click to reveal the certificate.",',
+                '"description":"BUGCATs wander. The Codex remembers.",',
                 '"image":"', image, '",',
                 '"animation_url":"', animationUrl, '",',
                 '"attributes":[',
-                    '{"trait_type":"Bug Type","value":"', _getBugcatTypeName(bugcatIndexes[tokenId]), '"},',
+                    '{"trait_type":"BUGCAT Index","value":"', _toString(bugcatIndexes[tokenId]), '"},',
                     '{"trait_type":"Theme","value":"', lights[tokenId] ? "Light" : "Dark", '"},',
-                    '{"trait_type":"Compiled","value":"', compileds[tokenId] ? "Yes" : "No", '"},',
-                    '{"trait_type":"Collection Progress","value":"', _getCollectionProgress(preservedBugcatIndexes), '"}',
+                    '{"trait_type":"Compiled","value":"', compileds[tokenId] ? "Yes" : "No", '"}'
                 ']',
             '}'
         );
 
         return string.concat("data:application/json;base64,", Base64.encode(bytes(json)));
-    }
-
-    function _getBugcatTypeName(uint8 catType) internal pure returns (string memory) {
-        return string.concat("Type ", _toString(catType));
     }
 
     function _toString(uint256 value) internal pure returns (string memory str) {
@@ -189,10 +157,6 @@ contract BugcatCodex is ERC721, ERC2981, Ownable {
             value /= 10;
         }
         str = string(buffer);
-    }
-
-    function _getCollectionProgress(uint8[] memory preservedBugcatIndexes) internal view returns (string memory) {
-        return string.concat(Strings.toString(preservedBugcatIndexes.length), "/", Strings.toString(bugcatCount));
     }
 
     function _choose(uint256 salt) internal view returns (uint8) {
