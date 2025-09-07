@@ -44,12 +44,12 @@ contract BugcatCodexRenderer is IRender {
 
         string memory svg = string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
-            "<defs><style>",
+            "<defs><style>\n",
             ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
-            ".code   { font-family: monospace; font-size: 17px; line-height: 1.3; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
-            ".cols{display:flex;gap:28px;}\n",
-            ".col{flex:1 1 0;}\n",
-            ".hl{background:", hlBg, ";padding:0 2px;border-radius:2px;}\n",
+            ".code { font-family: monospace; font-size: 17px; line-height: 1.3; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".cols { display: flex; gap: 28px; }\n",
+            ".col { flex: 1 1 0; }\n",
+            ".hl { background:", hlBg, "; padding: 0 2px; border-radius: 2px; }\n",
             "</style></defs>",
             "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
 
