@@ -2,15 +2,15 @@ const hre = require("hardhat");
 const fs = require("fs");
 
 async function main() {
-  console.log("🔍 Starting contract verification on Ethereum Mainnet...");
+  console.log("🔍 Starting BugcatCodexRenderer verification on Ethereum Mainnet...");
 
   // Read deployment info
   let deploymentInfo;
   try {
-    const data = fs.readFileSync("deployment-mainnet.json", "utf8");
+    const data = fs.readFileSync("deployment-renderer-mainnet.json", "utf8");
     deploymentInfo = JSON.parse(data);
   } catch (error) {
-    console.error("❌ Could not read deployment-mainnet.json. Please run deployment first.");
+    console.error("❌ Could not read deployment-renderer-mainnet.json. Please run deployment first.");
     process.exit(1);
   }
 
@@ -36,28 +36,9 @@ async function main() {
     console.error("❌ BugcatCodexRenderer verification failed:", error.message);
   }
 
-  // Verify BugcatCodex
-  console.log("\n🔍 Verifying BugcatCodex...");
-  try {
-    await hre.run("verify:verify", {
-      address: contracts.BugcatCodex,
-      constructorArguments: [
-        deploymentInfo.constructorArgs.BugcatCodex.owner,
-        deploymentInfo.constructorArgs.BugcatCodex.bugcatRegistry,
-        deploymentInfo.constructorArgs.BugcatCodex.bugcatCount,
-        deploymentInfo.constructorArgs.BugcatCodex.renderer,
-        deploymentInfo.constructorArgs.BugcatCodex.royaltyReceiver
-      ]
-    });
-    console.log("✅ BugcatCodex verified successfully");
-  } catch (error) {
-    console.error("❌ BugcatCodex verification failed:", error.message);
-  }
-
   console.log("\n🎉 Verification completed!");
-  console.log("📋 Verified contracts:");
+  console.log("📋 Verified contract:");
   console.log("  - BugcatCodexRenderer:", contracts.BugcatCodexRenderer);
-  console.log("  - BugcatCodex:", contracts.BugcatCodex);
 }
 
 main()
@@ -66,6 +47,4 @@ main()
     console.error("❌ Verification failed:", error);
     process.exit(1);
   });
-
-
 

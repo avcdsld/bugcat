@@ -46,8 +46,8 @@ contract BugcatCodexRenderer {
         return string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
-            ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
-            ".code { font-family: monospace; font-size: 17px; line-height: 1.3; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".header { font-family: monospace; font-size: 14.5px; line-height: 1.0; letter-spacing: 0.005em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".code { font-family: monospace; font-size: 14.5px; line-height: 1.3; letter-spacing: 0.005em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
             ".cols { display: flex; gap: 28px; }\n",
             ".col { flex: 1 1 0; }\n",
             ".hl { background:", hlBg, "; padding: 0 2px; border-radius: 2px; }\n",
@@ -93,9 +93,9 @@ contract BugcatCodexRenderer {
         return string.concat(
             "<svg width=\"100%\" height=\"100%\" viewBox=\"0 0 1000 1000\" preserveAspectRatio=\"xMidYMid meet\" style=\"background-color: ", bgColor, "\" xmlns=\"http://www.w3.org/2000/svg\">",
             "<defs><style>\n",
-            ".header { font-family: monospace; font-size: 17px; line-height: 1.0; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
-            ".code { font-family: monospace; font-size: 17px; line-height: 1.3; letter-spacing: 0.1em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
-            ".message { font-family: monospace; font-size: 17px; line-height: 0.95; letter-spacing: 0.01em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".header { font-family: monospace; font-size: 14.5px; line-height: 1.0; letter-spacing: 0.005em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".code { font-family: monospace; font-size: 14.5px; line-height: 1.3; letter-spacing: 0.005em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
+            ".message { font-family: monospace; font-size: 14.5px; line-height: 1.1; letter-spacing: 0.005em; white-space: pre-wrap; word-break: break-all; overflow: hidden; height: 100%; color: ", textColor, "; }\n",
             "</style></defs>",
             "<rect width=\"1000\" height=\"1000\" fill=\"", boxBgColor, "\"/>",
             _getHeader(tokenId, caretaker),
@@ -354,7 +354,7 @@ contract BugcatCodexRenderer {
     function _wrapInInteractiveHtml(string memory svg, string memory backSvg, bool light) internal pure returns (string memory) {
         string memory bgColor = light ? "#f5f5f5" : "#0a0a0a";
         string memory html = string.concat(
-            "data:text/html;base64,",
+            "data:text/html;charset=utf-8;base64,",
             Base64.encode(bytes(string.concat(
                 "<!DOCTYPE html><html><head><style>",
                 "html,body{margin:0;padding:0;width:100%;height:100%;background:", bgColor, ";overflow:hidden;perspective:1000px;}",
