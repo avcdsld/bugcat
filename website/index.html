@@ -14,6 +14,29 @@
         body { font-family: Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.6; }
         .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
         
+        /* Language Switcher */
+        .lang-switch {
+            position: fixed;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            z-index: 100;
+        }
+        .lang-switch button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: Georgia, serif;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.5rem;
+            transition: color 0.3s;
+        }
+        .lang-switch button:hover { color: var(--text); }
+        .lang-switch button.active { color: var(--text); }
+        .lang-switch span { color: var(--text-dim); }
+
         /* Header */
         .header { margin-bottom: 4rem; text-align: center; }
         .title { font-size: 6rem; font-weight: 100; letter-spacing: -0.05em; margin: 6rem 0 4rem; }
@@ -176,6 +199,13 @@
     </style>
 </head>
 <body>
+    <!-- Language Switcher -->
+    <div class="lang-switch">
+        <button id="lang-en" class="active">EN</button>
+        <span>/</span>
+        <button id="lang-ja">JA</button>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <header class="header">
@@ -184,7 +214,7 @@
 
         <!-- Statement -->
         <section class="statement">
-            <p style="font-style: italic;">
+            <p style="font-style: italic;" data-i18n="statement">
                 Poetry is what happens when language exceeds its own limits.<br>
                 In code, we call these moments vulnerabilities.<br>
                 Smart contracts are poems with consequences.
@@ -193,16 +223,16 @@
 
         <!-- Navigation -->
         <nav class="nav-links">
-            <a href="#poems">Poems</a>
-            <a href="#interface">Interface</a>
-            <a href="#annotations">Annotations</a>
-            <a href="#invocation">Invocation</a>
-            <a href="#specifications">Specifications</a>
+            <a href="#poems" data-i18n="nav-poems">Poems</a>
+            <a href="#interface" data-i18n="nav-interface">Interface</a>
+            <a href="#annotations" data-i18n="nav-annotations">Annotations</a>
+            <a href="#invocation" data-i18n="nav-invocation">Invocation</a>
+            <a href="#specifications" data-i18n="nav-specifications">Specifications</a>
         </nav>
 
         <!-- ========== THE POEMS ========== -->
         <section class="poems-section" id="poems">
-            <h2 class="section-header">Poems</h2>
+            <h2 class="section-header" data-i18n="nav-poems">Poems</h2>
 
             <!-- ReentrancyCat -->
             <article class="poem-entry">
@@ -388,10 +418,10 @@ contract MisspelledCat is BugCat {
 
         <!-- ========== THE INTERFACE ========== -->
         <section class="interface-section" id="interface">
-            <h2 class="section-header">Interface</h2>
+            <h2 class="section-header" data-i18n="nav-interface">Interface</h2>
 
             <div class="annotation-text" style="margin-bottom: 2.5rem;">
-                <p>Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.</p>
+                <p data-i18n="interface-desc">Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.</p>
             </div>
 
             <div class="code-block">
@@ -405,14 +435,14 @@ contract MisspelledCat is BugCat {
 
         <!-- ========== ANNOTATIONS ========== -->
         <section class="annotations-section" id="annotations">
-            <h2 class="section-header">Annotations</h2>
+            <h2 class="section-header" data-i18n="nav-annotations">Annotations</h2>
 
             <article class="annotation-entry">
                 <h3 class="annotation-title">ReentrancyCat</h3>
                 <p class="annotation-vuln">reentrancy</p>
                 <div class="annotation-text">
-                    <p>The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.</p>
-                    <p>Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum's ability to transfer control flow to arbitrary code during external calls.</p>
+                    <p data-i18n="ann-reentrancy-1">The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.</p>
+                    <p data-i18n="ann-reentrancy-2">Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum's ability to transfer control flow to arbitrary code during external calls.</p>
                 </div>
             </article>
 
@@ -420,8 +450,8 @@ contract MisspelledCat is BugCat {
                 <h3 class="annotation-title">PredictableCat</h3>
                 <p class="annotation-vuln">weak randomness</p>
                 <div class="annotation-text">
-                    <p>FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.</p>
-                    <p>True randomness cannot exist in a deterministic system where every node must reach consensus. Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted or manipulated. Miners have additional power to influence these values, turning games of chance into games of control.</p>
+                    <p data-i18n="ann-predictable-1">FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.</p>
+                    <p data-i18n="ann-predictable-2">True randomness cannot exist in a deterministic system where every node must reach consensus. Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted or manipulated. Miners have additional power to influence these values, turning games of chance into games of control.</p>
                 </div>
             </article>
 
@@ -429,8 +459,8 @@ contract MisspelledCat is BugCat {
                 <h3 class="annotation-title">OverflowCat</h3>
                 <p class="annotation-vuln">integer overflow</p>
                 <div class="annotation-text">
-                    <p>BEC Token, 2018. A multiplication overflow created billions of tokens from nothing. Markets crashed in minutes. Mathematics betrayed economics.</p>
-                    <p>Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero. The BEC Token's batchTransfer function multiplied the number of recipients by the value per recipient without checking if the result would overflow, allowing attackers to bypass balance checks.</p>
+                    <p data-i18n="ann-overflow-1">BECトークン, 2018. A multiplication overflow created billions of tokens from nothing. Markets crashed in minutes. Mathematics betrayed economics.</p>
+                    <p data-i18n="ann-overflow-2">Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero. The BEC Token's batchTransfer function multiplied the number of recipients by the value per recipient without checking if the result would overflow, allowing attackers to bypass balance checks.</p>
                 </div>
             </article>
 
@@ -438,8 +468,8 @@ contract MisspelledCat is BugCat {
                 <h3 class="annotation-title">UnprotectedCat</h3>
                 <p class="annotation-vuln">unprotected initializer</p>
                 <div class="annotation-text">
-                    <p>Parity, 2017. July: hackers stole $30 million by calling unprotected init functions. November: someone accidentally killed the patched library, freezing $280 million forever. One vulnerability, two catastrophes.</p>
-                    <p>The Parity wallet library had initialization functions that could be called by anyone, multiple times. This allowed attackers to take ownership of wallets. After the fix, the library itself remained vulnerable—someone initialized it, became owner, and killed it, destroying the code that all wallets depended on.</p>
+                    <p data-i18n="ann-unprotected-1">Parity, 2017. July: hackers stole $30 million by calling unprotected init functions. November: someone accidentally killed the patched library, freezing $280 million forever. One vulnerability, two catastrophes.</p>
+                    <p data-i18n="ann-unprotected-2">The Parity wallet library had initialization functions that could be called by anyone, multiple times. This allowed attackers to take ownership of wallets. After the fix, the library itself remained vulnerable—someone initialized it, became owner, and killed it, destroying the code that all wallets depended on.</p>
                 </div>
             </article>
 
@@ -447,19 +477,19 @@ contract MisspelledCat is BugCat {
                 <h3 class="annotation-title">MisspelledCat</h3>
                 <p class="annotation-vuln">constructor typo</p>
                 <div class="annotation-text">
-                    <p>Rubixi, 2016. The contract changed its name. The constructor didn't. Solidity reinterpreted it. Ownership became an open door.</p>
-                    <p>Before Solidity 0.4.22, constructors were functions with the contract's exact name. Any typo turned initialization into a regular public function. When Rubixi was renamed from DynamicPyramid but the constructor wasn't updated, ownership became open to anyone who noticed the mistake.</p>
+                    <p data-i18n="ann-misspelled-1">Rubixi, 2016. The contract changed its name. The constructor didn't. Solidity reinterpreted it. Ownership became an open door.</p>
+                    <p data-i18n="ann-misspelled-2">Before Solidity 0.4.22, constructors were functions with the contract's exact name. Any typo turned initialization into a regular public function. When Rubixi was renamed from DynamicPyramid but the constructor wasn't updated, ownership became open to anyone who noticed the mistake.</p>
                 </div>
             </article>
         </section>
 
         <!-- ========== INVOCATION ========== -->
         <section class="specs-section" id="invocation">
-            <h2 class="section-header">Invocation</h2>
+            <h2 class="section-header" data-i18n="nav-invocation">Invocation</h2>
 
             <div class="annotation-text" style="margin-bottom: 2.5rem;">
-                <p>The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.</p>
-                <p style="margin-top: 1.5rem;">You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.</p>
+                <p data-i18n="invocation-desc1">The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.</p>
+                <p style="margin-top: 1.5rem;" data-i18n="invocation-desc2">You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.</p>
             </div>
 
             <div class="code-block">
@@ -479,28 +509,28 @@ contract MisspelledCat is BugCat {
 
         <!-- ========== SPECIFICATIONS ========== -->
         <section class="specs-section" id="specifications">
-            <h2 class="section-header">Specifications</h2>
+            <h2 class="section-header" data-i18n="nav-specifications">Specifications</h2>
 
             <div class="spec-table">
-                <span class="spec-label">Title</span>
+                <span class="spec-label" data-i18n="spec-title">Title</span>
                 <span class="spec-value">BUGCAT</span>
 
-                <span class="spec-label">Author</span>
-                <span class="spec-value">Zeroichi Arakawa</span>
+                <span class="spec-label" data-i18n="spec-author">Author</span>
+                <span class="spec-value" data-i18n="spec-author-value">Zeroichi Arakawa</span>
 
-                <span class="spec-label">Year</span>
+                <span class="spec-label" data-i18n="spec-year">Year</span>
                 <span class="spec-value">2025</span>
 
-                <span class="spec-label">Blockchain</span>
+                <span class="spec-label" data-i18n="spec-blockchain">Blockchain</span>
                 <span class="spec-value">Ethereum</span>
 
-                <span class="spec-label">Medium</span>
-                <span class="spec-value">On-chain code (Solidity), Event logs, Vulnerability references</span>
+                <span class="spec-label" data-i18n="spec-medium">Medium</span>
+                <span class="spec-value" data-i18n="spec-medium-value">On-chain code (Solidity), Event logs, Vulnerability references</span>
 
-                <span class="spec-label">License</span>
+                <span class="spec-label" data-i18n="spec-license">License</span>
                 <span class="spec-value"><a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a></span>
 
-                <span class="spec-label">Contracts</span>
+                <span class="spec-label" data-i18n="spec-contracts">Contracts</span>
                 <span class="spec-value">
                     <div class="spec-contracts">
                         <div class="contract-row">
@@ -537,5 +567,95 @@ contract MisspelledCat is BugCat {
             <p><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en" target="_blank">Copyleft</a> © 2025 Zeroichi Arakawa</p>
         </footer>
     </div>
+
+    <script>
+    const translations = {
+        en: {
+            'statement': 'Poetry is what happens when language exceeds its own limits.<br>In code, we call these moments vulnerabilities.<br>Smart contracts are poems with consequences.',
+            'nav-poems': 'Poems',
+            'nav-interface': 'Interface',
+            'nav-annotations': 'Annotations',
+            'nav-invocation': 'Invocation',
+            'nav-specifications': 'Specifications',
+            'interface-desc': 'Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.',
+            'invocation-desc1': 'The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.',
+            'invocation-desc2': 'You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.',
+            'ann-reentrancy-1': 'The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.',
+            'ann-reentrancy-2': 'Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum\'s ability to transfer control flow to arbitrary code during external calls.',
+            'ann-predictable-1': 'FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.',
+            'ann-predictable-2': 'True randomness cannot exist in a deterministic system where every node must reach consensus. Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted or manipulated. Miners have additional power to influence these values, turning games of chance into games of control.',
+            'ann-overflow-1': 'BEC Token, 2018. A multiplication overflow created billions of tokens from nothing. Markets crashed in minutes. Mathematics betrayed economics.',
+            'ann-overflow-2': 'Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero. The BEC Token\'s batchTransfer function multiplied the number of recipients by the value per recipient without checking if the result would overflow, allowing attackers to bypass balance checks.',
+            'ann-unprotected-1': 'Parity, 2017. July: hackers stole $30 million by calling unprotected init functions. November: someone accidentally killed the patched library, freezing $280 million forever. One vulnerability, two catastrophes.',
+            'ann-unprotected-2': 'The Parity wallet library had initialization functions that could be called by anyone, multiple times. This allowed attackers to take ownership of wallets. After the fix, the library itself remained vulnerable—someone initialized it, became owner, and killed it, destroying the code that all wallets depended on.',
+            'ann-misspelled-1': 'Rubixi, 2016. The contract changed its name. The constructor didn\'t. Solidity reinterpreted it. Ownership became an open door.',
+            'ann-misspelled-2': 'Before Solidity 0.4.22, constructors were functions with the contract\'s exact name. Any typo turned initialization into a regular public function. When Rubixi was renamed from DynamicPyramid but the constructor wasn\'t updated, ownership became open to anyone who noticed the mistake.',
+            'spec-title': 'Title',
+            'spec-author': 'Author',
+            'spec-author-value': 'Zeroichi Arakawa',
+            'spec-year': 'Year',
+            'spec-blockchain': 'Blockchain',
+            'spec-medium': 'Medium',
+            'spec-medium-value': 'On-chain code (Solidity), Event logs, Vulnerability references',
+            'spec-license': 'License',
+            'spec-contracts': 'Contracts'
+        },
+        ja: {
+            'statement': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードの世界では、その瞬間を脆弱性と呼ぶ。<br>スマートコントラクトは、代償を伴う詩である。',
+            'nav-poems': '詩篇',
+            'nav-interface': 'インターフェース',
+            'nav-annotations': '注釈',
+            'nav-invocation': 'インタラクション',
+            'nav-specifications': '仕様',
+            'interface-desc': 'すべてのBUGCATは、記憶という共通言語を持つ。<em>remember</em>——時を超えて存在を確かめる行為。祖先がバイトコードの中でまだ息をしていれば、trueを返す。<em>caress</em>——内に眠る亡霊を呼び覚ます行為。触れるたびにガスを消費し、すべての接触は痕跡を残す。その鳴き声はイベントとしてネットワークに響き、永久に刻まれ、誰の記憶にも残らない。',
+            'invocation-desc1': 'BUGCATSコントラクトは、誰かが彼らを思い出すかもしれない場所である。アドレスの配列、それぞれが一つの物語である。<em>remember</em>はそれぞれのネコの祖先がまだ生きているかを問う。<em>caress</em>は内なる亡霊を目覚めさせる——触れるたびにガスを消費し、すべての接触はチェーンに刻まれる。',
+            'invocation-desc2': 'これらの詩とは<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>でインタラクションできる。<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code>で祖先の存在を確認せよ。ウォレットを接続し<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code>を呼べば、あなたの痕跡がMeowイベントとして永続的に刻まれる。',
+            'ann-reentrancy-1': 'The DAO、2016年。360万ETHが再帰の淵に消えた。Ethereumは二つに分かれた——記憶を選んだチェーンと、忘却を選んだチェーン。',
+            'ann-reentrancy-2': '再入可能性は、コントラクトが状態を更新する前に外部アドレスを呼び出すときに発生する。外部コントラクトは元の関数を再び呼び出し、残高がゼロになる前に何度でも資金を引き出せる。この脆弱性は、外部呼び出し時に任意のコードへ制御を渡すEthereumの特性に起因する。',
+            'ann-predictable-1': 'FoMo3D。ブロックハッシュに刻まれた未来。マイナーが勝者を選んだ。ランダム性は幻想だった。',
+            'ann-predictable-2': 'すべてのノードが合意に達する決定論的システムでは、真の乱数は存在し得ない。ブロックタイムスタンプ、ハッシュ、トランザクションパラメータ——あらゆるオンチェーンデータは予測または操作が可能。マイナーはこれらの値を操る力を持ち、偶然のゲームを支配のゲームへと変える。',
+            'ann-overflow-1': 'BECトークン、2018年。乗算オーバーフローが無から数十億のトークンを生んだ。市場は数分で崩壊した。数学が経済学を裏切った。',
+            'ann-overflow-2': '整数オーバーフローは、演算結果がデータ型の最大値を超えたときに発生する。uint256では、大きな数の乗算がゼロに巻き戻る。BECトークンのbatchTransfer関数は、オーバーフローを検証せずに受取人数と送金額を乗算した。攻撃者は残高チェックを迂回できた。',
+            'ann-unprotected-1': 'Parity、2017年。7月、ハッカーが無防備なinit関数を呼び出し3000万ドルを奪った。11月、誰かが修正済みライブラリを誤って破壊し、2億8000万ドルが永遠に凍結された。一つの脆弱性、二つの破滅。',
+            'ann-unprotected-2': 'Parityウォレットライブラリには、誰でも何度でも呼び出せる初期化関数があった。攻撃者はウォレットの所有権を奪取できた。修正後もライブラリ自体は脆弱なままだった——誰かがそれを初期化し、所有者となり、自壊させた。すべてのウォレットが依存していたコードを道連れに。',
+            'ann-misspelled-1': 'Rubixi、2016年。コントラクト名は変わった。コンストラクタは変わらなかった。Solidityはそれを別物と解釈した。所有権は開け放たれた扉となった。',
+            'ann-misspelled-2': 'Solidity 0.4.22以前、コンストラクタはコントラクトと同名の関数だった。綴りを間違えれば、初期化処理は誰でも呼べる通常の関数になる。RubixiがDynamicPyramidから改名されたとき、コンストラクタは置き去りにされた。所有権は、その誤りに気づいた者すべてに開かれた。',
+            'spec-title': 'タイトル',
+            'spec-author': '作者',
+            'spec-author-value': '荒川零一',
+            'spec-year': '制作年',
+            'spec-blockchain': 'チェーン',
+            'spec-medium': 'メディウム',
+            'spec-medium-value': 'オンチェーンコード（Solidity）、イベントログ、脆弱性への参照',
+            'spec-license': 'ライセンス',
+            'spec-contracts': 'コントラクト'
+        }
+    };
+
+    let currentLang = 'en';
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[lang][key]) {
+                el.innerHTML = translations[lang][key];
+            }
+        });
+        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('lang-ja').classList.toggle('active', lang === 'ja');
+        localStorage.setItem('bugcat-lang', lang);
+    }
+
+    document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+    document.getElementById('lang-ja').addEventListener('click', () => setLanguage('ja'));
+
+    // Load saved language preference
+    const savedLang = localStorage.getItem('bugcat-lang');
+    if (savedLang) {
+        setLanguage(savedLang);
+    }
+    </script>
 </body>
 </html>
