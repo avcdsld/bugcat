@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGCAT</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        :root {
+            --bg: #000000;
+            --text: #ffffff;
+            --text-dim: #666666;
+            --border: #333333;
+            --green: #00ff00;
+            --red: #ff3333;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* ========== INTRO SECTION ========== */
+        .intro {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .intro-title {
+            font-size: 4rem;
+            font-weight: 100;
+            letter-spacing: 0.3em;
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeIn 2s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .terminal {
+            font-family: Monaco, Consolas, 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            max-width: 700px;
+            width: 100%;
+            min-height: 300px;
+        }
+
+        .terminal-line {
+            opacity: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .terminal-line.visible {
+            opacity: 1;
+        }
+
+        .terminal-line.dim {
+            color: var(--text-dim);
+        }
+
+        .terminal-line .prompt {
+            color: var(--text-dim);
+            margin-right: 0.5rem;
+        }
+
+        .terminal-line .address {
+            color: var(--green);
+            word-break: break-all;
+        }
+
+        .terminal-line .status-alive {
+            color: var(--green);
+        }
+
+        .terminal-line .status-dead {
+            color: var(--red);
+        }
+
+        .terminal-line .highlight {
+            color: var(--red);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 0.6em;
+            height: 1.1em;
+            background: var(--text);
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .remember-btn {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 1rem;
+            padding: 1rem 2.5rem;
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text);
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            margin-top: 3rem;
+            opacity: 0;
+        }
+
+        .remember-btn.visible {
+            opacity: 1;
+        }
+
+        .remember-btn:hover {
+            border-color: var(--text);
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .remember-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .enter-btn {
+            position: absolute;
+            bottom: 3rem;
+            font-family: Georgia, serif;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            background: none;
+            border: none;
+            cursor: pointer;
+            letter-spacing: 0.2em;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .enter-btn.visible {
+            opacity: 1;
+        }
+
+        .enter-btn:hover {
+            color: var(--text);
+        }
+
+        .enter-btn::after {
+            content: '';
+            display: block;
+            width: 1px;
+            height: 30px;
+            background: var(--text-dim);
+            margin: 1rem auto 0;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ========== MEOW LOG SECTION ========== */
+        .meow-log-section {
+            padding: 4rem 2rem;
+            border-top: 1px solid var(--border);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .meow-log-header {
+            font-size: 0.85rem;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .meow-log {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+        }
+
+        .meow-entry {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .meow-entry.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .meow-entry:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .meow-cat {
+            color: var(--text);
+        }
+
+        .meow-address {
+            color: var(--text-dim);
+        }
+
+        .meow-address a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        .meow-address a:hover {
+            color: var(--text);
+        }
+
+        .meow-time {
+            color: var(--text-dim);
+            text-align: right;
+        }
+
+        .meow-empty {
+            color: var(--text-dim);
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        .meow-stats {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
+
+        /* Language Switcher */
+        .lang-switch {
+            position: fixed;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .lang-switch.visible { opacity: 1; }
+        .lang-switch button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: Georgia, serif;
+            font-size: 0.8rem;
+            padding: 0.3rem 0.5rem;
+            transition: color 0.3s;
+        }
+        .lang-switch button:hover { color: var(--text); }
+        .lang-switch button.active { color: var(--text); }
+        .lang-switch span { color: var(--text-dim); }
+
+        /* Header */
+        .header { margin-bottom: 4rem; text-align: center; }
+        .title { font-size: 5rem; font-weight: 100; letter-spacing: -0.05em; margin: 4rem 0 3rem; }
+
+        /* Statement */
+        .statement { margin: 3rem 0 5rem; font-size: 1.1rem; line-height: 2; text-align: center; color: var(--text-dim); }
+
+        /* Navigation */
+        .nav-links { display: flex; justify-content: center; gap: 3rem; margin: 4rem 0; font-size: 0.9rem; letter-spacing: 0.1em; }
+        .nav-links a { color: var(--text-dim); text-decoration: none; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--text); }
+
+        /* Section Headers */
+        .section-header {
+            font-size: 0.85rem;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Poems Section */
+        .poems-section { margin: 6rem 0; }
+
+        .poem-entry { margin: 6rem 0; }
+        .poem-entry:first-of-type { margin-top: 3rem; }
+
+        .poem-title {
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            font-family: Monaco, Consolas, monospace;
+        }
+
+        .code-block {
+            padding: 2.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .code-block pre {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .vulnerability-line {
+            background: rgba(255, 51, 51, 0.1);
+            display: inline;
+        }
+
+        /* Annotations Section */
+        .annotations-section { margin: 8rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
+
+        .annotation-entry { margin: 4rem 0; padding: 2rem 0; }
+        .annotation-entry:not(:last-child) { border-bottom: 1px solid var(--border); }
+
+        .annotation-title {
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            font-family: Monaco, Consolas, monospace;
+        }
+        .annotation-vuln {
+            font-family: Monaco, Consolas, monospace;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        .annotation-text {
+            font-size: 0.95rem;
+            line-height: 1.9;
+            color: var(--text);
+            opacity: 0.85;
+        }
+        .annotation-text p { margin-bottom: 1rem; }
+
+        /* Footer */
+        .footer { margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border); text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+        .footer a { color: var(--text-dim); text-decoration: none; }
+        .footer a:hover { color: var(--text); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .intro-title { font-size: 2.5rem; }
+            .terminal { font-size: 0.75rem; }
+            .title { font-size: 3rem; }
+            .code-block { padding: 1.5rem; }
+            .code-block pre { font-size: 0.7rem; }
+            .nav-links { flex-direction: column; gap: 1rem; }
+            .meow-entry { grid-template-columns: 1fr; gap: 0.3rem; }
+            .meow-time { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== INTRO SECTION ========== -->
+    <section class="intro" id="intro">
+        <h1 class="intro-title">BUGCAT</h1>
+
+        <div class="terminal" id="terminal">
+            <div class="terminal-line" id="line-0">
+                <span class="prompt">&gt;</span> <span id="type-target"></span><span class="cursor" id="cursor"></span>
+            </div>
+        </div>
+
+        <button class="remember-btn" id="remember-btn">REMEMBER</button>
+
+        <button class="enter-btn" id="enter-btn">ENTER</button>
+    </section>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content" id="main-content">
+        <!-- Language Switcher -->
+        <div class="lang-switch" id="lang-switch">
+            <button id="lang-en" class="active">EN</button>
+            <span>/</span>
+            <button id="lang-ja">JA</button>
+        </div>
+
+        <!-- Meow Log Section -->
+        <section class="meow-log-section" id="meow-log-section">
+            <h2 class="meow-log-header">
+                <span class="live-indicator"></span>
+                Recent Meows
+            </h2>
+            <div class="meow-log" id="meow-log">
+                <div class="meow-empty">Loading from Ethereum...</div>
+            </div>
+            <div class="meow-stats" id="meow-stats"></div>
+        </section>
+
+        <div class="container">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="title">BUGCAT</h1>
+            </header>
+
+            <!-- Statement -->
+            <section class="statement">
+                <p style="font-style: italic;" data-i18n="statement">
+                    Poetry is what happens when language exceeds its own limits.<br>
+                    In code, we call these moments vulnerabilities.<br>
+                    Smart contracts are poems with consequences.
+                </p>
+            </section>
+
+            <!-- Navigation -->
+            <nav class="nav-links">
+                <a href="#poems">Poems</a>
+                <a href="#annotations">Annotations</a>
+            </nav>
+
+            <!-- ========== THE POEMS ========== -->
+            <section class="poems-section" id="poems">
+                <h2 class="section-header">Poems</h2>
+
+                <!-- ReentrancyCat -->
+                <article class="poem-entry">
+                    <h3 class="poem-title">ReentrancyCat</h3>
+                    <div class="code-block">
+                        <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.8.30;
+
+contract ReentrancyCat {
+    mapping(address => uint) public balance;
+
+    function deposit() public payable {
+        balance[msg.sender] += msg.value;
+    }
+
+    function withdraw() public {
+        <span class="vulnerability-line">// External call BEFORE state update</span>
+        <span class="vulnerability-line">(bool success, ) = msg.sender.call{value: balance[msg.sender]}("");</span>
+        require(success);
+        <span class="vulnerability-line">balance[msg.sender] = 0;  // Too late</span>
+    }
+
+    function remember() external view returns (bool) {
+        address TheDAO = 0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413;
+        return TheDAO.code.length > 0;
+    }
+}</pre>
+                    </div>
+                </article>
+
+                <!-- OverflowCat -->
+                <article class="poem-entry">
+                    <h3 class="poem-title">OverflowCat</h3>
+                    <div class="code-block">
+                        <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
+
+contract OverflowCat {
+    mapping(address => uint) public balance;
+
+    function batchTransfer(address[] memory _receivers, uint256 _value) public {
+        uint count = _receivers.length;
+        <span class="vulnerability-line">uint amount = count * _value;  // Can overflow to 0</span>
+        require(_value > 0 && balance[msg.sender] >= amount);
+        balance[msg.sender] -= amount;
+        for (uint i = 0; i < count; i++) {
+            balance[_receivers[i]] += _value;
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address BecToken = 0xC5d105E63711398aF9bbff092d4B6769C82F793D;
+        return BecToken.code.length > 0;
+    }
+}</pre>
+                    </div>
+                </article>
+
+                <!-- MisspelledCat -->
+                <article class="poem-entry">
+                    <h3 class="poem-title">MisspelledCat</h3>
+                    <div class="code-block">
+                        <pre>// SPDX-License-Identifier: WTFPL
+pragma solidity ^0.4.26;
+
+<span class="vulnerability-line">contract MisspelledCat {  // Contract name</span>
+    address public owner;
+
+    <span class="vulnerability-line">function MisspeledCat(address o) {  // Typo: not a constructor</span>
+        owner = o;
+    }
+
+    function remember() external view returns (bool) {
+        address Rubixi = 0xe82719202e5965Cf5D9B6673B7503a3b92DE20be;
+        return Rubixi.code.length > 0;
+    }
+}</pre>
+                    </div>
+                </article>
+            </section>
+
+            <!-- ========== ANNOTATIONS ========== -->
+            <section class="annotations-section" id="annotations">
+                <h2 class="section-header">Annotations</h2>
+
+                <article class="annotation-entry">
+                    <h3 class="annotation-title">ReentrancyCat</h3>
+                    <p class="annotation-vuln">reentrancy</p>
+                    <div class="annotation-text">
+                        <p>The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.</p>
+                        <p>Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero.</p>
+                    </div>
+                </article>
+
+                <article class="annotation-entry">
+                    <h3 class="annotation-title">OverflowCat</h3>
+                    <p class="annotation-vuln">integer overflow</p>
+                    <div class="annotation-text">
+                        <p>BEC Token, 2018. A multiplication overflow created billions of tokens from nothing. Markets crashed in minutes. Mathematics betrayed economics.</p>
+                        <p>Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero, allowing attackers to bypass balance checks.</p>
+                    </div>
+                </article>
+
+                <article class="annotation-entry">
+                    <h3 class="annotation-title">MisspelledCat</h3>
+                    <p class="annotation-vuln">constructor typo</p>
+                    <div class="annotation-text">
+                        <p>Rubixi, 2016. The contract changed its name. The constructor didn't. Solidity reinterpreted it. Ownership became an open door.</p>
+                        <p>Before Solidity 0.4.22, constructors were functions with the contract's exact name. Any typo turned initialization into a regular public function. Ownership became open to anyone who noticed the mistake.</p>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p>Copyleft 2025 Zeroichi Arakawa</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+    // ========== CONFIGURATION ==========
+    const CONFIG = {
+        // Ethereum RPC (public endpoints)
+        RPC_URL: 'https://eth.llamarpc.com',
+
+        // Contract addresses
+        BUGCATS_ADDRESS: '0x652f57021b4d39223e3769021a7d3edf01a1139e',
+        REENTRANCY_CAT: '0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2',
+
+        // Historical vulnerable contracts
+        THE_DAO: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413',
+        BEC_TOKEN: '0xC5d105E63711398aF9bbff092d4B6769C82F793D',
+        RUBIXI: '0xe82719202e5965Cf5D9B6673B7503a3b92DE20be',
+        PARITY_WALLET: '0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4',
+
+        // Etherscan API
+        ETHERSCAN_API: 'https://api.etherscan.io/api',
+
+        // Meow event signature: Meow(address,string)
+        MEOW_TOPIC: '0x' + ethers.utils.id('Meow(address,string)').slice(2)
+    };
+
+    // Contract ABIs (minimal)
+    const REMEMBER_ABI = ['function remember() external view returns (bool)'];
+    const MEOW_EVENT_ABI = ['event Meow(address indexed who, string vulnerability)'];
+
+    // ========== STATE ==========
+    let provider = null;
+    let introComplete = false;
+
+    // ========== INTRO SEQUENCE ==========
+    const terminalLines = [
+        { text: 'connecting to ethereum mainnet...', delay: 0 },
+        { text: 'target: The DAO (2016)', delay: 1500 },
+        { text: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413', delay: 2500, class: 'address' },
+    ];
+
+    async function typeText(element, text, speed = 30) {
+        element.textContent = '';
+        for (let i = 0; i < text.length; i++) {
+            element.textContent += text[i];
+            await new Promise(r => setTimeout(r, speed));
+        }
+    }
+
+    async function showIntroSequence() {
+        const terminal = document.getElementById('terminal');
+        const typeTarget = document.getElementById('type-target');
+        const cursor = document.getElementById('cursor');
+        const rememberBtn = document.getElementById('remember-btn');
+
+        // Initial typing
+        await typeText(typeTarget, 'Querying Ethereum for ghosts of the past...', 25);
+        await new Promise(r => setTimeout(r, 1000));
+
+        // Show remember button
+        rememberBtn.classList.add('visible');
+    }
+
+    async function executeRemember() {
+        const terminal = document.getElementById('terminal');
+        const rememberBtn = document.getElementById('remember-btn');
+        const enterBtn = document.getElementById('enter-btn');
+
+        rememberBtn.disabled = true;
+        rememberBtn.textContent = 'QUERYING...';
+
+        try {
+            provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URL);
+
+            // Clear terminal and start fresh
+            terminal.innerHTML = '';
+
+            // Line 1: Connecting
+            await addTerminalLine(terminal, '> connecting to ethereum mainnet...', 'dim');
+            await new Promise(r => setTimeout(r, 800));
+
+            // Line 2: Target
+            await addTerminalLine(terminal, '> target: The DAO (2016)', 'dim');
+            await new Promise(r => setTimeout(r, 500));
+
+            // Line 3: Address
+            const addrLine = await addTerminalLine(terminal, '> ', 'dim');
+            const addrSpan = document.createElement('span');
+            addrSpan.className = 'address';
+            addrSpan.textContent = CONFIG.THE_DAO;
+            addrLine.appendChild(addrSpan);
+            await new Promise(r => setTimeout(r, 800));
+
+            // Line 4: Querying
+            await addTerminalLine(terminal, '> checking if contract still exists...', 'dim');
+            await new Promise(r => setTimeout(r, 500));
+
+            // Actually query Ethereum
+            const code = await provider.getCode(CONFIG.THE_DAO);
+            const exists = code.length > 2; // '0x' means no code
+
+            await new Promise(r => setTimeout(r, 500));
+
+            // Line 5: Result
+            if (exists) {
+                const resultLine = await addTerminalLine(terminal, '> status: ');
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'status-alive';
+                statusSpan.textContent = 'ALIVE';
+                resultLine.appendChild(statusSpan);
+            } else {
+                const resultLine = await addTerminalLine(terminal, '> status: ');
+                const statusSpan = document.createElement('span');
+                statusSpan.className = 'status-dead';
+                statusSpan.textContent = 'DESTROYED';
+                resultLine.appendChild(statusSpan);
+            }
+
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Line 6: Historical context
+            await addTerminalLine(terminal, '');
+            const historyLine = await addTerminalLine(terminal, '> ');
+            const highlightSpan = document.createElement('span');
+            highlightSpan.className = 'highlight';
+            highlightSpan.textContent = '3,641,694 ETH';
+            historyLine.appendChild(highlightSpan);
+            historyLine.appendChild(document.createTextNode(' was drained from this address.'));
+
+            await new Promise(r => setTimeout(r, 800));
+            await addTerminalLine(terminal, '> The contract still exists. The wound remains.');
+
+            await new Promise(r => setTimeout(r, 1500));
+
+            // Final poetic line
+            await addTerminalLine(terminal, '');
+            await addTerminalLine(terminal, '> Smart contracts are poems with consequences.', 'dim');
+
+            // Show enter button
+            rememberBtn.style.display = 'none';
+            enterBtn.classList.add('visible');
+            introComplete = true;
+
+            // Start loading meow logs in background
+            loadMeowLogs();
+
+        } catch (error) {
+            console.error('Error:', error);
+            await addTerminalLine(terminal, '> error: ' + error.message, 'dim');
+            rememberBtn.disabled = false;
+            rememberBtn.textContent = 'RETRY';
+        }
+    }
+
+    async function addTerminalLine(terminal, text, className = '') {
+        const line = document.createElement('div');
+        line.className = 'terminal-line' + (className ? ' ' + className : '');
+        line.textContent = text;
+        terminal.appendChild(line);
+
+        // Trigger reflow for animation
+        await new Promise(r => setTimeout(r, 50));
+        line.classList.add('visible');
+
+        return line;
+    }
+
+    function enterMainContent() {
+        const intro = document.getElementById('intro');
+        const mainContent = document.getElementById('main-content');
+        const langSwitch = document.getElementById('lang-switch');
+
+        intro.style.transition = 'opacity 1s ease, transform 1s ease';
+        intro.style.opacity = '0';
+        intro.style.transform = 'translateY(-50px)';
+
+        setTimeout(() => {
+            intro.style.display = 'none';
+            mainContent.classList.add('visible');
+            langSwitch.classList.add('visible');
+
+            // Scroll to top of main content
+            window.scrollTo(0, 0);
+        }, 1000);
+    }
+
+    // ========== MEOW LOGS ==========
+    async function loadMeowLogs() {
+        const meowLog = document.getElementById('meow-log');
+        const meowStats = document.getElementById('meow-stats');
+
+        try {
+            // Get logs from all BUGCAT contracts
+            const contracts = [
+                { address: CONFIG.REENTRANCY_CAT, name: 'ReentrancyCat' },
+            ];
+
+            const allLogs = [];
+
+            for (const contract of contracts) {
+                try {
+                    const iface = new ethers.utils.Interface(MEOW_EVENT_ABI);
+                    const logs = await provider.getLogs({
+                        address: contract.address,
+                        topics: [CONFIG.MEOW_TOPIC],
+                        fromBlock: 0,
+                        toBlock: 'latest'
+                    });
+
+                    for (const log of logs) {
+                        const parsed = iface.parseLog(log);
+                        const block = await provider.getBlock(log.blockNumber);
+                        allLogs.push({
+                            cat: contract.name,
+                            who: parsed.args.who,
+                            vulnerability: parsed.args.vulnerability,
+                            blockNumber: log.blockNumber,
+                            txHash: log.transactionHash,
+                            timestamp: block.timestamp
+                        });
+                    }
+                } catch (e) {
+                    console.log('Error fetching logs for', contract.name, e);
+                }
+            }
+
+            // Sort by timestamp descending
+            allLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+            // Display logs
+            if (allLogs.length === 0) {
+                meowLog.innerHTML = '<div class="meow-empty">No meows yet. Be the first to caress a BUGCAT.</div>';
+            } else {
+                meowLog.innerHTML = '';
+                const displayLogs = allLogs.slice(0, 10); // Show last 10
+
+                displayLogs.forEach((log, index) => {
+                    const entry = document.createElement('div');
+                    entry.className = 'meow-entry';
+                    entry.innerHTML = `
+                        <span class="meow-cat">${log.cat}</span>
+                        <span class="meow-address">
+                            <a href="https://etherscan.io/tx/${log.txHash}" target="_blank">
+                                ${log.who.slice(0, 6)}...${log.who.slice(-4)}
+                            </a>
+                        </span>
+                        <span class="meow-time">${formatTimeAgo(log.timestamp)}</span>
+                    `;
+                    meowLog.appendChild(entry);
+
+                    // Animate in
+                    setTimeout(() => {
+                        entry.classList.add('visible');
+                    }, index * 100);
+                });
+            }
+
+            meowStats.textContent = `Total: ${allLogs.length} interactions recorded on Ethereum`;
+
+        } catch (error) {
+            console.error('Error loading meow logs:', error);
+            meowLog.innerHTML = '<div class="meow-empty">Could not load logs from Ethereum.</div>';
+        }
+    }
+
+    function formatTimeAgo(timestamp) {
+        const now = Math.floor(Date.now() / 1000);
+        const diff = now - timestamp;
+
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 2592000) return Math.floor(diff / 86400) + ' days ago';
+        return new Date(timestamp * 1000).toLocaleDateString();
+    }
+
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('remember-btn').addEventListener('click', executeRemember);
+    document.getElementById('enter-btn').addEventListener('click', enterMainContent);
+
+    // Language switching (simplified)
+    const translations = {
+        en: {
+            'statement': 'Poetry is what happens when language exceeds its own limits.<br>In code, we call these moments vulnerabilities.<br>Smart contracts are poems with consequences.'
+        },
+        ja: {
+            'statement': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードの世界では、その瞬間を脆弱性と呼ぶ。<br>スマートコントラクトは、代償を伴う詩である。'
+        }
+    };
+
+    document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+    document.getElementById('lang-ja').addEventListener('click', () => setLanguage('ja'));
+
+    function setLanguage(lang) {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[lang][key]) {
+                el.innerHTML = translations[lang][key];
+            }
+        });
+        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('lang-ja').classList.toggle('active', lang === 'ja');
+    }
+
+    // ========== INIT ==========
+    window.addEventListener('load', () => {
+        setTimeout(showIntroSequence, 500);
+    });
+    </script>
+</body>
+</html>
