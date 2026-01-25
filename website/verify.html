@@ -1,0 +1,2258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BUGCAT</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        :root {
+            --bg: #000000;
+            --text: #ffffff;
+            --text-dim: #666666;
+            --border: #333333;
+            --green: #8a8;
+            --red: #a66;
+        }
+
+        body {
+            font-family: Georgia, serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        /* Language Switcher */
+        .lang-switch {
+            position: fixed;
+            top: 1.5rem;
+            right: 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            z-index: 100;
+        }
+        .lang-switch button {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            transition: color 0.3s;
+        }
+        .lang-switch button:hover { color: var(--text); }
+        .lang-switch button.active { color: var(--text); }
+        .lang-switch span { color: var(--text-dim); }
+
+        /* ========== INTRO SECTION ========== */
+        .intro {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .intro-title {
+            font-size: 4rem;
+            font-weight: 100;
+            letter-spacing: 0.3em;
+            margin-bottom: 2rem;
+            transition: opacity 0.5s ease;
+        }
+
+
+        .terminal {
+            font-family: Monaco, Consolas, 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.8;
+            max-width: 700px;
+            width: 100%;
+        }
+
+        .terminal-line {
+            opacity: 0;
+            margin-bottom: 0.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .terminal-line.visible {
+            opacity: 1;
+        }
+
+        .terminal-code.visible,
+        .terminal-list.visible {
+            opacity: 1;
+        }
+
+        .terminal-line.dim {
+            color: var(--text-dim);
+        }
+
+        .terminal-line .prompt {
+            color: var(--text-dim);
+            margin-right: 0.5rem;
+        }
+
+        .terminal-line .address {
+            color: var(--green);
+            word-break: break-all;
+        }
+
+        .terminal-line .status-alive {
+            color: var(--green);
+        }
+
+        .terminal-line .status-dead {
+            color: var(--red);
+        }
+
+        .terminal-line .highlight {
+            color: var(--red);
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 0.6em;
+            height: 1.1em;
+            background: var(--text);
+            vertical-align: text-bottom;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .terminal-code {
+            background: rgba(255,255,255,0.03);
+            border-left: 2px solid var(--text-dim);
+            padding: 1rem 1.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .terminal-list {
+            padding: 0.5rem 0;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            white-space: pre;
+        }
+
+        .cat-name { color: var(--text); }
+        .code-keyword { color: var(--text-dim); }
+        .code-fn { color: var(--text); }
+        .code-addr { color: var(--text-dim); font-size: 0.75rem; }
+        .dim { color: var(--text-dim); }
+
+        .terminal-line.poetic {
+            margin-top: 1rem;
+            color: var(--text);
+        }
+
+        .skip-btn {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .skip-btn:hover {
+            color: var(--text);
+        }
+
+        .remember-btn {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 1rem;
+            padding: 1rem 2.5rem;
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text);
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+        }
+
+        .remember-btn:hover {
+            border-color: var(--text);
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .remember-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .enter-btn {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.9rem;
+            padding: 0.8rem 2rem;
+            background: transparent;
+            border: 1px solid var(--text-dim);
+            color: var(--text);
+            cursor: pointer;
+            letter-spacing: 0.1em;
+            transition: all 0.3s ease;
+            margin-top: 2rem;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .enter-btn.visible {
+            opacity: 1;
+        }
+        .enter-btn:hover {
+            border-color: var(--text);
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        /* ========== MEOW LOG SECTION ========== */
+        .meow-log-section {
+            margin: 6rem 0;
+            padding-top: 4rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .meow-log-header {
+            font-size: 0.85rem;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .live-indicator {
+            width: 8px;
+            height: 8px;
+            background: var(--text-dim);
+            border-radius: 50%;
+            animation: livePulse 2s ease-in-out infinite;
+        }
+
+        @keyframes livePulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .meow-log {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+        }
+
+        .meow-entry {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 1.5rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .meow-entry.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .meow-entry:hover {
+            background: rgba(255,255,255,0.02);
+        }
+
+        .meow-cat {
+            color: var(--text);
+        }
+
+        .meow-address {
+            color: var(--text-dim);
+        }
+
+        .meow-address a {
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+
+        .meow-address a:hover {
+            color: var(--text);
+        }
+
+        .meow-time {
+            color: var(--text-dim);
+            text-align: right;
+        }
+
+        .meow-empty {
+            color: var(--text-dim);
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        .meow-stats {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-dim);
+            font-size: 0.8rem;
+        }
+
+        /* ========== MAIN CONTENT ========== */
+        .main-content {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .main-content.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
+
+
+        /* Header */
+        .header { margin-bottom: 4rem; text-align: center; }
+        .title { font-size: 5rem; font-weight: 100; letter-spacing: -0.05em; margin: 4rem 0 3rem; }
+
+        /* Statement */
+        .tagline {
+            font-size: 1.1rem;
+            font-style: italic;
+            color: var(--text);
+            margin-top: 1rem;
+        }
+
+        /* Cat Navigation */
+        .cat-nav {
+            margin-top: 3rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem 1.5rem;
+        }
+        .cat-nav a {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-decoration: none;
+            letter-spacing: 0.05em;
+            transition: color 0.3s;
+        }
+        .cat-nav a:hover {
+            color: var(--text);
+        }
+        .statement { margin: 4rem 0; padding-top: 4rem; border-top: 1px solid var(--border); font-size: 0.95rem; line-height: 1.9; text-align: left; color: var(--text); opacity: 0.85; }
+        .statement .section-header { margin-bottom: 2rem; }
+        .statement p { margin-bottom: 1.2rem; }
+        .statement p:last-child { margin-bottom: 0; }
+
+
+        /* Section Headers */
+        .section-header {
+            font-size: 0.85rem;
+            letter-spacing: 0.3rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 3rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Poems Section */
+        .poems-section { margin: 6rem 0; }
+
+        .poem-entry { margin: 6rem 0; }
+        .poem-entry:first-of-type { margin-top: 3rem; }
+
+        .poem-title {
+            font-size: 1.4rem;
+            font-weight: 400;
+            margin-bottom: 2rem;
+            font-family: Monaco, Consolas, monospace;
+        }
+
+        .code-block {
+            padding: 2.5rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        .code-block pre {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .vulnerability-line {
+            background: rgba(255, 255, 255, 0.05);
+            display: inline;
+        }
+
+
+        /* Interface & Specs Sections */
+        .interface-section { margin: 6rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
+        .specs-section { margin: 6rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
+        .section-text {
+            font-size: 0.95rem;
+            line-height: 1.9;
+            color: var(--text);
+            opacity: 0.85;
+            margin-bottom: 2rem;
+        }
+        .section-text a { color: var(--text-dim); text-decoration: none; }
+        .section-text a:hover { color: var(--text); }
+        .spec-table {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 0;
+            font-size: 0.9rem;
+        }
+        .spec-label {
+            color: var(--text-dim);
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .spec-value {
+            padding: 0.6rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .spec-value a { color: var(--text-dim); text-decoration: none; }
+        .spec-value a:hover { color: var(--text); }
+        .spec-contracts { display: flex; flex-direction: column; }
+        .contract-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .contract-name {
+            font-family: Monaco, Consolas, monospace;
+            min-width: 120px;
+        }
+        .contract-addr {
+            font-family: Monaco, Consolas, monospace;
+            color: var(--text-dim);
+            text-decoration: none;
+        }
+        .contract-addr:hover { color: var(--text); }
+
+        /* Footer */
+        .footer { margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border); text-align: center; color: var(--text-dim); font-size: 0.85rem; }
+        .footer a { color: var(--text-dim); text-decoration: none; }
+        .footer a:hover { color: var(--text); }
+
+        /* Poem Buttons */
+        .poem-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .poem-btn {
+            padding: 0.7rem 1.5rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            background: transparent;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .poem-btn:hover {
+            color: var(--text);
+            border-color: var(--text);
+        }
+        .poem-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .poem-btn.remember-active {
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .modal {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            width: 700px;
+            height: 80vh;
+            overflow-y: auto;
+            padding: 3rem;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: var(--text);
+        }
+        .modal-title {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .modal-vuln {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+        }
+        /* Simulation Code Display */
+        .modal-simulation {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .sim-code {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        .sim-code .code-line {
+            padding: 0.2rem 0.5rem;
+            margin: 0 -1rem;
+            padding-left: 1rem;
+            transition: background 0.3s ease;
+            min-height: 1.8em;
+            white-space: pre;
+        }
+        .sim-code .code-line.highlight {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .sim-code .code-line.vuln {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        .sim-code .code-line .line-num {
+            color: var(--text-dim);
+            margin-right: 1rem;
+            user-select: none;
+        }
+        .sim-explanation {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            min-height: 80px;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-left: 2px solid var(--text-dim);
+        }
+        .sim-explanation .step-text {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .sim-explanation .step-text.visible {
+            opacity: 1;
+        }
+        .sim-explanation .step-text.hint {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            border-left: 2px solid var(--green);
+            padding-left: 1rem;
+            margin-left: 0;
+        }
+        .sim-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1.5rem;
+        }
+        .sim-nav-btn {
+            padding: 0.6rem 1.2rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sim-nav-btn:hover:not(:disabled) {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .sim-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        .sim-step-indicator {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .modal-close-btn {
+            display: block;
+            margin: 2rem auto 0;
+            padding: 0.8rem 2rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .modal-close-btn.visible {
+            opacity: 1;
+        }
+        .modal-close-btn:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .sim-complete {
+            text-align: left;
+        }
+        .sim-complete-text {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+            opacity: 0.9;
+        }
+        .sim-complete-code {
+            text-align: left;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        .sim-interact-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.1em;
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        .sim-interact-link:hover {
+            color: var(--text);
+        }
+                .modal-section {
+            margin-bottom: 2rem;
+        }
+        .modal-section-title {
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 1rem;
+        }
+        .modal-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text);
+            opacity: 0.9;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 1rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .modal-btn:hover {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .modal-btn.primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .modal-btn.primary:hover {
+            background: transparent;
+            color: var(--text);
+        }
+
+        /* Remember Terminal in Modal */
+        .remember-modal {
+            max-width: 600px;
+        }
+        .remember-history {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text);
+            opacity: 0.9;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .remember-terminal {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-top: 1.5rem;
+            min-height: 200px;
+        }
+        .remember-terminal .term-line {
+            opacity: 0;
+            transform: translateY(5px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            margin-bottom: 0.3rem;
+        }
+        .remember-terminal .term-line.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .remember-terminal .term-line.dim {
+            color: var(--text-dim);
+        }
+        .remember-terminal .term-line .prompt {
+            color: var(--text-dim);
+            margin-right: 0.5rem;
+        }
+        .remember-terminal .term-line .addr {
+            color: var(--green);
+            font-size: 0.8rem;
+        }
+        .remember-terminal .term-line .result-true {
+            color: var(--green);
+        }
+        .remember-terminal .term-line .result-false {
+            color: var(--red);
+        }
+        .remember-terminal .term-line.poetic {
+            margin-top: 1.5rem;
+        }
+
+        /* Simulation Terminal */
+        .sim-terminal {
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .sim-terminal .sim-line {
+            opacity: 0;
+            margin-bottom: 0.4rem;
+            transition: opacity 0.2s ease;
+        }
+        .sim-terminal .sim-line.visible {
+            opacity: 1;
+        }
+        .sim-terminal .sim-line.dim {
+            color: var(--text-dim);
+        }
+        .sim-terminal .sim-line .balance {
+            color: var(--green);
+        }
+        .sim-terminal .sim-line .balance.zero {
+            color: var(--red);
+        }
+        .sim-terminal .sim-line .warn {
+            color: var(--text);
+        }
+        .sim-terminal .sim-line .success {
+            color: var(--green);
+        }
+        .sim-terminal .sim-line .arrow {
+            color: var(--text-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { padding: 2rem 1rem; }
+            .intro { padding: 1rem; }
+            .intro-title { font-size: 2.5rem; }
+            .terminal { font-size: 0.7rem; }
+            .title { font-size: 2.5rem; }
+            .tagline { font-size: 0.9rem; }
+            .cat-nav { gap: 0.3rem 1rem; }
+            .cat-nav a { font-size: 0.7rem; }
+            .code-block { padding: 1rem; overflow-x: auto; }
+            .code-block pre { font-size: 0.65rem; }
+            .poem-title { font-size: 1.1rem; }
+            .poem-actions { flex-direction: column; gap: 0.5rem; }
+            .poem-actions .caress-btn,
+            .poem-actions .remember-btn-poem { width: 100%; }
+            .meow-entry { grid-template-columns: 1fr; gap: 0.3rem; }
+            .meow-time { text-align: left; }
+            .modal {
+                padding: 1.5rem;
+                width: 95%;
+                max-height: 90vh;
+            }
+            .modal-title { font-size: 1.2rem; }
+            .sim-code { font-size: 0.65rem; padding: 0.8rem; }
+            .sim-explanation { font-size: 0.85rem; padding: 0.8rem; }
+            .sim-nav { flex-wrap: wrap; gap: 0.5rem; }
+            .sim-nav-btn { padding: 0.5rem 1rem; font-size: 0.7rem; }
+            .sim-complete-code { font-size: 0.6rem; }
+            .statement { font-size: 0.85rem; }
+            .section-header { font-size: 0.75rem; }
+            .skip-btn { bottom: 1rem; font-size: 0.65rem; }
+            .lang-switch { top: 1rem; right: 1rem; }
+            .remember-btn { padding: 0.8rem 1.5rem; font-size: 0.75rem; }
+            .spec-table { grid-template-columns: 100px 1fr; font-size: 0.8rem; }
+            .contract-addr { font-size: 0.7rem; }
+        }
+
+        @media (max-width: 480px) {
+            .spec-table { grid-template-columns: 1fr; }
+            .spec-label { border-bottom: none; padding-bottom: 0.2rem; }
+            .spec-value { padding-top: 0; margin-bottom: 0.5rem; }
+            .intro-title { font-size: 2rem; }
+            .title { font-size: 2rem; }
+            .code-block pre { font-size: 0.55rem; }
+            .modal { padding: 1rem; }
+            .sim-code { font-size: 0.55rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Switcher -->
+    <div class="lang-switch">
+        <button id="lang-en" class="active">EN</button>
+        <span>/</span>
+        <button id="lang-ja">JA</button>
+    </div>
+
+    <!-- ========== INTRO SECTION ========== -->
+    <section class="intro" id="intro">
+        <h1 class="intro-title" id="intro-title">BUGCAT</h1>
+
+        <div class="terminal" id="terminal">
+            <div class="terminal-line" id="line-0">
+                <span class="prompt">&gt;</span> <span id="type-target"></span><span class="cursor" id="cursor"></span>
+            </div>
+        </div>
+
+        <button class="remember-btn" id="remember-btn">REMEMBER</button>
+        <button class="skip-btn" id="skip-btn">top →</button>
+    </section>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <div class="main-content" id="main-content">
+
+        <div class="container">
+            <!-- Header -->
+            <header class="header">
+                <h1 class="title">BUGCAT</h1>
+                <p class="tagline" data-i18n="tagline">Poetry is what happens when language exceeds its own limits.<br>In code, we call these moments vulnerabilities.<br>Smart contracts are poems with consequences.</p>
+                <nav class="cat-nav">
+                    <a href="#reentrancy">ReentrancyCat</a>
+                    <a href="#predictable">PredictableCat</a>
+                    <a href="#overflow">OverflowCat</a>
+                    <a href="#unprotected">UnprotectedCat</a>
+                    <a href="#misspelled">MisspelledCat</a>
+                </nav>
+            </header>
+
+
+            <!-- ========== THE POEMS ========== -->
+            <section class="poems-section" id="poems">
+                <h2 class="section-header" data-i18n="section-poems">Poems</h2>
+
+                <!-- ReentrancyCat -->
+                <article class="poem-entry" id="reentrancy">
+                    <h3 class="poem-title">ReentrancyCat</h3>
+                    <div class="code-block">
+                        <pre>contract ReentrancyCat is BugCat {
+    mapping(address => uint) public balance;
+
+    function deposit() public payable {
+        balance[msg.sender] += msg.value;
+    }
+
+    function withdraw() public {
+        (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
+        require(success);
+        balance[msg.sender] = 0;
+    }
+
+    function caress() public {
+        if (address(this).balance == 0) {
+            emit Meow(msg.sender, "reentrancy");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address TheDAO = 0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413;
+        return TheDAO.code.length > 0;
+    }
+}</pre>
+                    </div>
+                    <div class="poem-buttons">
+                        <button class="poem-btn remember-btn-poem" data-cat="ReentrancyCat">REMEMBER</button>
+                        <button class="poem-btn caress-btn" data-cat="ReentrancyCat">CARESS</button>
+                    </div>
+                </article>
+
+                <!-- PredictableCat -->
+                <article class="poem-entry" id="predictable">
+                    <h3 class="poem-title">PredictableCat</h3>
+                    <div class="code-block">
+                        <pre>contract PredictableCat is BugCat {
+    mapping(address => uint8) public winCount;
+
+    function flip() external {
+        if ((uint(keccak256(abi.encodePacked(
+            block.timestamp,
+            block.prevrandao,
+            msg.sender
+        ))) & 1) == 0) {
+            winCount[msg.sender] += 1;
+        } else {
+            winCount[msg.sender] = 0;
+        }
+    }
+
+    function caress() public {
+        if (winCount[msg.sender] >= 10) {
+            emit Meow(msg.sender, "predictable");
+            winCount[msg.sender] = 0;
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address FoMo3Dlong = 0xA62142888ABa8370742bE823c1782D17A0389Da1;
+        return FoMo3Dlong.code.length > 0;
+    }
+}</pre>
+                    </div>
+                    <div class="poem-buttons">
+                        <button class="poem-btn remember-btn-poem" data-cat="PredictableCat">REMEMBER</button>
+                        <button class="poem-btn caress-btn" data-cat="PredictableCat">CARESS</button>
+                    </div>
+                </article>
+
+                <!-- OverflowCat -->
+                <article class="poem-entry" id="overflow">
+                    <h3 class="poem-title">OverflowCat</h3>
+                    <div class="code-block">
+                        <pre>contract OverflowCat is BugCat {
+    mapping(address => uint) public balance;
+
+    function batchTransfer(address[] memory _receivers, uint256 _value) public {
+        uint count = _receivers.length;
+        uint amount = count * _value;
+        require(_value > 0 && balance[msg.sender] >= amount);
+        balance[msg.sender] -= amount;
+        for (uint i = 0; i < count; i++) {
+            balance[_receivers[i]] += _value;
+        }
+    }
+
+    function caress() public {
+        if (balance[msg.sender] > 0) {
+            emit Meow(msg.sender, "overflow");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address BecToken = 0xC5d105E63711398aF9bbff092d4B6769C82F793D;
+        uint256 size; assembly { size := extcodesize(BecToken) }
+        return size > 0;
+    }
+}</pre>
+                    </div>
+                    <div class="poem-buttons">
+                        <button class="poem-btn remember-btn-poem" data-cat="OverflowCat">REMEMBER</button>
+                        <button class="poem-btn caress-btn" data-cat="OverflowCat">CARESS</button>
+                    </div>
+                </article>
+
+                <!-- UnprotectedCat -->
+                <article class="poem-entry" id="unprotected">
+                    <h3 class="poem-title">UnprotectedCat</h3>
+                    <div class="code-block">
+                        <pre>contract UnprotectedCat is BugCat {
+    address public owner;
+    bool public initialized;
+
+    function init(address o) public {
+        owner = o;
+        initialized = true;
+    }
+
+    function kill() public {
+        require(msg.sender == owner);
+        suicide(owner);
+    }
+
+    function caress() public {
+        if (msg.sender == owner) {
+            emit Meow(msg.sender, "unprotected");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address WalletLibrary = 0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4;
+        uint256 size; assembly { size := extcodesize(WalletLibrary) }
+        return size == 0 && WalletLibrary.balance > 0;
+    }
+}</pre>
+                    </div>
+                    <div class="poem-buttons">
+                        <button class="poem-btn remember-btn-poem" data-cat="UnprotectedCat">REMEMBER</button>
+                        <button class="poem-btn caress-btn" data-cat="UnprotectedCat">CARESS</button>
+                    </div>
+                </article>
+
+                <!-- MisspelledCat -->
+                <article class="poem-entry" id="misspelled">
+                    <h3 class="poem-title">MisspelledCat</h3>
+                    <div class="code-block">
+                        <pre>contract MisspelledCat is BugCat {
+    address public owner;
+
+    function MisspeledCat(address o) {
+        owner = o;
+    }
+
+    function caress() public {
+        if (msg.sender == owner) {
+            emit Meow(msg.sender, "misspelled");
+        }
+    }
+
+    function remember() external view returns (bool) {
+        address Rubixi = 0xe82719202e5965Cf5D9B6673B7503a3b92DE20be;
+        uint256 size; assembly { size := extcodesize(Rubixi) }
+        return size > 0;
+    }
+}</pre>
+                    </div>
+                    <div class="poem-buttons">
+                        <button class="poem-btn remember-btn-poem" data-cat="MisspelledCat">REMEMBER</button>
+                        <button class="poem-btn caress-btn" data-cat="MisspelledCat">CARESS</button>
+                    </div>
+                </article>
+            </section>
+
+            <!-- Statement (moved after poems) -->
+            <section class="statement" id="statement">
+                <h2 class="section-header" data-i18n="section-statement">Statement</h2>
+                <p data-i18n="statement-1">BUGCAT is a series of smart contracts presented as code poetry, each embodying a historically significant software vulnerability—reentrancy, integer overflow, weak randomness, unprotected initialization, and constructor misnaming—not as metaphor or simulation, but as executable logic.</p>
+                <p data-i18n="statement-2">Unlike works that focus on generated output or visual interaction, BUGCAT foregrounds reading source code itself. The work cannot be meaningfully experienced without reading, and here reading is inseparable from verification. The reader assumes the position of an auditor, attending to what the code does, where it might fail, and whether it is safe, exploitative, or dangerous.</p>
+                <p data-i18n="statement-3">Each contract is deployed on the Ethereum mainnet, where its logic is immutable and financially consequential. The ordering of seemingly ordinary lines of code can determine irreversible outcomes, turning syntax into a matter of fate rather than style. A line of code is no longer a purely symbolic gesture but a potential action capable of moving value, lending weight to hesitation, misinterpretation, and ethical judgment.</p>
+                <p data-i18n="statement-4">Each contract queries whether its historical predecessor still exists on-chain, embedding the address of a past catastrophe. Verification becomes a form of elegy: an act of checking for the continued presence of what should no longer be there.</p>
+                <p data-i18n="statement-5">In an era of seamless interfaces, BUGCAT's minimal presentation insists on slow, deliberate scrutiny of source code—reframing reading as an act of audit, confronting the intersections of language, power, and responsibility that define computation today.</p>
+            </section>
+
+            <!-- ========== INTERFACE ========== -->
+            <section class="interface-section" id="interface">
+                <h2 class="section-header" data-i18n="nav-interface">Interface</h2>
+                <div class="section-text">
+                    <p data-i18n="interface-desc">Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.</p>
+                </div>
+                <div class="code-block">
+                    <pre>interface BugCat {
+    function remember() external view returns (bool);
+    function caress() external;
+    event Meow(address indexed who, string vulnerability);
+}</pre>
+                </div>
+            </section>
+
+            <!-- ========== INVOCATION ========== -->
+            <section class="specs-section" id="invocation">
+                <h2 class="section-header" data-i18n="nav-invocation">Invocation</h2>
+                <div class="section-text">
+                    <p data-i18n="invocation-desc1">The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.</p>
+                    <p style="margin-top: 1rem;" data-i18n="invocation-desc2">You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.</p>
+                </div>
+                <div class="code-block">
+                    <pre>contract BUGCATS is Ownable {
+    address[] public bugs;
+
+    function remember(uint256 index) external view returns (bool) {
+        return BugCat(bugs[index]).remember();
+    }
+
+    function inject(address bug) external onlyOwner {
+        bugs.push(bug);
+    }
+}</pre>
+                </div>
+            </section>
+
+            <!-- ========== SPECIFICATIONS ========== -->
+            <section class="specs-section" id="specifications">
+                <h2 class="section-header" data-i18n="nav-specifications">Specifications</h2>
+                <div class="spec-table">
+                    <span class="spec-label" data-i18n="spec-title">Title</span>
+                    <span class="spec-value">BUGCAT</span>
+                    <span class="spec-label" data-i18n="spec-author">Author</span>
+                    <span class="spec-value" data-i18n="spec-author-value">Zeroichi Arakawa</span>
+                    <span class="spec-label" data-i18n="spec-year">Year</span>
+                    <span class="spec-value">2025</span>
+                    <span class="spec-label" data-i18n="spec-blockchain">Blockchain</span>
+                    <span class="spec-value">Ethereum</span>
+                    <span class="spec-label" data-i18n="spec-medium">Medium</span>
+                    <span class="spec-value" data-i18n="spec-medium-value">On-chain code (Solidity), Event logs, Vulnerability references</span>
+                    <span class="spec-label" data-i18n="spec-license">License</span>
+                    <span class="spec-value"><a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a></span>
+                    <span class="spec-label" data-i18n="spec-contracts">Contracts</span>
+                    <span class="spec-value">
+                        <div class="spec-contracts">
+                            <div class="contract-row">
+                                <span class="contract-name">BUGCATS</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#code" target="_blank">0x652f...1139e</a>
+                            </div>
+                            <div class="contract-row">
+                                <span class="contract-name">ReentrancyCat</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2#code" target="_blank">0xa9e8...4dd2</a>
+                            </div>
+                            <div class="contract-row">
+                                <span class="contract-name">PredictableCat</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0x9050628cae4268e4701d4b011c99db30bc402b1c#code" target="_blank">0x9050...2b1c</a>
+                            </div>
+                            <div class="contract-row">
+                                <span class="contract-name">OverflowCat</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0xf3fe43009429dd8450d916f7118970a52f130cbe#code" target="_blank">0xf3fe...0cbe</a>
+                            </div>
+                            <div class="contract-row">
+                                <span class="contract-name">UnprotectedCat</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1#code" target="_blank">0x81b4...6fc1</a>
+                            </div>
+                            <div class="contract-row">
+                                <span class="contract-name">MisspelledCat</span>
+                                <a class="contract-addr" href="https://etherscan.io/address/0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f#code" target="_blank">0xa109...625f</a>
+                            </div>
+                        </div>
+                    </span>
+                </div>
+            </section>
+
+            <!-- ========== MEOWS ========== -->
+            <section class="meow-log-section" id="meow-log-section">
+                <h2 class="meow-log-header">
+                    <span class="live-indicator"></span>
+                    <span data-i18n="section-meows">Meows</span>
+                </h2>
+                <div class="meow-log" id="meow-log">
+                    <div class="meow-empty">Loading from Ethereum...</div>
+                </div>
+                <div class="meow-stats" id="meow-stats"></div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <p><a href="https://creativecommons.org/licenses/by-sa/4.0/deed.en" target="_blank">Copyleft</a> © 2025 Zeroichi Arakawa</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- ========== REMEMBER MODAL ========== -->
+    <div class="modal-overlay" id="remember-modal">
+        <div class="modal remember-modal">
+            <button class="modal-close" id="remember-modal-close">&times;</button>
+            <h3 class="modal-title" id="remember-modal-title">ReentrancyCat</h3>
+            <p class="modal-vuln" id="remember-modal-ancestor"></p>
+            <div class="remember-history" id="remember-history"></div>
+
+            <div class="remember-terminal" id="remember-terminal">
+                <!-- Terminal lines will be added here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CARESS MODAL ========== -->
+    <div class="modal-overlay" id="caress-modal">
+        <div class="modal caress-modal">
+            <button class="modal-close" id="modal-close">&times;</button>
+            <h3 class="modal-title" id="modal-title">ReentrancyCat</h3>
+
+            <!-- Code + Explanation area -->
+            <div class="modal-simulation" id="modal-simulation" style="display: none;">
+                <div class="sim-code" id="sim-code"></div>
+                <div class="sim-explanation" id="sim-explanation"></div>
+                <div class="sim-complete" id="sim-complete" style="display: none;">
+                    <p class="sim-complete-text" id="sim-complete-text"></p>
+                    <pre class="sim-complete-code" id="sim-complete-code" style="display: none;"></pre>
+                </div>
+                <div class="sim-nav">
+                    <button class="sim-nav-btn" id="sim-prev" disabled>&larr; BACK</button>
+                    <span class="sim-step-indicator" id="sim-step-indicator">1 / 7</span>
+                    <button class="sim-nav-btn" id="sim-next">NEXT &rarr;</button>
+                    <button class="sim-nav-btn" id="sim-close" style="display: none;">CLOSE</button>
+                </div>
+                <a class="sim-interact-link" id="sim-interact" href="#" target="_blank" style="display: none;">INTERACT &rarr;</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ========== CONFIGURATION ==========
+    const CONFIG = {
+        // Ethereum RPC (public endpoints)
+        RPC_URL: 'https://ethereum.publicnode.com',
+
+        // Etherscan API V2
+        ETHERSCAN_API: 'https://api.etherscan.io/v2/api?chainid=1&apikey=NZIU7G5RSKETIWFFS6DYJMKJDVYCIAAXN1',
+
+        // Meow event topic (keccak256("Meow(address,string)"))
+        MEOW_TOPIC: '0x55d68e0254b44d1d00659bd7e45544dea474c1b9d01304669332e1111dcd9d33'
+    };
+
+    // The 5 BUGCATs and their memories
+    const BUGCATS = [
+        {
+            name: 'ReentrancyCat',
+            address: '0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2',
+            ancestor: 'The DAO',
+            ancestorAddress: '0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413',
+            year: 2016,
+            impact: '3,641,694 ETH drained',
+            endingTrue: 'The DAO is still there.',
+            endingFalse: 'The DAO is gone.',
+            endingTrueJa: 'The DAOはまだそこにある。',
+            endingFalseJa: 'The DAOは消えた。',
+            code: `<span class="code-keyword">function</span> <span class="code-fn">remember</span>() <span class="code-keyword">external view returns</span> (bool) {
+    <span class="code-keyword">address</span> TheDAO = <span class="code-addr">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</span>;
+    <span class="code-keyword">return</span> TheDAO.code.length > 0;
+}`
+        },
+        {
+            name: 'PredictableCat',
+            address: '0x9050628cae4268e4701d4b011c99db30bc402b1c',
+            ancestor: 'FoMo3D',
+            ancestorAddress: '0xA62142888ABa8370742bE823c1782D17A0389Da1',
+            year: 2018,
+            impact: 'Winners were predictable',
+            endingTrue: 'FoMo3D is still there.',
+            endingFalse: 'FoMo3D is gone.',
+            endingTrueJa: 'FoMo3Dはまだそこにある。',
+            endingFalseJa: 'FoMo3Dは消えた。',
+            code: `<span class="code-keyword">function</span> <span class="code-fn">remember</span>() <span class="code-keyword">external view returns</span> (bool) {
+    <span class="code-keyword">address</span> FoMo3Dlong = <span class="code-addr">0xA62142888ABa8370742bE823c1782D17A0389Da1</span>;
+    <span class="code-keyword">return</span> FoMo3Dlong.code.length > 0;
+}`
+        },
+        {
+            name: 'OverflowCat',
+            address: '0xf3fe43009429dd8450d916f7118970a52f130cbe',
+            ancestor: 'BEC Token',
+            ancestorAddress: '0xC5d105E63711398aF9bbff092d4B6769C82F793D',
+            year: 2018,
+            impact: 'Billions of tokens from nothing',
+            endingTrue: 'BEC Token is still there.',
+            endingFalse: 'BEC Token is gone.',
+            endingTrueJa: 'BEC Tokenはまだそこにある。',
+            endingFalseJa: 'BEC Tokenは消えた。',
+            code: `<span class="code-keyword">function</span> <span class="code-fn">remember</span>() <span class="code-keyword">external view returns</span> (bool) {
+    <span class="code-keyword">address</span> BecToken = <span class="code-addr">0xC5d105E63711398aF9bbff092d4B6769C82F793D</span>;
+    <span class="code-keyword">return</span> BecToken.code.length > 0;
+}`
+        },
+        {
+            name: 'UnprotectedCat',
+            address: '0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1',
+            ancestor: 'Parity Wallet',
+            ancestorAddress: '0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4',
+            year: 2017,
+            impact: '$280M frozen forever',
+            endingTrue: 'WalletLibrary has no code.',
+            endingFalse: 'Something changed.',
+            endingTrueJa: 'WalletLibraryにコードはない。',
+            endingFalseJa: '何かが変わった。',
+            code: `<span class="code-keyword">function</span> <span class="code-fn">remember</span>() <span class="code-keyword">external view returns</span> (bool) {
+    <span class="code-keyword">address</span> WalletLibrary = <span class="code-addr">0x863DF6BFa4469f3ead0bE8f9F2AAE51c91A907b4</span>;
+    <span class="code-keyword">return</span> WalletLibrary.code.length == 0;
+}`
+        },
+        {
+            name: 'MisspelledCat',
+            address: '0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f',
+            ancestor: 'Rubixi',
+            ancestorAddress: '0xe82719202e5965Cf5D9B6673B7503a3b92DE20be',
+            year: 2016,
+            impact: 'Ownership wide open',
+            endingTrue: 'Rubixi is still there.',
+            endingFalse: 'Rubixi is gone.',
+            endingTrueJa: 'Rubixiはまだそこにある。',
+            endingFalseJa: 'Rubixiは消えた。',
+            code: `<span class="code-keyword">function</span> <span class="code-fn">remember</span>() <span class="code-keyword">external view returns</span> (bool) {
+    <span class="code-keyword">address</span> Rubixi = <span class="code-addr">0xe82719202e5965Cf5D9B6673B7503a3b92DE20be</span>;
+    <span class="code-keyword">return</span> Rubixi.code.length > 0;
+}`
+        }
+    ];
+
+    // Contract ABIs (minimal)
+    const REMEMBER_ABI = ['function remember() external view returns (bool)'];
+    const MEOW_EVENT_ABI = ['event Meow(address indexed who, string vulnerability)'];
+
+    // ========== STATE ==========
+    let provider = null;
+    let introComplete = false;
+
+    async function typeText(element, text, speed = 30) {
+        element.textContent = '';
+        for (let i = 0; i < text.length; i++) {
+            element.textContent += text[i];
+            await new Promise(r => setTimeout(r, speed));
+        }
+    }
+
+    async function showIntroSequence() {
+        const terminal = document.getElementById('terminal');
+        const typeTarget = document.getElementById('type-target');
+        const cursor = document.getElementById('cursor');
+        const rememberBtn = document.getElementById('remember-btn');
+
+        // Initial typing
+        await typeText(typeTarget, 'Do the dead contracts still breathe?', 25);
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    async function executeRemember() {
+        console.log('executeRemember called');
+        const terminal = document.getElementById('terminal');
+        const rememberBtn = document.getElementById('remember-btn');
+
+        rememberBtn.disabled = true;
+
+        try {
+            provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URL);
+
+            // Hide title and button
+            const introTitle = document.getElementById('intro-title');
+            introTitle.style.opacity = '0';
+            rememberBtn.style.opacity = '0';
+
+            // Wait for fade, then remove and clear
+            await new Promise(r => setTimeout(r, 500));
+            introTitle.style.display = 'none';
+            rememberBtn.style.display = 'none';
+            terminal.innerHTML = '';
+
+            // Show the list of all 5 BUGCATs
+            await addTerminalLine(terminal, '> BUGCATS: 5 vulnerabilities remembered', 'dim');
+            await new Promise(r => setTimeout(r, 600));
+
+            await addTerminalLine(terminal, '');
+            const listBlock = document.createElement('div');
+            listBlock.className = 'terminal-line terminal-list visible';
+            listBlock.innerHTML = BUGCATS.map(cat =>
+                `  <span class="cat-name">${cat.name.padEnd(18)}</span> <span class="dim">— ${cat.ancestor} (${cat.year})</span>`
+            ).join('\n');
+            terminal.appendChild(listBlock);
+            await new Promise(r => setTimeout(r, 1500));
+
+            // Randomly select one cat
+            const selectedCat = BUGCATS[Math.floor(Math.random() * BUGCATS.length)];
+
+            await addTerminalLine(terminal, '');
+            await addTerminalLine(terminal, `> calling ${selectedCat.name}.remember()`, 'dim');
+            await new Promise(r => setTimeout(r, 600));
+
+            // Show the code block
+            await addTerminalLine(terminal, '');
+            const codeBlock = document.createElement('div');
+            codeBlock.className = 'terminal-line terminal-code visible';
+            codeBlock.innerHTML = selectedCat.code;
+            terminal.appendChild(codeBlock);
+            await new Promise(r => setTimeout(r, 1200));
+
+            // Querying
+            await addTerminalLine(terminal, '');
+            await addTerminalLine(terminal, `> querying ${selectedCat.ancestor} contract...`, 'dim');
+            await new Promise(r => setTimeout(r, 400));
+
+            // Actually call remember() on the selected cat
+            const contract = new ethers.Contract(
+                selectedCat.address,
+                REMEMBER_ABI,
+                provider
+            );
+            const result = await contract.remember();
+
+            await new Promise(r => setTimeout(r, 300));
+
+            // Get code length for dramatic effect (if contract exists)
+            const code = await provider.getCode(selectedCat.ancestorAddress);
+            const codeLength = (code.length - 2) / 2; // hex string to bytes
+
+            if (codeLength > 0) {
+                await addTerminalLine(terminal, `> code.length: ${codeLength} bytes`, 'dim');
+            } else {
+                await addTerminalLine(terminal, `> code.length: 0 (destroyed)`, 'dim');
+            }
+            await new Promise(r => setTimeout(r, 400));
+
+            // Show result
+            const resultLine = await addTerminalLine(terminal, '> ');
+            if (result) {
+                resultLine.innerHTML = '> returns: <span class="status-alive">true</span>';
+            } else {
+                resultLine.innerHTML = '> returns: <span class="status-dead">false</span>';
+            }
+            await new Promise(r => setTimeout(r, 1000));
+
+            // Poetic ending (unique per cat, depends on result)
+            await addTerminalLine(terminal, '');
+            let ending;
+            if (currentLang === 'ja') {
+                ending = result ? selectedCat.endingTrueJa : selectedCat.endingFalseJa;
+            } else {
+                ending = result ? selectedCat.endingTrue : selectedCat.endingFalse;
+            }
+            await addTerminalLine(terminal, ending, 'poetic');
+
+            await new Promise(r => setTimeout(r, 1500));
+
+            // Add ENTER button
+            const enterBtn = document.createElement('button');
+            enterBtn.className = 'enter-btn';
+            enterBtn.textContent = 'ENTER';
+            enterBtn.addEventListener('click', enterMainContent);
+            terminal.after(enterBtn);
+
+            // Fade in button
+            await new Promise(r => setTimeout(r, 100));
+            enterBtn.classList.add('visible');
+            introComplete = true;
+
+            // Start loading meow logs in background
+            loadMeowLogs();
+
+        } catch (error) {
+            console.error('Error:', error);
+            await addTerminalLine(terminal, '> error: ' + error.message, 'dim');
+            rememberBtn.disabled = false;
+            rememberBtn.textContent = 'RETRY';
+        }
+    }
+
+    async function addTerminalLine(terminal, text, className = '') {
+        const line = document.createElement('div');
+        line.className = 'terminal-line' + (className ? ' ' + className : '');
+        line.textContent = text;
+        terminal.appendChild(line);
+
+        // Trigger reflow for animation
+        await new Promise(r => setTimeout(r, 50));
+        line.classList.add('visible');
+
+        return line;
+    }
+
+    function enterMainContent() {
+        const intro = document.getElementById('intro');
+        const mainContent = document.getElementById('main-content');
+
+        intro.style.transition = 'opacity 1s ease, transform 1s ease';
+        intro.style.opacity = '0';
+        intro.style.transform = 'translateY(-50px)';
+
+        setTimeout(() => {
+            intro.style.display = 'none';
+            mainContent.classList.add('visible');
+
+            // Scroll to top of main content
+            window.scrollTo(0, 0);
+        }, 1000);
+    }
+
+    // ========== MEOW LOGS ==========
+    async function loadMeowLogs() {
+        const meowLog = document.getElementById('meow-log');
+        const meowStats = document.getElementById('meow-stats');
+
+        try {
+            // Get logs from all BUGCAT contracts via Etherscan API
+            const allLogs = [];
+
+            for (let i = 0; i < BUGCATS.length; i++) {
+                const cat = BUGCATS[i];
+                try {
+                    // Add delay to avoid Etherscan rate limit (3/sec)
+                    if (i > 0) await new Promise(r => setTimeout(r, 350));
+
+                    // Use Etherscan API to get event logs
+                    const url = `${CONFIG.ETHERSCAN_API}&module=logs&action=getLogs&address=${cat.address}&topic0=${CONFIG.MEOW_TOPIC}&fromBlock=0&toBlock=latest`;
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    console.log(`${cat.name} logs:`, data);
+
+                    if (data.status === '1' && data.result) {
+                        const iface = new ethers.utils.Interface(MEOW_EVENT_ABI);
+
+                        for (const log of data.result) {
+                            try {
+                                const parsed = iface.parseLog({
+                                    topics: log.topics,
+                                    data: log.data
+                                });
+                                allLogs.push({
+                                    cat: cat.name,
+                                    who: parsed.args.who,
+                                    vulnerability: parsed.args.vulnerability,
+                                    blockNumber: parseInt(log.blockNumber, 16),
+                                    txHash: log.transactionHash,
+                                    timestamp: parseInt(log.timeStamp, 16)
+                                });
+                            } catch (parseError) {
+                                console.log('Error parsing log:', parseError);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('Error fetching logs for', cat.name, e);
+                }
+            }
+
+            // Sort by timestamp descending
+            allLogs.sort((a, b) => b.timestamp - a.timestamp);
+
+            // Display logs
+            if (allLogs.length === 0) {
+                meowLog.innerHTML = '<div class="meow-empty">No meows yet. Be the first to caress a BUGCAT.</div>';
+            } else {
+                meowLog.innerHTML = '';
+                const displayLogs = allLogs.slice(0, 10); // Show last 10
+
+                displayLogs.forEach((log, index) => {
+                    const entry = document.createElement('div');
+                    entry.className = 'meow-entry';
+                    entry.innerHTML = `
+                        <span class="meow-cat">${log.cat}</span>
+                        <span class="meow-address">
+                            <a href="https://etherscan.io/tx/${log.txHash}" target="_blank">
+                                ${log.who.slice(0, 6)}...${log.who.slice(-4)}
+                            </a>
+                        </span>
+                        <span class="meow-time">${formatTimeAgo(log.timestamp)}</span>
+                    `;
+                    meowLog.appendChild(entry);
+
+                    // Animate in
+                    setTimeout(() => {
+                        entry.classList.add('visible');
+                    }, index * 100);
+                });
+            }
+
+            meowStats.textContent = `Total: ${allLogs.length} interactions recorded on Ethereum`;
+
+        } catch (error) {
+            console.error('Error loading meow logs:', error);
+            meowLog.innerHTML = '<div class="meow-empty">Could not load logs from Ethereum.</div>';
+        }
+    }
+
+    function formatTimeAgo(timestamp) {
+        const now = Math.floor(Date.now() / 1000);
+        const diff = now - timestamp;
+
+        if (diff < 60) return 'just now';
+        if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+        if (diff < 86400) return Math.floor(diff / 3600) + ' hours ago';
+        if (diff < 2592000) return Math.floor(diff / 86400) + ' days ago';
+        return new Date(timestamp * 1000).toLocaleDateString();
+    }
+
+    // ========== EVENT LISTENERS ==========
+    document.getElementById('remember-btn').addEventListener('click', executeRemember);
+
+    // Skip intro
+    document.getElementById('skip-btn').addEventListener('click', skipIntro);
+
+    function skipIntro() {
+        const intro = document.getElementById('intro');
+        const main = document.getElementById('main-content');
+        intro.style.display = 'none';
+        main.style.transition = 'none';
+        main.classList.add('visible');
+    }
+
+
+    // ========== CARESS CONTENT ==========
+    const CARESS_CONTENT = {
+        'ReentrancyCat': {
+            codeLines: [
+                'function withdraw() public {',
+                '    (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");',
+                '    require(success);',
+                '    balance[msg.sender] = 0;',
+                '}'
+            ],
+            reading: [
+                { lines: [0], text: 'An open door. All may enter.', ja: '開かれた扉。誰でも入れる。' },
+                { lines: [1], text: 'Return what was entrusted. Let it flow back to the caller.', ja: '預かったものを返す。呼び手のもとへ流れ戻れ。', vuln: true },
+                { lines: [2], text: 'Only if the journey succeeds.', ja: '旅が成功した時だけ。' },
+                { lines: [3], text: 'Now, forget what was owed.', ja: 'さあ、借りを忘れよ。', vuln: true },
+                { lines: [1, 3], text: 'But the order is wrong. Money leaves before memory fades. In that gap, a loop is born.', ja: 'だが順序が違う。記憶が消える前にお金が去る。その隙間に、ループが生まれる。' },
+                { lines: [1], text: 'The caller catches the coin, calls again, catches again... an infinite echo until silence.', ja: '呼び手は金を受け取り、また呼び、また受け取る…静寂まで続く無限の残響。' },
+                { lines: [], text: 'When nothing remains: the cat meows "reentrancy"', ja: '何も残らぬ時：猫は「reentrancy」と鳴く' }
+            ],
+            completion: {
+                easy: false,
+                message: 'To caress, deploy a contract like this:',
+                messageJa: '撫でるには、例えばこのようなコントラクトをデプロイする：',
+                code: `contract Witness {
+    constructor() payable {
+        ReentrancyCat cat = ReentrancyCat(
+            0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2
+        );
+        cat.deposit{value: msg.value}();
+        cat.withdraw();
+    }
+
+    receive() external payable {
+        ReentrancyCat cat = ReentrancyCat(
+            0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2
+        );
+        if (address(cat).balance > 0) {
+            cat.withdraw();
+        } else {
+            cat.caress();
+        }
+    }
+}`
+            }
+        },
+        'PredictableCat': {
+            codeLines: [
+                'function flip() external {',
+                '    if ((uint(keccak256(abi.encodePacked(',
+                '        block.timestamp,',
+                '        block.prevrandao,',
+                '        msg.sender',
+                '    ))) & 1) == 0) {',
+                '        winCount[msg.sender] += 1;',
+                '    } else {',
+                '        winCount[msg.sender] = 0;',
+                '    }',
+                '}'
+            ],
+            reading: [
+                { lines: [0], text: 'A game of chance. Or so it seems.', ja: '運のゲーム。そう見えるだけ。' },
+                { lines: [1, 2, 3, 4, 5], text: 'Weave together: the moment, the chaos, the caller. Forge a destiny.', ja: '紡ぎ合わせよ：瞬間、混沌、呼び手を。運命を鍛える。', vuln: true },
+                { lines: [2, 3], text: 'But these threads are visible to all. Some can even choose them.', ja: 'だがこれらの糸は誰にも見える。選べる者さえいる。' },
+                { lines: [1, 5], text: 'The pattern repeats identically. Tomorrow is already written.', ja: '模様は寸分違わず繰り返す。明日はもう書かれている。' },
+                { lines: [6], text: 'If victory awaits, step forward.', ja: '勝利が待つなら、踏み出せ。' },
+                { lines: [8], text: 'If defeat, stand still. Wait for another sky.', ja: '敗北なら、立ち止まれ。別の空を待て。' },
+                { lines: [], text: 'Ten certain victories: the cat meows "predictable"', ja: '十の確かな勝利：猫は「predictable」と鳴く' }
+            ],
+            completion: {
+                easy: false,
+                message: 'To caress, deploy a contract like this and call mend():',
+                messageJa: '撫でるには、例えばこのようなコントラクトをデプロイしてmend()を呼ぶ：',
+                code: `contract Witness {
+    PredictableCat cat = PredictableCat(
+        0x9050628cae4268e4701d4b011c99db30bc402b1c
+    );
+
+    function willWin() public view returns (bool) {
+        return (uint(keccak256(abi.encodePacked(
+            block.timestamp, block.prevrandao, address(this)
+        ))) & 1) == 0;
+    }
+
+    function mend() external {
+        require(willWin(), "wait for next block");
+        for (uint i = 0; i < 10; i++) {
+            cat.flip();
+        }
+        cat.caress();
+    }
+}`
+            }
+        },
+        'OverflowCat': {
+            codeLines: [
+                'function batchTransfer(address[] memory _receivers, uint256 _value) public {',
+                '    uint count = _receivers.length;',
+                '    uint amount = count * _value;',
+                '    require(_value > 0 && balance[msg.sender] >= amount);',
+                '    balance[msg.sender] -= amount;',
+                '    for (uint i = 0; i < count; i++) {',
+                '        balance[_receivers[i]] += _value;',
+                '    }',
+                '}'
+            ],
+            reading: [
+                { lines: [0], text: 'A gift to many. Names and a number.', ja: '多くへの贈り物。名前と数字。' },
+                { lines: [1], text: 'Count the recipients.', ja: '受け手を数える。' },
+                { lines: [2], text: 'Multiply: how many times how much.', ja: '掛ける：いくつ掛けるいくら。', vuln: true },
+                { lines: [2], text: 'But numbers have ceilings. Beyond them, they fall back to the floor.', ja: 'だが数には天井がある。超えれば、床まで落ちる。', vuln: true },
+                { lines: [3], text: 'Check: do you have enough? But "enough" has become almost nothing.', ja: '確認：足りているか？でも「足りる」はほぼ無に。' },
+                { lines: [4], text: 'Subtract the nothing.', ja: '無を引く。' },
+                { lines: [5, 6, 7], text: 'Give each one the original vastness. Wealth from void.', ja: '各人に元の広大さを与える。虚空からの富。' },
+                { lines: [], text: 'Holding what never existed: the cat meows "overflow"', ja: '在らざるものを手に：猫は「overflow」と鳴く' }
+            ],
+            completion: {
+                easy: false,
+                message: 'To caress, deploy a contract like this:',
+                messageJa: '撫でるには、例えばこのようなコントラクトをデプロイする：',
+                code: `contract Witness {
+    constructor() {
+        OverflowCat cat = OverflowCat(
+            0xf3fe43009429dd8450d916f7118970a52f130cbe
+        );
+        address[] memory receivers = new address[](2);
+        receivers[0] = address(this);
+        receivers[1] = msg.sender;
+        // 2 * 2^255 = 0 (overflow)
+        cat.batchTransfer(receivers, 2**255);
+        cat.caress();
+    }
+}`
+            }
+        },
+        'UnprotectedCat': {
+            codeLines: [
+                'function init(address o) public {',
+                '    owner = o;',
+                '    initialized = true;',
+                '}',
+                '',
+                'function kill() public {',
+                '    require(msg.sender == owner);',
+                '    suicide(owner);',
+                '}'
+            ],
+            reading: [
+                { lines: [0], text: 'A beginning. Meant to happen once.', ja: '始まり。一度だけのはず。', vuln: true },
+                { lines: [0], text: 'But the door has no lock. Anyone may begin again.', ja: 'だが扉に鍵はない。誰でもまた始められる。', vuln: true },
+                { lines: [1], text: 'Whoever speaks first becomes the master.', ja: '最初に声を発した者が主人になる。' },
+                { lines: [2], text: 'A flag rises, but no one watches it.', ja: '旗は立つが、誰も見ていない。' },
+                { lines: [5, 6, 7, 8], text: 'The master may end it all. Erase the code. Forever.', ja: '主人はすべてを終わらせられる。コードを消す。永遠に。' },
+                { lines: [0, 1], text: 'Speak the word, claim the throne, touch the cat.', ja: '言葉を発し、玉座を奪い、猫に触れよ。' },
+                { lines: [], text: 'Crowned by accident: the cat meows "unprotected"', ja: '偶然の戴冠：猫は「unprotected」と鳴く' }
+            ],
+            completion: {
+                easy: true,
+                message: 'To caress: call init(yourAddress), then caress().',
+                messageJa: '撫でるには：init(あなたのアドレス)を呼び、次にcaress()を呼ぶ。'
+            }
+        },
+        'MisspelledCat': {
+            codeLines: [
+                'contract MisspelledCat is BugCat {',
+                '    address public owner;',
+                '',
+                '    function MisspeledCat(address o) {',
+                '        owner = o;',
+                '    }',
+                '',
+                '    ...',
+                '}'
+            ],
+            reading: [
+                { lines: [0], text: 'A name: MisspelledCat. Two L\'s.', ja: '名前：MisspelledCat。Lがふたつ。' },
+                { lines: [3], text: 'Another name: MisspeledCat. One L.', ja: '別の名前：MisspeledCat。Lがひとつ。', vuln: true },
+                { lines: [3], text: 'In the old tongue, birth required exact names.', ja: '古い言葉では、誕生には正確な名が要った。', vuln: true },
+                { lines: [3], text: 'This is not birth. This is an open invitation.', ja: 'これは誕生ではない。これは開かれた招待。' },
+                { lines: [4], text: 'Speak the wrong name, and the throne is yours.', ja: '間違った名を呼べば、玉座はあなたのもの。' },
+                { lines: [], text: 'A letter\'s absence: the cat meows "misspelled"', ja: '一文字の不在：猫は「misspelled」と鳴く' }
+            ],
+            completion: {
+                easy: true,
+                message: 'To caress: call MisspeledCat(yourAddress), then caress().',
+                messageJa: '撫でるには：MisspeledCat(あなたのアドレス)を呼び、次にcaress()を呼ぶ。'
+            }
+        }
+    };
+
+    function openCaressModal(catName) {
+        const content = CARESS_CONTENT[catName];
+        if (!content) return;
+
+        document.getElementById('modal-title').textContent = catName;
+
+        // Store current cat for buttons
+        document.getElementById('caress-modal').dataset.currentCat = catName;
+
+        // Show modal
+        document.getElementById('caress-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Start reading experience automatically
+        showSimulation();
+    }
+
+    function closeCaressModal() {
+        document.getElementById('caress-modal').classList.remove('active');
+        document.body.style.overflow = '';
+        // Reset simulation state
+        currentSimContent = null;
+        currentSimStep = 0;
+    }
+
+    let currentSimStep = 0;
+    let currentSimContent = null;
+    let currentLang = 'en';
+
+    // ========== TRANSLATIONS ==========
+    const translations = {
+        en: {
+            'statement-1': 'BUGCAT is a series of smart contracts presented as code poetry, each embodying a historically significant software vulnerability—reentrancy, integer overflow, weak randomness, unprotected initialization, and constructor misnaming—not as metaphor or simulation, but as executable logic.',
+            'statement-2': 'Unlike works that focus on generated output or visual interaction, BUGCAT foregrounds reading source code itself. The work cannot be meaningfully experienced without reading, and here reading is inseparable from verification. The reader assumes the position of an auditor, attending to what the code does, where it might fail, and whether it is safe, exploitative, or dangerous.',
+            'statement-3': 'Each contract is deployed on the Ethereum mainnet, where its logic is immutable and financially consequential. The ordering of seemingly ordinary lines of code can determine irreversible outcomes, turning syntax into a matter of fate rather than style. A line of code is no longer a purely symbolic gesture but a potential action capable of moving value, lending weight to hesitation, misinterpretation, and ethical judgment.',
+            'statement-4': 'Each contract queries whether its historical predecessor still exists on-chain, embedding the address of a past catastrophe. Verification becomes a form of elegy: an act of checking for the continued presence of what should no longer be there.',
+            'statement-5': 'In an era of seamless interfaces, BUGCAT\'s minimal presentation insists on slow, deliberate scrutiny of source code—reframing reading as an act of audit, confronting the intersections of language, power, and responsibility that define computation today.',
+            'tagline': 'Poetry is what happens when language exceeds its own limits.<br>In code, we call these moments vulnerabilities.<br>Smart contracts are poems with consequences.',
+            'section-poems': 'Poems',
+            'section-statement': 'Statement',
+            'section-meows': 'Meows',
+            'nav-interface': 'Interface',
+            'nav-invocation': 'Invocation',
+            'nav-specifications': 'Specifications',
+            'interface-desc': 'Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.',
+            'invocation-desc1': 'The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.',
+            'invocation-desc2': 'You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.',
+            'spec-title': 'Title',
+            'spec-author': 'Author',
+            'spec-author-value': 'Zeroichi Arakawa',
+            'spec-year': 'Year',
+            'spec-blockchain': 'Blockchain',
+            'spec-medium': 'Medium',
+            'spec-medium-value': 'On-chain code (Solidity), Event logs, Vulnerability references',
+            'spec-license': 'License',
+            'spec-contracts': 'Contracts',
+            'sim-complete': 'To caress, connect your wallet and call the contract.',
+            'poetic-reentrancy': '3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.',
+            'poetic-predictable': 'The future was written in block hashes. Miners chose winners. Randomness was an illusion.',
+            'poetic-overflow': 'A multiplication overflow created billions from nothing. Markets crashed in minutes. Mathematics betrayed economics.',
+            'poetic-unprotected': 'July: $30 million stolen. November: someone accidentally killed the library. $280 million frozen forever.',
+            'poetic-misspelled': 'The contract changed its name. The constructor didn\'t. A typo turned initialization into an open door.'
+        },
+        ja: {
+            'statement-1': 'BUGCATは、コードによる詩として提示されるスマートコントラクトのシリーズである。各作品は歴史的に重大なソフトウェア脆弱性——再入可能性、整数オーバーフロー、予測可能な乱数、無防備な初期化、コンストラクタの誤命名——を、比喩やシミュレーションとしてではなく、実行可能なロジックとして体現している。',
+            'statement-2': '生成物やビジュアルインタラクションを中心とするデジタル作品とは異なり、BUGCATはソースコードを読む行為そのものを前景化する。読むことなしにこの作品を体験することはできず、読むことは検証することと不可分である。鑑賞者は監査人のような立場に置かれ——コードが何をするのか、どこで破綻しうるのか、それは安全か、搾取的か、危険かを見極めることになる。',
+            'statement-3': '各コントラクトはEthereumメインネットにデプロイされている。そのロジックは不変であり、金銭的帰結を伴う。ここでは、ありふれたコードの順序が不可逆的な結末を決定しうる——構文そのものが、スタイルではなく運命の問題となる。一行のコードはもはや象徴的な身振りではなく、価値を動かしうる潜在的行為であり、躊躇、誤読、倫理的判断に重みを与える。',
+            'statement-4': '各コントラクトは、歴史上の先祖がいまもチェーン上に存在するかを照会し、過去の惨事のアドレスを内包している。検証は哀歌の形をとる——もはや存在すべきでないものが、まだそこにあるかを確かめる行為。',
+            'statement-5': 'シームレスなインターフェースの時代にあって、BUGCATの最小限の提示は、ソースコードへの遅く慎重な凝視を要求する——読むことを監査の行為として再定義し、今日の計算を規定する言語・権力・責任の交差点に向き合う。',
+            'tagline': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードの世界では、その瞬間を脆弱性と呼ぶ。<br>スマートコントラクトは、代償を伴う詩である。',
+            'section-poems': '詩篇',
+            'section-statement': 'ステートメント',
+            'section-meows': 'ネコの鳴き声',
+            'nav-interface': 'インターフェース',
+            'nav-invocation': 'インタラクション',
+            'nav-specifications': '仕様',
+            'interface-desc': 'すべてのBUGCATは、記憶という共通言語を持つ。<em>remember</em>——時を超えて存在を確かめる行為。祖先がバイトコードの中でまだ息をしていれば、trueを返す。<em>caress</em>——内に眠る亡霊を呼び覚ます行為。触れるたびにガスを消費し、すべての接触は痕跡を残す。その鳴き声はイベントとしてネットワークに響き、永久に刻まれ、誰の記憶にも残らない。',
+            'invocation-desc1': 'BUGCATSコントラクトは、誰かが彼らを思い出すかもしれない場所である。アドレスの配列、それぞれが一つの物語である。<em>remember</em>はそれぞれのネコの祖先がまだ生きているかを問う。<em>caress</em>は内なる亡霊を目覚めさせる——触れるたびにガスを消費し、すべての接触はチェーンに刻まれる。',
+            'invocation-desc2': 'これらの詩とは<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>でインタラクションできる。<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code>で祖先の存在を確認せよ。ウォレットを接続し<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code>を呼べば、あなたの痕跡がMeowイベントとして永続的に刻まれる。',
+            'spec-title': 'タイトル',
+            'spec-author': '作者',
+            'spec-author-value': '荒川零一',
+            'spec-year': '制作年',
+            'spec-blockchain': 'チェーン',
+            'spec-medium': 'メディウム',
+            'spec-medium-value': 'オンチェーンコード（Solidity）、イベントログ、脆弱性への参照',
+            'spec-license': 'ライセンス',
+            'spec-contracts': 'コントラクト',
+            'sim-complete': '撫でるには、ウォレットを接続してコントラクトを呼び出す。',
+            'poetic-reentrancy': '360万ETHが再帰の中へ消えた。Ethereumは二つに分裂した——記憶を選んだチェーンと、忘却を選んだチェーン。',
+            'poetic-predictable': '未来はブロックハッシュに刻まれていた。マイナーが勝者を選んだ。乱数は幻想だった。',
+            'poetic-overflow': '乗算オーバーフローが無から数十億を生んだ。市場は数分で崩壊した。数学が経済を裏切った。',
+            'poetic-unprotected': '7月：3000万ドルが盗まれた。11月：誰かが誤ってライブラリを殺した。2億8000万ドルが永久に凍結された。',
+            'poetic-misspelled': 'コントラクトは名を変えた。コンストラクタは変えなかった。一文字の誤りが、初期化を開け放たれた扉に変えた。'
+        }
+    };
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+        document.getElementById('lang-ja').classList.toggle('active', lang === 'ja');
+        localStorage.setItem('bugcat-lang', lang);
+
+        // Update all translatable elements
+        updateTranslations();
+
+        // Re-render current step if simulation is active
+        if (currentSimContent) {
+            renderSimStep();
+        }
+    }
+
+    function updateTranslations() {
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (translations[currentLang][key]) {
+                el.innerHTML = translations[currentLang][key];
+            }
+        });
+    }
+
+    function showSimulation() {
+        const catName = document.getElementById('caress-modal').dataset.currentCat;
+        const content = CARESS_CONTENT[catName];
+        if (!content) return;
+
+        currentSimContent = content;
+        currentSimStep = 0;
+
+        const simContainer = document.getElementById('modal-simulation');
+        const codeContainer = document.getElementById('sim-code');
+
+        // Build the code display with line numbers
+        codeContainer.innerHTML = content.codeLines.map((line, i) =>
+            `<div class="code-line" data-line="${i}"><span class="line-num">${i + 1}</span>${escapeHtml(line)}</div>`
+        ).join('');
+
+        // Show simulation area
+        simContainer.style.display = 'block';
+        simContainer.scrollIntoView({ behavior: 'smooth' });
+
+        // Render first step
+        renderSimStep();
+    }
+
+    function renderSimStep() {
+        if (!currentSimContent) return;
+
+        const codeContainer = document.getElementById('sim-code');
+        const explanationContainer = document.getElementById('sim-explanation');
+        const completeSection = document.getElementById('sim-complete');
+        const stepIndicator = document.getElementById('sim-step-indicator');
+        const prevBtn = document.getElementById('sim-prev');
+        const nextBtn = document.getElementById('sim-next');
+        const interactBtn = document.getElementById('sim-interact');
+        const closeBtn = document.getElementById('sim-close');
+
+        const step = currentSimContent.reading[currentSimStep];
+        const totalSteps = currentSimContent.reading.length;
+        const isLastStep = currentSimStep === totalSteps - 1;
+
+        // Clear previous highlights
+        codeContainer.querySelectorAll('.code-line').forEach(el => {
+            el.classList.remove('highlight', 'vuln');
+        });
+
+        // Highlight current lines
+        step.lines.forEach(lineNum => {
+            const lineEl = codeContainer.querySelector(`[data-line="${lineNum}"]`);
+            if (lineEl) {
+                lineEl.classList.add(step.vuln ? 'vuln' : 'highlight');
+                lineEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+
+        // Show explanation
+        const text = (currentLang === 'ja' && step.ja) ? step.ja : step.text;
+        const hintClass = step.hint ? ' hint' : '';
+        explanationContainer.innerHTML = `<div class="step-text${hintClass}">${text}</div>`;
+        setTimeout(() => {
+            const stepText = explanationContainer.querySelector('.step-text');
+            if (stepText) stepText.classList.add('visible');
+        }, 50);
+
+        // Update navigation
+        stepIndicator.textContent = `${currentSimStep + 1} / ${totalSteps}`;
+        prevBtn.disabled = currentSimStep === 0;
+
+        if (isLastStep && currentSimContent.completion) {
+            // Last step: hide code/explanation, show completion only
+            codeContainer.style.display = 'none';
+            explanationContainer.style.display = 'none';
+
+            const completion = currentSimContent.completion;
+            completeSection.style.display = 'block';
+
+            const message = currentLang === 'ja' ? completion.messageJa : completion.message;
+            document.getElementById('sim-complete-text').textContent = message;
+
+            const codeEl = document.getElementById('sim-complete-code');
+            if (!completion.easy && completion.code) {
+                codeEl.textContent = completion.code;
+                codeEl.style.display = 'block';
+            } else {
+                codeEl.style.display = 'none';
+            }
+
+            // Show CLOSE instead of NEXT, INTERACT below
+            nextBtn.style.display = 'none';
+            stepIndicator.style.display = 'none';
+            closeBtn.style.display = 'inline-block';
+            interactBtn.style.display = 'block';
+
+            const catName = document.getElementById('caress-modal').dataset.currentCat;
+            const cat = BUGCATS.find(c => c.name === catName);
+            if (cat) {
+                interactBtn.href = `https://etherscan.io/address/${cat.address}#writeContract`;
+            }
+        } else {
+            // Normal step: show code/explanation
+            codeContainer.style.display = 'block';
+            explanationContainer.style.display = 'block';
+            completeSection.style.display = 'none';
+            nextBtn.style.display = 'inline-block';
+            nextBtn.textContent = 'NEXT →';
+            stepIndicator.style.display = 'inline';
+            interactBtn.style.display = 'none';
+            closeBtn.style.display = 'none';
+        }
+    }
+
+    function simPrev() {
+        if (currentSimStep > 0) {
+            currentSimStep--;
+            renderSimStep();
+        }
+    }
+
+    function simNext() {
+        if (currentSimContent && currentSimStep < currentSimContent.reading.length - 1) {
+            currentSimStep++;
+            renderSimStep();
+        }
+    }
+
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    // ========== REMEMBER MODAL ==========
+    async function openRememberModal(catName) {
+        const cat = BUGCATS.find(c => c.name === catName);
+        if (!cat) return;
+
+        document.getElementById('remember-modal-title').textContent = catName;
+        document.getElementById('remember-modal-ancestor').textContent = `${cat.ancestor} (${cat.year})`;
+
+        // Set historical text based on language
+        const poeticKey = 'poetic-' + catName.toLowerCase().replace('cat', '');
+        const historyText = translations[currentLang][poeticKey] || '';
+        document.getElementById('remember-history').textContent = historyText;
+
+        const terminal = document.getElementById('remember-terminal');
+        terminal.innerHTML = '';
+
+        // Show modal
+        document.getElementById('remember-modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Start the remember sequence
+        await executeRememberSequence(cat, terminal);
+    }
+
+    function closeRememberModal() {
+        document.getElementById('remember-modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    async function addRememberLine(terminal, text, className = '', html = false) {
+        const line = document.createElement('div');
+        line.className = 'term-line' + (className ? ' ' + className : '');
+        if (html) {
+            line.innerHTML = text;
+        } else {
+            line.textContent = text;
+        }
+        terminal.appendChild(line);
+        await new Promise(r => setTimeout(r, 50));
+        line.classList.add('visible');
+        return line;
+    }
+
+    async function executeRememberSequence(cat, terminal) {
+        try {
+            // Ensure provider exists
+            if (!provider) {
+                provider = new ethers.providers.JsonRpcProvider(CONFIG.RPC_URL);
+            }
+
+            await addRememberLine(terminal, `> ${cat.name}.remember()`, 'dim');
+            await new Promise(r => setTimeout(r, 300));
+
+            await addRememberLine(terminal, `> querying ${cat.ancestor}...`, 'dim');
+            await addRememberLine(terminal, `  <span class="addr">${cat.ancestorAddress}</span>`, '', true);
+            await new Promise(r => setTimeout(r, 400));
+
+            // Get code length
+            const code = await provider.getCode(cat.ancestorAddress);
+            const codeLength = (code.length - 2) / 2;
+
+            // Call remember()
+            const contract = new ethers.Contract(cat.address, REMEMBER_ABI, provider);
+            const result = await contract.remember();
+
+            await new Promise(r => setTimeout(r, 200));
+
+            if (codeLength > 0) {
+                await addRememberLine(terminal, `> code.length: ${codeLength} bytes`, 'dim');
+            } else {
+                await addRememberLine(terminal, `> code.length: 0 (destroyed)`, 'dim');
+
+                // For UnprotectedCat, also show balance
+                if (cat.name === 'UnprotectedCat') {
+                    const balance = await provider.getBalance(cat.ancestorAddress);
+                    const ethBalance = ethers.utils.formatEther(balance);
+                    await addRememberLine(terminal, `> balance: ${parseFloat(ethBalance).toFixed(4)} ETH (frozen)`, 'dim');
+                }
+            }
+
+            await new Promise(r => setTimeout(r, 400));
+
+            // Show result
+            if (result) {
+                await addRememberLine(terminal, `> returns: <span class="result-true">true</span>`, '', true);
+            } else {
+                await addRememberLine(terminal, `> returns: <span class="result-false">false</span>`, '', true);
+            }
+
+            await new Promise(r => setTimeout(r, 800));
+
+            // Poetic ending (translated)
+            let ending;
+            if (currentLang === 'ja') {
+                ending = result ? cat.endingTrueJa : cat.endingFalseJa;
+            } else {
+                ending = result ? cat.endingTrue : cat.endingFalse;
+            }
+            await addRememberLine(terminal, ending, 'poetic');
+
+            // Add close button after ending
+            await new Promise(r => setTimeout(r, 600));
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'modal-close-btn';
+            closeBtn.textContent = currentLang === 'ja' ? '閉じる' : 'CLOSE';
+            closeBtn.addEventListener('click', closeRememberModal);
+            terminal.appendChild(closeBtn);
+            await new Promise(r => setTimeout(r, 50));
+            closeBtn.classList.add('visible');
+
+        } catch (error) {
+            console.error('Remember error:', error);
+            await addRememberLine(terminal, `> error: ${error.message}`, 'dim');
+        }
+    }
+
+    // ========== EVENT LISTENERS ==========
+
+    // CARESS button event listeners
+    document.querySelectorAll('.caress-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const catName = btn.dataset.cat;
+            openCaressModal(catName);
+        });
+    });
+
+    // REMEMBER button event listeners (poem buttons)
+    document.querySelectorAll('.remember-btn-poem').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const catName = btn.dataset.cat;
+            openRememberModal(catName);
+        });
+    });
+
+    // Modal close events - Caress
+    document.getElementById('modal-close').addEventListener('click', closeCaressModal);
+    document.getElementById('caress-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'caress-modal') closeCaressModal();
+    });
+
+    // Modal close events - Remember
+    document.getElementById('remember-modal-close').addEventListener('click', closeRememberModal);
+    document.getElementById('remember-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'remember-modal') closeRememberModal();
+    });
+
+    // Escape key closes any open modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeCaressModal();
+            closeRememberModal();
+        }
+    });
+
+    // Simulation navigation
+    document.getElementById('sim-prev').addEventListener('click', simPrev);
+    document.getElementById('sim-next').addEventListener('click', simNext);
+    document.getElementById('sim-close').addEventListener('click', closeCaressModal);
+
+    // Language switcher
+    document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
+    document.getElementById('lang-ja').addEventListener('click', () => setLanguage('ja'));
+
+    // Load saved language preference
+    const savedLang = localStorage.getItem('bugcat-lang');
+    if (savedLang) {
+        setLanguage(savedLang);
+    }
+
+    // ========== INIT ==========
+    window.addEventListener('load', () => {
+        setTimeout(showIntroSequence, 500);
+    });
+    </script>
+</body>
+</html>
