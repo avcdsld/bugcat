@@ -226,6 +226,7 @@
             <a href="#poems" data-i18n="nav-poems">Poems</a>
             <a href="#interface" data-i18n="nav-interface">Interface</a>
             <a href="#annotations" data-i18n="nav-annotations">Annotations</a>
+            <a href="#audit" data-i18n="nav-audit">Audit</a>
             <a href="#invocation" data-i18n="nav-invocation">Invocation</a>
             <a href="#specifications" data-i18n="nav-specifications">Specifications</a>
         </nav>
@@ -483,6 +484,55 @@ contract MisspelledCat is BugCat {
             </article>
         </section>
 
+        <!-- ========== AUDIT ========== -->
+        <section class="annotations-section" id="audit">
+        <h2 class="section-header" data-i18n="nav-audit">Audit</h2>
+
+        <article class="annotation-entry">
+            <h3 class="annotation-title">ReentrancyCat</h3>
+            <p class="annotation-vuln" data-i18n="audit-reentrancy-meta">BUGCAT-AUDIT-REENTRANCY-01 / Critical (by design)</p>
+
+            <div class="annotation-text">
+            <p data-i18n="audit-reentrancy-finding-title"><strong>Finding</strong></p>
+            <p data-i18n="audit-reentrancy-finding">
+                External call occurs before internal accounting is committed, allowing control flow to return while the old state still holds.
+            </p>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-affected-title"><strong>Affected ordering</strong></p>
+            <pre class="code-block" style="padding: 1.25rem; margin-top: 0.8rem;"><code style="font-family: Monaco, Consolas, monospace; font-size: 0.85rem; white-space: pre;">withdraw():
+        (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
+        require(success);
+        balance[msg.sender] = 0; // updated too late</code></pre>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-sketch-title"><strong>Exploit sketch</strong></p>
+            <pre class="code-block" style="padding: 1.25rem; margin-top: 0.8rem;"><code style="font-family: Monaco, Consolas, monospace; font-size: 0.85rem; white-space: pre;">check(balance[user] >= amt)
+        CALL user(value=amt)  --->  fallback(): withdraw()  // re-enter
+        balance[user] = 0     // too late</code></pre>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-pre-title"><strong>Preconditions</strong></p>
+            <p data-i18n="audit-reentrancy-pre">
+                A prior deposit exists; the caller controls a contract that can re-enter on receiving ETH; sufficient gas remains.
+            </p>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-elegy-title"><strong>Elegy hook</strong></p>
+            <p data-i18n="audit-reentrancy-elegy">
+                remember() queries The DAO — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>.
+                Verification returns history as bytecode.
+            </p>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-trace-title"><strong>Trace</strong></p>
+            <p data-i18n="audit-reentrancy-trace">
+                Invoke <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> via Etherscan, then read the event log. (Tx: ________)
+            </p>
+
+            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-note-title"><strong>Elegy note</strong></p>
+            <p data-i18n="audit-reentrancy-note">
+                The cat returns <em>before</em> it is remembered. One call becomes a corridor.
+            </p>
+            </div>
+        </article>
+        </section>
+
         <!-- ========== INVOCATION ========== -->
         <section class="specs-section" id="invocation">
             <h2 class="section-header" data-i18n="nav-invocation">Invocation</h2>
@@ -598,7 +648,21 @@ contract MisspelledCat is BugCat {
             'spec-medium': 'Medium',
             'spec-medium-value': 'On-chain code (Solidity), Event logs, Vulnerability references',
             'spec-license': 'License',
-            'spec-contracts': 'Contracts'
+            'spec-contracts': 'Contracts',
+            'nav-audit': 'Audit',
+            'audit-reentrancy-meta': 'BUGCAT-AUDIT-REENTRANCY-01 / Critical (by design)',
+            'audit-reentrancy-finding-title': '<strong>Finding</strong>',
+            'audit-reentrancy-finding': 'External call occurs before internal accounting is committed, allowing control flow to return while the old state still holds.',
+            'audit-reentrancy-affected-title': '<strong>Affected ordering</strong>',
+            'audit-reentrancy-sketch-title': '<strong>Exploit sketch</strong>',
+            'audit-reentrancy-pre-title': '<strong>Preconditions</strong>',
+            'audit-reentrancy-pre': 'A prior deposit exists; the caller controls a contract that can re-enter on receiving ETH; sufficient gas remains.',
+            'audit-reentrancy-elegy-title': '<strong>Elegy hook</strong>',
+            'audit-reentrancy-elegy': 'remember() queries The DAO — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>. Verification returns history as bytecode.',
+            'audit-reentrancy-trace-title': '<strong>Trace</strong>',
+            'audit-reentrancy-trace': 'Invoke <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> via Etherscan, then read the event log. (Tx: ________)',
+            'audit-reentrancy-note-title': '<strong>Elegy note</strong>',
+            'audit-reentrancy-note': 'The cat returns <em>before</em> it is remembered. One call becomes a corridor.'
         },
         ja: {
             'statement': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードの世界では、その瞬間を脆弱性と呼ぶ。<br>スマートコントラクトは、代償を伴う詩である。',
@@ -628,7 +692,21 @@ contract MisspelledCat is BugCat {
             'spec-medium': 'メディウム',
             'spec-medium-value': 'オンチェーンコード（Solidity）、イベントログ、脆弱性への参照',
             'spec-license': 'ライセンス',
-            'spec-contracts': 'コントラクト'
+            'spec-contracts': 'コントラクト',
+            'nav-audit': '監査',
+            'audit-reentrancy-meta': 'BUGCAT-AUDIT-REENTRANCY-01 / Critical（設計として）',
+            'audit-reentrancy-finding-title': '<strong>所見</strong>',
+            'audit-reentrancy-finding': '外部呼び出しが内部の会計（状態更新）より先に実行されるため、古い状態が保持されたまま制御が戻り、同じ入口を再び通れる。',
+            'audit-reentrancy-affected-title': '<strong>問題となる順序</strong>',
+            'audit-reentrancy-sketch-title': '<strong>攻撃スケッチ</strong>',
+            'audit-reentrancy-pre-title': '<strong>前提条件</strong>',
+            'audit-reentrancy-pre': '事前にdepositがある／受信時に再入できるコントラクトを呼び出し元が保持している／再帰に十分なガスが残る。',
+            'audit-reentrancy-elegy-title': '<strong>エレジー・フック</strong>',
+            'audit-reentrancy-elegy': 'remember() は The DAO を照会する — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>。検証は、歴史をバイトコードとして呼び戻す。',
+            'audit-reentrancy-trace-title': '<strong>痕跡</strong>',
+            'audit-reentrancy-trace': 'Etherscanで <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> を呼び、event log を読む。（Tx: ________）',
+            'audit-reentrancy-note-title': '<strong>短い注記</strong>',
+            'audit-reentrancy-note': 'ネコは「思い出される前」に戻ってくる。ひとつの呼び出しが回廊になる。'
         }
     };
 
