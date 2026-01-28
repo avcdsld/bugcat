@@ -4,14 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BUGCAT</title>
+    <meta name="description" content="Poetry is what happens when language exceeds its own limits. In code, these moments are called vulnerabilities.">
+    <meta property="og:title" content="BUGCAT">
+    <meta property="og:description" content="Poetry is what happens when language exceeds its own limits. In code, these moments are called vulnerabilities.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="BUGCAT">
+    <meta name="twitter:description" content="Poetry is what happens when language exceeds its own limits. In code, these moments are called vulnerabilities.">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        :root { --bg: #ffffff; --text: #000000; --text-dim: #666666; --border: #e0e0e0; --highlight: #f8f4e8; }
+        :root { --bg: #ffffff; --text: #000000; --text-dim: #666666; --border: #e0e0e0; }
         @media (prefers-color-scheme: dark) {
-            :root { --bg: #000000; --text: #ffffff; --text-dim: #999999; --border: #333333; --highlight: #1a1a12; }
+            :root { --bg: #000000; --text: #ffffff; --text-dim: #999999; --border: #333333; }
         }
         body { font-family: Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        code { font-family: Monaco, Consolas, monospace; }
         .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
         
         /* Language Switcher */
@@ -89,6 +97,13 @@
         /* Interface Section */
         .interface-section { margin: 8rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
         
+        /* Statement Section */
+        .statement-section { margin: 8rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
+        .statement-section .section-header { margin-bottom: 2rem; }
+        .statement-text { font-size: 0.95rem; line-height: 1.9; opacity: 0.85; }
+        .statement-text p { margin-bottom: 1.2rem; }
+        .statement-text p:last-child { margin-bottom: 0; }
+
         /* Annotations Section */
         .annotations-section { margin: 8rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
         
@@ -116,7 +131,51 @@
         .annotation-text p { margin-bottom: 1rem; }
         .annotation-text a { color: var(--text-dim); text-decoration: none; }
         .annotation-text a:hover { color: var(--text); }
-        
+
+        /* Audit Section */
+        .audit-section { margin: 8rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
+
+        /* Audit entries */
+        .audit-entry {
+            margin: 3rem 0;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .audit-entry .annotation-title {
+            margin-bottom: 0.25rem;
+        }
+        .audit-entry .annotation-vuln {
+            margin-bottom: 1rem;
+        }
+        .audit-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            font-family: Monaco, Consolas, monospace;
+            font-size: 0.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .audit-meta p {
+            margin: 0;
+        }
+        .audit-entry .code-block code {
+            font-size: 0.85rem;
+            white-space: pre;
+        }
+        .audit-entry .code-block {
+            padding: 1.25rem;
+            margin-top: 0.8rem;
+        }
+        .audit-entry .annotation-text p + p {
+            margin-top: 1.2rem;
+        }
+        .tagline { font-style: italic; }
+        .invocation-text { margin-bottom: 2.5rem; }
+        .invocation-text p + p { margin-top: 1.5rem; }
+
         /* Specifications */
         .specs-section { margin: 6rem 0; padding-top: 4rem; border-top: 1px solid var(--border); }
         .spec-table {
@@ -214,10 +273,9 @@
 
         <!-- Statement -->
         <section class="statement">
-            <p style="font-style: italic;" data-i18n="statement">
+            <p class="tagline" data-i18n="tagline">
                 Poetry is what happens when language exceeds its own limits.<br>
-                In code, we call these moments vulnerabilities.<br>
-                Smart contracts are poems with consequences.
+                In code, these moments are called vulnerabilities.
             </p>
         </section>
 
@@ -225,6 +283,7 @@
         <nav class="nav-links">
             <a href="#poems" data-i18n="nav-poems">Poems</a>
             <a href="#interface" data-i18n="nav-interface">Interface</a>
+            <a href="#statement" data-i18n="nav-statement">Statement</a>
             <a href="#annotations" data-i18n="nav-annotations">Annotations</a>
             <a href="#audit" data-i18n="nav-audit">Audit</a>
             <a href="#invocation" data-i18n="nav-invocation">Invocation</a>
@@ -421,16 +480,25 @@ contract MisspelledCat is BugCat {
         <section class="interface-section" id="interface">
             <h2 class="section-header" data-i18n="nav-interface">Interface</h2>
 
-            <div class="annotation-text" style="margin-bottom: 2.5rem;">
-                <p data-i18n="interface-desc">Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.</p>
-            </div>
-
             <div class="code-block">
                 <pre>interface BugCat {
     function remember() external view returns (bool);
     function caress() external;
     event Meow(address indexed who, string vulnerability);
 }</pre>
+            </div>
+        </section>
+
+        <!-- ========== STATEMENT ========== -->
+        <section class="statement-section" id="statement">
+            <h2 class="section-header" data-i18n="nav-statement">Statement</h2>
+
+            <div class="statement-text">
+                <p data-i18n="statement-1">BUGCAT is a series of smart contracts deployed on the Ethereum mainnet. Each embodies a historically significant vulnerability: reentrancy, integer overflow, weak randomness, unprotected initialization, and constructor misnaming. Not as metaphor or simulation, but as executable logic.</p>
+                <p data-i18n="statement-2">The work cannot be meaningfully experienced without reading source code. Here, reading is inseparable from verification: the reader assumes the position of an auditor, attending to what the code does, where it fails, and whether it is safe or dangerous.</p>
+                <p data-i18n="statement-3">Each contract embeds the address of a historical predecessor and queries whether it still exists on-chain. Verification becomes a form of elegy—an act of checking for the continued presence of what should no longer be there.</p>
+                <p data-i18n="statement-4">On Ethereum, the ordering of ordinary lines of code can determine irreversible outcomes. A line is not a symbolic gesture but a potential action capable of moving value. A misplaced call drains a treasury. An unchecked multiplication conjures tokens from nothing.</p>
+                <p data-i18n="statement-5">In an era of seamless interfaces, BUGCAT insists on slow, deliberate scrutiny. It reframes reading as an act of audit.</p>
             </div>
         </section>
 
@@ -451,7 +519,7 @@ contract MisspelledCat is BugCat {
                 <h3 class="annotation-title">PredictableCat</h3>
                 <p class="annotation-vuln">weak randomness</p>
                 <div class="annotation-text">
-                    <p data-i18n="ann-predictable-1">FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.</p>
+                    <p data-i18n="ann-predictable-1">FoMo3D. The future written in block hashes. Anyone could win. Randomness was an illusion.</p>
                     <p data-i18n="ann-predictable-2">True randomness cannot exist in a deterministic system where every node must reach consensus. Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted or manipulated. Miners have additional power to influence these values, turning games of chance into games of control.</p>
                 </div>
             </article>
@@ -485,61 +553,173 @@ contract MisspelledCat is BugCat {
         </section>
 
         <!-- ========== AUDIT ========== -->
-        <section class="annotations-section" id="audit">
-        <h2 class="section-header" data-i18n="nav-audit">Audit</h2>
+        <section class="audit-section" id="audit">
+            <h2 class="section-header" data-i18n="nav-audit">Audit</h2>
 
-        <article class="annotation-entry">
-            <h3 class="annotation-title">ReentrancyCat</h3>
-            <p class="annotation-vuln" data-i18n="audit-reentrancy-meta">BUGCAT-AUDIT-REENTRANCY-01 / Critical (by design)</p>
+            <!-- ReentrancyCat -->
+            <article class="audit-entry">
+                <h3 class="annotation-title">BUGCAT-1 ReentrancyCat</h3>
+                <p class="annotation-vuln">reentrancy</p>
 
-            <div class="annotation-text">
-            <p data-i18n="audit-reentrancy-finding-title"><strong>Finding</strong></p>
-            <p data-i18n="audit-reentrancy-finding">
-                External call occurs before internal accounting is committed, allowing control flow to return while the old state still holds.
-            </p>
+                <div class="audit-meta">
+                    <p data-i18n="audit-reentrancy-severity"><strong>Severity</strong>: Critical</p>
+                    <p data-i18n="audit-reentrancy-status"><strong>Status</strong>: Open</p>
+                </div>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-affected-title"><strong>Affected ordering</strong></p>
-            <pre class="code-block" style="padding: 1.25rem; margin-top: 0.8rem;"><code style="font-family: Monaco, Consolas, monospace; font-size: 0.85rem; white-space: pre;">withdraw():
-        (bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
-        require(success);
-        balance[msg.sender] = 0; // updated too late</code></pre>
+                <div class="annotation-text">
+                    <p data-i18n="audit-reentrancy-desc-title"><strong>Description</strong></p>
+                    <p data-i18n="audit-reentrancy-desc">
+                        The <code>withdraw()</code> function performs an external call to <code>msg.sender</code> via <code>call{value: balance[msg.sender]}("")</code> before setting <code>balance[msg.sender]</code> to zero. If the recipient is a contract, its fallback function can recursively call <code>withdraw()</code>, draining funds beyond the caller's original balance.
+                    </p>
+                    <pre class="code-block"><code>(bool success, ) = msg.sender.call{value: balance[msg.sender]}("");
+require(success);
+balance[msg.sender] = 0;  // state update after external call</code></pre>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-sketch-title"><strong>Exploit sketch</strong></p>
-            <pre class="code-block" style="padding: 1.25rem; margin-top: 0.8rem;"><code style="font-family: Monaco, Consolas, monospace; font-size: 0.85rem; white-space: pre;">check(balance[user] >= amt)
-        CALL user(value=amt)  --->  fallback(): withdraw()  // re-enter
-        balance[user] = 0     // too late</code></pre>
+                    <p data-i18n="audit-reentrancy-repro-title"><strong>Reproduction</strong></p>
+                    <p data-i18n="audit-reentrancy-repro">
+                        Deploy an attacker contract that calls <code>deposit()</code>, then <code>withdraw()</code>. In its <code>receive()</code> function, call <code>withdraw()</code> again. Verify via <code>caress()</code> and inspect the emitted <code>Meow</code> event.
+                    </p>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-pre-title"><strong>Preconditions</strong></p>
-            <p data-i18n="audit-reentrancy-pre">
-                A prior deposit exists; the caller controls a contract that can re-enter on receiving ETH; sufficient gas remains.
-            </p>
+                    <p data-i18n="audit-reentrancy-rec-title"><strong>Recommendation</strong></p>
+                    <p data-i18n="audit-reentrancy-rec">
+                        Apply the checks-effects-interactions pattern: set <code>balance[msg.sender] = 0</code> before the external call. Alternatively, use a reentrancy guard (<code>nonReentrant</code> modifier).
+                    </p>
+                </div>
+            </article>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-elegy-title"><strong>Elegy hook</strong></p>
-            <p data-i18n="audit-reentrancy-elegy">
-                remember() queries The DAO — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>.
-                Verification returns history as bytecode.
-            </p>
+            <!-- PredictableCat -->
+            <article class="audit-entry">
+                <h3 class="annotation-title">BUGCAT-2 PredictableCat</h3>
+                <p class="annotation-vuln">weak randomness</p>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-trace-title"><strong>Trace</strong></p>
-            <p data-i18n="audit-reentrancy-trace">
-                Invoke <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> via Etherscan, then read the event log. (Tx: ________)
-            </p>
+                <div class="audit-meta">
+                    <p data-i18n="audit-predictable-severity"><strong>Severity</strong>: Critical</p>
+                    <p data-i18n="audit-predictable-status"><strong>Status</strong>: Open</p>
+                </div>
 
-            <p style="margin-top: 1.2rem;" data-i18n="audit-reentrancy-note-title"><strong>Elegy note</strong></p>
-            <p data-i18n="audit-reentrancy-note">
-                The cat returns <em>before</em> it is remembered. One call becomes a corridor.
-            </p>
-            </div>
-        </article>
+                <div class="annotation-text">
+                    <p data-i18n="audit-predictable-desc-title"><strong>Description</strong></p>
+                    <p data-i18n="audit-predictable-desc">
+                        The <code>flip()</code> function derives its outcome from <code>block.timestamp</code>, <code>block.prevrandao</code>, and <code>msg.sender</code>. These values are publicly observable or controllable. An attacker can precompute the result off-chain and selectively submit transactions only when the outcome is favorable, or use a contract that reverts on unfavorable outcomes.
+                    </p>
+                    <pre class="code-block"><code>uint bit = uint(keccak256(abi.encodePacked(
+    block.timestamp, block.prevrandao, msg.sender
+))) & 1;</code></pre>
+
+                    <p data-i18n="audit-predictable-repro-title"><strong>Reproduction</strong></p>
+                    <p data-i18n="audit-predictable-repro">
+                        Deploy a contract that computes the expected outcome before calling <code>flip()</code>; revert if outcome is unfavorable. Repeat until <code>winCount</code> reaches 10. Verify via <code>caress()</code>.
+                    </p>
+
+                    <p data-i18n="audit-predictable-rec-title"><strong>Recommendation</strong></p>
+                    <p data-i18n="audit-predictable-rec">
+                        Use a verifiable random function (VRF) such as Chainlink VRF to obtain randomness that cannot be predicted or manipulated by miners or callers.
+                    </p>
+                </div>
+            </article>
+
+            <!-- OverflowCat -->
+            <article class="audit-entry">
+                <h3 class="annotation-title">BUGCAT-3 OverflowCat</h3>
+                <p class="annotation-vuln">integer overflow</p>
+
+                <div class="audit-meta">
+                    <p data-i18n="audit-overflow-severity"><strong>Severity</strong>: Critical</p>
+                    <p data-i18n="audit-overflow-status"><strong>Status</strong>: Open</p>
+                </div>
+
+                <div class="annotation-text">
+                    <p data-i18n="audit-overflow-desc-title"><strong>Description</strong></p>
+                    <p data-i18n="audit-overflow-desc">
+                        In <code>batchTransfer()</code>, the expression <code>count * _value</code> is computed without overflow protection (Solidity &lt;0.8.0). When the product exceeds <code>2^256 - 1</code>, it wraps to a small value, causing the <code>require</code> balance check to pass. The subsequent loop credits the full, unwrapped <code>_value</code> to each receiver.
+                    </p>
+                    <pre class="code-block"><code>uint amount = count * _value;  // unchecked multiplication
+require(balance[msg.sender] >= amount);  // check against wrapped value
+balance[_receivers[i]] += _value;  // credits full _value</code></pre>
+
+                    <p data-i18n="audit-overflow-repro-title"><strong>Reproduction</strong></p>
+                    <p data-i18n="audit-overflow-repro">
+                        Call <code>batchTransfer([addr1, addr2], 2^255)</code>. The product <code>2 * 2^255</code> overflows to 0, passing the require. Each receiver is credited <code>2^255</code>. Verify via <code>caress()</code>.
+                    </p>
+
+                    <p data-i18n="audit-overflow-rec-title"><strong>Recommendation</strong></p>
+                    <p data-i18n="audit-overflow-rec">
+                        Use SafeMath or upgrade to Solidity &ge;0.8.0, which includes built-in overflow checks. Validate that <code>count * _value</code> does not overflow before proceeding.
+                    </p>
+                </div>
+            </article>
+
+            <!-- UnprotectedCat -->
+            <article class="audit-entry">
+                <h3 class="annotation-title">BUGCAT-4 UnprotectedCat</h3>
+                <p class="annotation-vuln">unprotected initializer</p>
+
+                <div class="audit-meta">
+                    <p data-i18n="audit-unprotected-severity"><strong>Severity</strong>: Critical</p>
+                    <p data-i18n="audit-unprotected-status"><strong>Status</strong>: Open</p>
+                </div>
+
+                <div class="annotation-text">
+                    <p data-i18n="audit-unprotected-desc-title"><strong>Description</strong></p>
+                    <p data-i18n="audit-unprotected-desc">
+                        The <code>init()</code> function sets <code>owner</code> without access control. The <code>initialized</code> flag is written but never checked as a guard, allowing any address to call <code>init()</code> at any time and claim ownership. The owner can subsequently call <code>kill()</code> to destroy the contract via <code>selfdestruct</code>.
+                    </p>
+                    <pre class="code-block"><code>function init(address o) public {  // no modifier, no require
+    owner = o;
+    initialized = true;  // flag set but never checked
+}</code></pre>
+
+                    <p data-i18n="audit-unprotected-repro-title"><strong>Reproduction</strong></p>
+                    <p data-i18n="audit-unprotected-repro">
+                        Call <code>init(yourAddress)</code>. Confirm <code>owner()</code> returns your address. As owner, <code>caress()</code> will emit a <code>Meow</code> event. Note: <code>kill()</code> is callable by owner and will destroy the contract.
+                    </p>
+
+                    <p data-i18n="audit-unprotected-rec-title"><strong>Recommendation</strong></p>
+                    <p data-i18n="audit-unprotected-rec">
+                        Add <code>require(!initialized)</code> as a guard in <code>init()</code>, or use OpenZeppelin's <code>Initializable</code> pattern to ensure one-time initialization.
+                    </p>
+                </div>
+            </article>
+
+            <!-- MisspelledCat -->
+            <article class="audit-entry">
+                <h3 class="annotation-title">BUGCAT-5 MisspelledCat</h3>
+                <p class="annotation-vuln">constructor typo</p>
+
+                <div class="audit-meta">
+                    <p data-i18n="audit-misspelled-severity"><strong>Severity</strong>: Critical</p>
+                    <p data-i18n="audit-misspelled-status"><strong>Status</strong>: Open</p>
+                </div>
+
+                <div class="annotation-text">
+                    <p data-i18n="audit-misspelled-desc-title"><strong>Description</strong></p>
+                    <p data-i18n="audit-misspelled-desc">
+                        In Solidity &lt;0.4.22, constructors were functions named identically to the contract. The function <code>MisspeledCat()</code> does not match the contract name <code>MisspelledCat</code> and is therefore compiled as a regular public function. The <code>owner</code> variable is never set during deployment, and any caller can invoke <code>MisspeledCat()</code> post-deployment to claim ownership.
+                    </p>
+                    <pre class="code-block"><code>contract MisspelledCat {
+    function MisspeledCat(address o) { owner = o; }  // typo: not a constructor
+}</code></pre>
+
+                    <p data-i18n="audit-misspelled-repro-title"><strong>Reproduction</strong></p>
+                    <p data-i18n="audit-misspelled-repro">
+                        Call <code>MisspeledCat(yourAddress)</code> to set yourself as owner. Confirm via <code>owner()</code>. As owner, <code>caress()</code> will emit a <code>Meow</code> event.
+                    </p>
+
+                    <p data-i18n="audit-misspelled-rec-title"><strong>Recommendation</strong></p>
+                    <p data-i18n="audit-misspelled-rec">
+                        Use the <code>constructor</code> keyword (Solidity &ge;0.4.22) instead of a named function. This eliminates the risk of typo-based constructor failure.
+                    </p>
+                </div>
+            </article>
         </section>
 
         <!-- ========== INVOCATION ========== -->
         <section class="specs-section" id="invocation">
             <h2 class="section-header" data-i18n="nav-invocation">Invocation</h2>
 
-            <div class="annotation-text" style="margin-bottom: 2.5rem;">
-                <p data-i18n="invocation-desc1">The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.</p>
-                <p style="margin-top: 1.5rem;" data-i18n="invocation-desc2">You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.</p>
+            <div class="annotation-text invocation-text">
+                <p data-i18n="invocation-desc1">The BUGCATS contract holds an array of deployed contracts. <code>remember(index)</code> queries whether the historical predecessor of each contract still exists on-chain.</p>
+                <p data-i18n="invocation-desc2">Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>.</p>
             </div>
 
             <div class="code-block">
@@ -562,26 +742,26 @@ contract MisspelledCat is BugCat {
             <h2 class="section-header" data-i18n="nav-specifications">Specifications</h2>
 
             <div class="spec-table">
-                <span class="spec-label" data-i18n="spec-title">Title</span>
-                <span class="spec-value">BUGCAT</span>
+                <div class="spec-label" data-i18n="spec-title">Title</div>
+                <div class="spec-value">BUGCAT</div>
 
-                <span class="spec-label" data-i18n="spec-author">Author</span>
-                <span class="spec-value" data-i18n="spec-author-value">Zeroichi Arakawa</span>
+                <div class="spec-label" data-i18n="spec-author">Author</div>
+                <div class="spec-value" data-i18n="spec-author-value">Zeroichi Arakawa</div>
 
-                <span class="spec-label" data-i18n="spec-year">Year</span>
-                <span class="spec-value">2025</span>
+                <div class="spec-label" data-i18n="spec-year">Year</div>
+                <div class="spec-value">2025</div>
 
-                <span class="spec-label" data-i18n="spec-blockchain">Blockchain</span>
-                <span class="spec-value">Ethereum</span>
+                <div class="spec-label" data-i18n="spec-blockchain">Blockchain</div>
+                <div class="spec-value">Ethereum</div>
 
-                <span class="spec-label" data-i18n="spec-medium">Medium</span>
-                <span class="spec-value" data-i18n="spec-medium-value">On-chain code (Solidity), Event logs, Vulnerability references</span>
+                <div class="spec-label" data-i18n="spec-medium">Medium</div>
+                <div class="spec-value" data-i18n="spec-medium-value">On-chain code (Solidity), Event logs, Vulnerability references</div>
 
-                <span class="spec-label" data-i18n="spec-license">License</span>
-                <span class="spec-value"><a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a></span>
+                <div class="spec-label" data-i18n="spec-license">License</div>
+                <div class="spec-value" data-i18n="spec-license-value">Source code licensed under <a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a>.</div>
 
-                <span class="spec-label" data-i18n="spec-contracts">Contracts</span>
-                <span class="spec-value">
+                <div class="spec-label" data-i18n="spec-contracts">Contracts</div>
+                <div class="spec-value">
                     <div class="spec-contracts">
                         <div class="contract-row">
                             <span class="contract-name">BUGCATS</span>
@@ -608,7 +788,7 @@ contract MisspelledCat is BugCat {
                             <a class="contract-addr" href="https://etherscan.io/address/0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f#code" target="_blank">0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f</a>
                         </div>
                     </div>
-                </span>
+                </div>
             </div>
         </section>
 
@@ -621,25 +801,81 @@ contract MisspelledCat is BugCat {
     <script>
     const translations = {
         en: {
-            'statement': 'Poetry is what happens when language exceeds its own limits.<br>In code, we call these moments vulnerabilities.<br>Smart contracts are poems with consequences.',
+            'tagline': 'Poetry is what happens when language exceeds its own limits.<br>In code, these moments are called vulnerabilities.',
             'nav-poems': 'Poems',
             'nav-interface': 'Interface',
+            'nav-statement': 'Statement',
             'nav-annotations': 'Annotations',
+            'nav-audit': 'Audit',
             'nav-invocation': 'Invocation',
             'nav-specifications': 'Specifications',
-            'interface-desc': 'Every BUGCAT speaks the same language of memory. To <em>remember</em> is to verify existence across time—it returns true if the ancestor still breathes in bytecode. To <em>caress</em> is to awaken the ghost within; each touch costs gas, each interaction leaves a trace. The purr echoes through the network as an event, logged in permanence, remembered by none.',
-            'invocation-desc1': 'The BUGCATS contract is where someone might remember them. An array of addresses, each a story. To <em>remember</em> is to ask each cat if its ancestor lives. To <em>caress</em> is to awaken the ghost within—each touch costs gas, each interaction leaves a trace on the chain.',
-            'invocation-desc2': 'You can invoke these poems through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>. Call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code> to verify if an ancestor still exists. Connect your wallet and call <code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code> to leave your mark—a Meow event, logged forever.',
+
+            'statement-1': 'BUGCAT is a series of smart contracts deployed on the Ethereum mainnet. Each embodies a historically significant vulnerability: reentrancy, integer overflow, weak randomness, unprotected initialization, and constructor misnaming. Not as metaphor or simulation, but as executable logic.',
+            'statement-2': 'The work cannot be meaningfully experienced without reading source code. Here, reading is inseparable from verification: the reader assumes the position of an auditor, attending to what the code does, where it fails, and whether it is safe or dangerous.',
+            'statement-3': 'Each contract embeds the address of a historical predecessor and queries whether it still exists on-chain. Verification becomes a form of elegy—an act of checking for the continued presence of what should no longer be there.',
+            'statement-4': 'On Ethereum, the ordering of ordinary lines of code can determine irreversible outcomes. A line is not a symbolic gesture but a potential action capable of moving value. A misplaced call drains a treasury. An unchecked multiplication conjures tokens from nothing.',
+            'statement-5': 'In an era of seamless interfaces, BUGCAT insists on slow, deliberate scrutiny. It reframes reading as an act of audit.',
+
+            'invocation-desc1': 'The BUGCATS contract holds an array of deployed contracts. <code>remember(index)</code> queries whether the historical predecessor of each contract still exists on-chain.',
+            'invocation-desc2': 'Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>.',
+
             'ann-reentrancy-1': 'The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.',
-            'ann-reentrancy-2': 'Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum\'s ability to transfer control flow to arbitrary code during external calls.',
-            'ann-predictable-1': 'FoMo3D. The future written in block hashes. Miners chose winners. Randomness was an illusion.',
+            'ann-reentrancy-2': 'Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum\\\'s ability to transfer control flow to arbitrary code during external calls.',
+            'ann-predictable-1': 'FoMo3D. The future written in block hashes. Anyone could win. Randomness was an illusion.',
             'ann-predictable-2': 'True randomness cannot exist in a deterministic system where every node must reach consensus. Any on-chain data source—block timestamps, hashes, or transaction parameters—can be predicted or manipulated. Miners have additional power to influence these values, turning games of chance into games of control.',
             'ann-overflow-1': 'BEC Token, 2018. A multiplication overflow created billions of tokens from nothing. Markets crashed in minutes. Mathematics betrayed economics.',
-            'ann-overflow-2': 'Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero. The BEC Token\'s batchTransfer function multiplied the number of recipients by the value per recipient without checking if the result would overflow, allowing attackers to bypass balance checks.',
+            'ann-overflow-2': 'Integer overflow occurs when arithmetic operations exceed the maximum value of a data type. In uint256, multiplying large numbers can wrap around to zero. The BEC Token\\\'s batchTransfer function multiplied the number of recipients by the value per recipient without checking if the result would overflow, allowing attackers to bypass balance checks.',
             'ann-unprotected-1': 'Parity, 2017. July: hackers stole $30 million by calling unprotected init functions. November: someone accidentally killed the patched library, freezing $280 million forever. One vulnerability, two catastrophes.',
             'ann-unprotected-2': 'The Parity wallet library had initialization functions that could be called by anyone, multiple times. This allowed attackers to take ownership of wallets. After the fix, the library itself remained vulnerable—someone initialized it, became owner, and killed it, destroying the code that all wallets depended on.',
-            'ann-misspelled-1': 'Rubixi, 2016. The contract changed its name. The constructor didn\'t. Solidity reinterpreted it. Ownership became an open door.',
-            'ann-misspelled-2': 'Before Solidity 0.4.22, constructors were functions with the contract\'s exact name. Any typo turned initialization into a regular public function. When Rubixi was renamed from DynamicPyramid but the constructor wasn\'t updated, ownership became open to anyone who noticed the mistake.',
+            'ann-misspelled-1': 'Rubixi, 2016. The contract changed its name. The constructor didn\\\'t. Solidity reinterpreted it. Ownership became an open door.',
+            'ann-misspelled-2': 'Before Solidity 0.4.22, constructors were functions with the contract\\\'s exact name. Any typo turned initialization into a regular public function. When Rubixi was renamed from DynamicPyramid but the constructor wasn\\\'t updated, ownership became open to anyone who noticed the mistake.',
+
+            /* Audit (EN) */
+            'audit-reentrancy-severity': '<strong>Severity</strong>: Critical',
+            'audit-reentrancy-status': '<strong>Status</strong>: Open',
+            'audit-reentrancy-desc-title': '<strong>Description</strong>',
+            'audit-reentrancy-desc': 'The <code>withdraw()</code> function performs an external call to <code>msg.sender</code> via <code>call{value: balance[msg.sender]}("")</code> before setting <code>balance[msg.sender]</code> to zero. If the recipient is a contract, its fallback function can recursively call <code>withdraw()</code>, draining funds beyond the caller\\\'s original balance.',
+            'audit-reentrancy-repro-title': '<strong>Reproduction</strong>',
+            'audit-reentrancy-repro': 'Deploy an attacker contract that calls <code>deposit()</code>, then <code>withdraw()</code>. In its <code>receive()</code> function, call <code>withdraw()</code> again. Verify via <code>caress()</code> and inspect the emitted <code>Meow</code> event.',
+            'audit-reentrancy-rec-title': '<strong>Recommendation</strong>',
+            'audit-reentrancy-rec': 'Apply the checks-effects-interactions pattern: set <code>balance[msg.sender] = 0</code> before the external call. Alternatively, use a reentrancy guard (<code>nonReentrant</code> modifier).',
+
+            'audit-predictable-severity': '<strong>Severity</strong>: Critical',
+            'audit-predictable-status': '<strong>Status</strong>: Open',
+            'audit-predictable-desc-title': '<strong>Description</strong>',
+            'audit-predictable-desc': 'The <code>flip()</code> function derives its outcome from <code>block.timestamp</code>, <code>block.prevrandao</code>, and <code>msg.sender</code>. These values are publicly observable or controllable. An attacker can precompute the result off-chain and selectively submit transactions only when the outcome is favorable, or use a contract that reverts on unfavorable outcomes.',
+            'audit-predictable-repro-title': '<strong>Reproduction</strong>',
+            'audit-predictable-repro': 'Deploy a contract that computes the expected outcome before calling <code>flip()</code>; revert if outcome is unfavorable. Repeat until <code>winCount</code> reaches 10. Verify via <code>caress()</code>.',
+            'audit-predictable-rec-title': '<strong>Recommendation</strong>',
+            'audit-predictable-rec': 'Use a verifiable random function (VRF) such as Chainlink VRF to obtain randomness that cannot be predicted or manipulated by miners or callers.',
+
+            'audit-overflow-severity': '<strong>Severity</strong>: Critical',
+            'audit-overflow-status': '<strong>Status</strong>: Open',
+            'audit-overflow-desc-title': '<strong>Description</strong>',
+            'audit-overflow-desc': 'In <code>batchTransfer()</code>, the expression <code>count * _value</code> is computed without overflow protection (Solidity &lt;0.8.0). When the product exceeds <code>2^256 - 1</code>, it wraps to a small value, causing the <code>require</code> balance check to pass. The subsequent loop credits the full, unwrapped <code>_value</code> to each receiver.',
+            'audit-overflow-repro-title': '<strong>Reproduction</strong>',
+            'audit-overflow-repro': 'Call <code>batchTransfer([addr1, addr2], 2^255)</code>. The product <code>2 * 2^255</code> overflows to 0, passing the require. Each receiver is credited <code>2^255</code>. Verify via <code>caress()</code>.',
+            'audit-overflow-rec-title': '<strong>Recommendation</strong>',
+            'audit-overflow-rec': 'Use SafeMath or upgrade to Solidity ≥0.8.0, which includes built-in overflow checks. Validate that <code>count * _value</code> does not overflow before proceeding.',
+
+            'audit-unprotected-severity': '<strong>Severity</strong>: Critical',
+            'audit-unprotected-status': '<strong>Status</strong>: Open',
+            'audit-unprotected-desc-title': '<strong>Description</strong>',
+            'audit-unprotected-desc': 'The <code>init()</code> function sets <code>owner</code> without access control. The <code>initialized</code> flag is written but never checked as a guard, allowing any address to call <code>init()</code> at any time and claim ownership. The owner can subsequently call <code>kill()</code> to destroy the contract via <code>selfdestruct</code>.',
+            'audit-unprotected-repro-title': '<strong>Reproduction</strong>',
+            'audit-unprotected-repro': 'Call <code>init(yourAddress)</code>. Confirm <code>owner()</code> returns your address. As owner, <code>caress()</code> will emit a <code>Meow</code> event. Note: <code>kill()</code> is callable by owner and will destroy the contract.',
+            'audit-unprotected-rec-title': '<strong>Recommendation</strong>',
+            'audit-unprotected-rec': 'Add <code>require(!initialized)</code> as a guard in <code>init()</code>, or use OpenZeppelin\\\'s <code>Initializable</code> pattern to ensure one-time initialization.',
+
+            'audit-misspelled-severity': '<strong>Severity</strong>: Critical',
+            'audit-misspelled-status': '<strong>Status</strong>: Open',
+            'audit-misspelled-desc-title': '<strong>Description</strong>',
+            'audit-misspelled-desc': 'In Solidity &lt;0.4.22, constructors were functions named identically to the contract. The function <code>MisspeledCat()</code> does not match the contract name <code>MisspelledCat</code> and is therefore compiled as a regular public function. The <code>owner</code> variable is never set during deployment, and any caller can invoke <code>MisspeledCat()</code> post-deployment to claim ownership.',
+            'audit-misspelled-repro-title': '<strong>Reproduction</strong>',
+            'audit-misspelled-repro': 'Call <code>MisspeledCat(yourAddress)</code> to set yourself as owner. Confirm via <code>owner()</code>. As owner, <code>caress()</code> will emit a <code>Meow</code> event.',
+            'audit-misspelled-rec-title': '<strong>Recommendation</strong>',
+            'audit-misspelled-rec': 'Use the <code>constructor</code> keyword (Solidity ≥0.4.22) instead of a named function. This eliminates the risk of typo-based constructor failure.',
+
             'spec-title': 'Title',
             'spec-author': 'Author',
             'spec-author-value': 'Zeroichi Arakawa',
@@ -648,35 +884,31 @@ contract MisspelledCat is BugCat {
             'spec-medium': 'Medium',
             'spec-medium-value': 'On-chain code (Solidity), Event logs, Vulnerability references',
             'spec-license': 'License',
-            'spec-contracts': 'Contracts',
-            'nav-audit': 'Audit',
-            'audit-reentrancy-meta': 'BUGCAT-AUDIT-REENTRANCY-01 / Critical (by design)',
-            'audit-reentrancy-finding-title': '<strong>Finding</strong>',
-            'audit-reentrancy-finding': 'External call occurs before internal accounting is committed, allowing control flow to return while the old state still holds.',
-            'audit-reentrancy-affected-title': '<strong>Affected ordering</strong>',
-            'audit-reentrancy-sketch-title': '<strong>Exploit sketch</strong>',
-            'audit-reentrancy-pre-title': '<strong>Preconditions</strong>',
-            'audit-reentrancy-pre': 'A prior deposit exists; the caller controls a contract that can re-enter on receiving ETH; sufficient gas remains.',
-            'audit-reentrancy-elegy-title': '<strong>Elegy hook</strong>',
-            'audit-reentrancy-elegy': 'remember() queries The DAO — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>. Verification returns history as bytecode.',
-            'audit-reentrancy-trace-title': '<strong>Trace</strong>',
-            'audit-reentrancy-trace': 'Invoke <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> via Etherscan, then read the event log. (Tx: ________)',
-            'audit-reentrancy-note-title': '<strong>Elegy note</strong>',
-            'audit-reentrancy-note': 'The cat returns <em>before</em> it is remembered. One call becomes a corridor.'
+            'spec-license-value': 'Source code licensed under <a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a>.',
+            'spec-contracts': 'Contracts'
         },
         ja: {
-            'statement': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードの世界では、その瞬間を脆弱性と呼ぶ。<br>スマートコントラクトは、代償を伴う詩である。',
+            'tagline': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードにおいて、その瞬間は脆弱性と呼ばれる。',
             'nav-poems': '詩篇',
             'nav-interface': 'インターフェース',
+            'nav-statement': 'ステートメント',
             'nav-annotations': '注釈',
+            'nav-audit': '監査',
             'nav-invocation': 'インタラクション',
             'nav-specifications': '仕様',
-            'interface-desc': 'すべてのBUGCATは、記憶という共通言語を持つ。<em>remember</em>——時を超えて存在を確かめる行為。祖先がバイトコードの中でまだ息をしていれば、trueを返す。<em>caress</em>——内に眠る亡霊を呼び覚ます行為。触れるたびにガスを消費し、すべての接触は痕跡を残す。その鳴き声はイベントとしてネットワークに響き、永久に刻まれ、誰の記憶にも残らない。',
-            'invocation-desc1': 'BUGCATSコントラクトは、誰かが彼らを思い出すかもしれない場所である。アドレスの配列、それぞれが一つの物語である。<em>remember</em>はそれぞれのネコの祖先がまだ生きているかを問う。<em>caress</em>は内なる亡霊を目覚めさせる——触れるたびにガスを消費し、すべての接触はチェーンに刻まれる。',
-            'invocation-desc2': 'これらの詩とは<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>でインタラクションできる。<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">remember(index)</code>で祖先の存在を確認せよ。ウォレットを接続し<code style="font-family: Monaco, Consolas, monospace; font-size: 0.9em;">caress(index)</code>を呼べば、あなたの痕跡がMeowイベントとして永続的に刻まれる。',
-            'ann-reentrancy-1': 'The DAO、2016年。360万ETHが再帰の淵に消えた。Ethereumは二つに分かれた——記憶を選んだチェーンと、忘却を選んだチェーン。',
+
+            'statement-1': 'BUGCATは、Ethereumメインネットにデプロイされたスマートコントラクトのシリーズである。再入可能性、整数オーバーフロー、予測可能な乱数、無防備な初期化、コンストラクタの命名ミス。各作品は歴史的に重大な脆弱性を、比喩やシミュレーションとしてではなく、実行可能なロジックとして体現する。',
+            'statement-2': 'この作品は、ソースコードを読むことなしに体験できない。ここでは、読むことと検証することは不可分である。読者は監査人の位置に立ち、コードが何をするか、どこで破綻するか、それが安全か危険かを注視する。',
+            'statement-3': '各コントラクトは、かつて実際に被害をもたらしたコントラクトのアドレスを埋め込み、それがいまもチェーン上に存在するかを問い合わせる。検証は哀歌となる——もはや存在すべきでないものが、まだそこにあるかを確かめる行為である。',
+            'statement-4': 'Ethereum上では、一見平凡なコードの順序が不可逆的な結果を引き起こす。一行のコードは象徴的な身振りではない。それは、価値を動かしうる潜在的な行為である。呼び出し順序の誤りが資金を流出させる。未検査の乗算が無からトークンを生む。',
+            'statement-5': 'シームレスなインターフェースの時代において、BUGCATは遅く慎重な凝視を要求し、読むことを監査の行為として再定義する。',
+
+            'invocation-desc1': 'BUGCATSコントラクトは、デプロイされたコントラクトの配列を保持する。<code>remember(index)</code>は、各コントラクトの歴史的先祖がいまもチェーン上に存在するかを照会する。',
+            'invocation-desc2': '各コントラクトの<code>caress()</code>を呼び出すと、条件を満たす場合に<code>Meow</code>イベントが記録される。どちらの関数も<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>から呼び出せる。',
+
+            'ann-reentrancy-1': 'The DAO、2016年。360万ETHが再帰の淵に消えた。Ethereumは二つに分かれた——記憶を選んだチェーン。忘却を選んだチェーン。',
             'ann-reentrancy-2': '再入可能性は、コントラクトが状態を更新する前に外部アドレスを呼び出すときに発生する。外部コントラクトは元の関数を再び呼び出し、残高がゼロになる前に何度でも資金を引き出せる。この脆弱性は、外部呼び出し時に任意のコードへ制御を渡すEthereumの特性に起因する。',
-            'ann-predictable-1': 'FoMo3D。ブロックハッシュに刻まれた未来。マイナーが勝者を選んだ。ランダム性は幻想だった。',
+            'ann-predictable-1': 'FoMo3D。ブロックハッシュに刻まれた未来。誰しもが勝者になれた。ランダム性は幻想だった。',
             'ann-predictable-2': 'すべてのノードが合意に達する決定論的システムでは、真の乱数は存在し得ない。ブロックタイムスタンプ、ハッシュ、トランザクションパラメータ——あらゆるオンチェーンデータは予測または操作が可能。マイナーはこれらの値を操る力を持ち、偶然のゲームを支配のゲームへと変える。',
             'ann-overflow-1': 'BECトークン、2018年。乗算オーバーフローが無から数十億のトークンを生んだ。市場は数分で崩壊した。数学が経済学を裏切った。',
             'ann-overflow-2': '整数オーバーフローは、演算結果がデータ型の最大値を超えたときに発生する。uint256では、大きな数の乗算がゼロに巻き戻る。BECトークンのbatchTransfer関数は、オーバーフローを検証せずに受取人数と送金額を乗算した。攻撃者は残高チェックを迂回できた。',
@@ -684,6 +916,53 @@ contract MisspelledCat is BugCat {
             'ann-unprotected-2': 'Parityウォレットライブラリには、誰でも何度でも呼び出せる初期化関数があった。攻撃者はウォレットの所有権を奪取できた。修正後もライブラリ自体は脆弱なままだった——誰かがそれを初期化し、所有者となり、自壊させた。すべてのウォレットが依存していたコードを道連れに。',
             'ann-misspelled-1': 'Rubixi、2016年。コントラクト名は変わった。コンストラクタは変わらなかった。Solidityはそれを別物と解釈した。所有権は開け放たれた扉となった。',
             'ann-misspelled-2': 'Solidity 0.4.22以前、コンストラクタはコントラクトと同名の関数だった。綴りを間違えれば、初期化処理は誰でも呼べる通常の関数になる。RubixiがDynamicPyramidから改名されたとき、コンストラクタは置き去りにされた。所有権は、その誤りに気づいた者すべてに開かれた。',
+
+            /* Audit (JA) */
+            'audit-reentrancy-severity': '<strong>深刻度</strong>: Critical',
+            'audit-reentrancy-status': '<strong>ステータス</strong>: Open',
+            'audit-reentrancy-desc-title': '<strong>説明</strong>',
+            'audit-reentrancy-desc': '<code>withdraw()</code> 関数は <code>call{value: balance[msg.sender]}("")</code> により <code>msg.sender</code> への外部呼び出しを、<code>balance[msg.sender]</code> をゼロに設定する前に実行する。受信者がコントラクトの場合、そのfallback関数から <code>withdraw()</code> を再帰的に呼び出し、元の残高を超えて資金を引き出すことが可能。',
+            'audit-reentrancy-repro-title': '<strong>再現手順</strong>',
+            'audit-reentrancy-repro': '<code>deposit()</code> 後に <code>withdraw()</code> を呼び出す攻撃コントラクトをデプロイする。その <code>receive()</code> 関数内で再度 <code>withdraw()</code> を呼び出す。<code>caress()</code> で検証し、発行された <code>Meow</code> イベントを確認する。',
+            'audit-reentrancy-rec-title': '<strong>推奨事項</strong>',
+            'audit-reentrancy-rec': 'checks-effects-interactionsパターンを適用し、外部呼び出しの前に <code>balance[msg.sender] = 0</code> を設定する。または、リエントランシーガード（<code>nonReentrant</code> 修飾子）を使用する。',
+
+            'audit-predictable-severity': '<strong>深刻度</strong>: Critical',
+            'audit-predictable-status': '<strong>ステータス</strong>: Open',
+            'audit-predictable-desc-title': '<strong>説明</strong>',
+            'audit-predictable-desc': '<code>flip()</code> 関数は <code>block.timestamp</code>、<code>block.prevrandao</code>、<code>msg.sender</code> から結果を導出する。これらの値は公開情報または制御可能であり、攻撃者はオフチェーンで結果を事前計算し、有利な場合のみ選択的にトランザクションを送信できる。または、不利な結果の場合にrevertするコントラクトを使用可能。',
+            'audit-predictable-repro-title': '<strong>再現手順</strong>',
+            'audit-predictable-repro': '<code>flip()</code> 呼び出し前に期待結果を計算し、不利な場合はrevertするコントラクトをデプロイする。<code>winCount</code> が10に達するまで繰り返す。<code>caress()</code> で検証する。',
+            'audit-predictable-rec-title': '<strong>推奨事項</strong>',
+            'audit-predictable-rec': 'Chainlink VRFなどの検証可能乱数関数（VRF）を使用し、マイナーや呼び出し者による予測・操作が不可能な乱数を取得する。',
+
+            'audit-overflow-severity': '<strong>深刻度</strong>: Critical',
+            'audit-overflow-status': '<strong>ステータス</strong>: Open',
+            'audit-overflow-desc-title': '<strong>説明</strong>',
+            'audit-overflow-desc': '<code>batchTransfer()</code> において、<code>count * _value</code> がオーバーフロー保護なしで計算される（Solidity &lt;0.8.0）。積が <code>2^256 - 1</code> を超えると小さな値に巻き戻り、<code>require</code> の残高チェックを通過する。後続のループは巻き戻り前の完全な <code>_value</code> を各受信者に加算する。',
+            'audit-overflow-repro-title': '<strong>再現手順</strong>',
+            'audit-overflow-repro': '<code>batchTransfer([addr1, addr2], 2^255)</code> を呼び出す。積 <code>2 * 2^255</code> は0にオーバーフローし、requireを通過する。各受信者に <code>2^255</code> が加算される。<code>caress()</code> で検証する。',
+            'audit-overflow-rec-title': '<strong>推奨事項</strong>',
+            'audit-overflow-rec': 'SafeMathを使用するか、Solidity ≥0.8.0にアップグレードする（組み込みオーバーフローチェックを含む）。処理前に <code>count * _value</code> がオーバーフローしないことを検証する。',
+
+            'audit-unprotected-severity': '<strong>深刻度</strong>: Critical',
+            'audit-unprotected-status': '<strong>ステータス</strong>: Open',
+            'audit-unprotected-desc-title': '<strong>説明</strong>',
+            'audit-unprotected-desc': '<code>init()</code> 関数はアクセス制御なしで <code>owner</code> を設定する。<code>initialized</code> フラグは書き込まれるがガードとしてチェックされないため、任意のアドレスがいつでも <code>init()</code> を呼び出して所有権を主張できる。ownerはその後 <code>kill()</code> を呼び出し、<code>selfdestruct</code> でコントラクトを破壊可能。',
+            'audit-unprotected-repro-title': '<strong>再現手順</strong>',
+            'audit-unprotected-repro': '<code>init(yourAddress)</code> を呼び出す。<code>owner()</code> があなたのアドレスを返すことを確認する。ownerとして <code>caress()</code> は <code>Meow</code> イベントを発行する。注意: <code>kill()</code> はownerが呼び出し可能でコントラクトを破壊する。',
+            'audit-unprotected-rec-title': '<strong>推奨事項</strong>',
+            'audit-unprotected-rec': '<code>init()</code> に <code>require(!initialized)</code> ガードを追加するか、OpenZeppelinの <code>Initializable</code> パターンを使用して一回限りの初期化を保証する。',
+
+            'audit-misspelled-severity': '<strong>深刻度</strong>: Critical',
+            'audit-misspelled-status': '<strong>ステータス</strong>: Open',
+            'audit-misspelled-desc-title': '<strong>説明</strong>',
+            'audit-misspelled-desc': 'Solidity &lt;0.4.22 では、コンストラクタはコントラクトと同一名の関数であった。関数 <code>MisspeledCat()</code> はコントラクト名 <code>MisspelledCat</code> と一致しないため、通常のpublic関数としてコンパイルされる。<code>owner</code> 変数はデプロイ時に設定されず、任意の呼び出し者がデプロイ後に <code>MisspeledCat()</code> を呼び出して所有権を主張できる。',
+            'audit-misspelled-repro-title': '<strong>再現手順</strong>',
+            'audit-misspelled-repro': '<code>MisspeledCat(yourAddress)</code> を呼び出して自分をownerに設定する。<code>owner()</code> で確認する。ownerとして <code>caress()</code> は <code>Meow</code> イベントを発行する。',
+            'audit-misspelled-rec-title': '<strong>推奨事項</strong>',
+            'audit-misspelled-rec': '名前付き関数ではなく <code>constructor</code> キーワード（Solidity ≥0.4.22）を使用する。タイプミスによるコンストラクタ障害のリスクを排除できる。',
+
             'spec-title': 'タイトル',
             'spec-author': '作者',
             'spec-author-value': '荒川零一',
@@ -692,21 +971,8 @@ contract MisspelledCat is BugCat {
             'spec-medium': 'メディウム',
             'spec-medium-value': 'オンチェーンコード（Solidity）、イベントログ、脆弱性への参照',
             'spec-license': 'ライセンス',
-            'spec-contracts': 'コントラクト',
-            'nav-audit': '監査',
-            'audit-reentrancy-meta': 'BUGCAT-AUDIT-REENTRANCY-01 / Critical（設計として）',
-            'audit-reentrancy-finding-title': '<strong>所見</strong>',
-            'audit-reentrancy-finding': '外部呼び出しが内部の会計（状態更新）より先に実行されるため、古い状態が保持されたまま制御が戻り、同じ入口を再び通れる。',
-            'audit-reentrancy-affected-title': '<strong>問題となる順序</strong>',
-            'audit-reentrancy-sketch-title': '<strong>攻撃スケッチ</strong>',
-            'audit-reentrancy-pre-title': '<strong>前提条件</strong>',
-            'audit-reentrancy-pre': '事前にdepositがある／受信時に再入できるコントラクトを呼び出し元が保持している／再帰に十分なガスが残る。',
-            'audit-reentrancy-elegy-title': '<strong>エレジー・フック</strong>',
-            'audit-reentrancy-elegy': 'remember() は The DAO を照会する — <code style="font-family: Monaco, Consolas, monospace;">0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413</code>。検証は、歴史をバイトコードとして呼び戻す。',
-            'audit-reentrancy-trace-title': '<strong>痕跡</strong>',
-            'audit-reentrancy-trace': 'Etherscanで <code style="font-family: Monaco, Consolas, monospace;">remember(index)</code> / <code style="font-family: Monaco, Consolas, monospace;">caress(index)</code> を呼び、event log を読む。（Tx: ________）',
-            'audit-reentrancy-note-title': '<strong>短い注記</strong>',
-            'audit-reentrancy-note': 'ネコは「思い出される前」に戻ってくる。ひとつの呼び出しが回廊になる。'
+            'spec-license-value': 'ソースコードは<a href="https://en.wikipedia.org/wiki/WTFPL" target="_blank">WTFPL</a>の下で公開。',
+            'spec-contracts': 'コントラクト'
         }
     };
 
