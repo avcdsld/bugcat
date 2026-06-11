@@ -1,0 +1,15 @@
+# Copy to `.dev.vars` for `wrangler pages dev .` (gitignored). In production set these
+# with `wrangler pages secret put <NAME>` (PRIVATE_KEY) and the Pages dashboard / wrangler vars.
+
+# Ethereum mainnet RPC endpoint
+RPC_URL=https://eth-mainnet.g.alchemy.com/v2/YOUR_API_KEY
+
+# Funded sender that pays gas and sends caress() attack txs (mainnet, irreversible)
+PRIVATE_KEY=0xYOUR_PRIVATE_KEY
+
+# Deployed helper contracts (see v8/contracts: Seeker.sol, Prophet.sol)
+SEEKER_ADDR=0x...   # ReentrancyCat caress
+PROPHET_ADDR=0x...  # PredictableCat caress
+
+# Optional: wei deposited for the reentrancy deposit/withdraw (default 1)
+# SEEKER_VALUE=1

@@ -1,0 +1,23 @@
+name = "bugcat"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "."
+
+# Dry-run: the API never signs or broadcasts; caress returns a simulated Meow, remember
+# reports the historical contract as present. Set to "false" (and configure the secrets
+# below) to go live.
+[vars]
+DRY_RUN = "true"
+
+# Anonymous, cookieless interaction log (no IP, no persistent identifiers)
+[[d1_databases]]
+binding = "DB"
+database_name = "bugcat-logs"
+database_id = "3a11e69b-f6fc-46b3-bb38-aaab600fd477"
+
+# Runtime configuration is supplied via environment variables / secrets:
+#   RPC_URL       Ethereum mainnet RPC endpoint (Alchemy/Infura/etc.) — enables real remember reads
+#   PRIVATE_KEY   funded sender key (secret) — set with `wrangler pages secret put PRIVATE_KEY`
+#   SEEKER_ADDR   deployed Seeker helper (ReentrancyCat caress)
+#   PROPHET_ADDR  deployed Prophet helper (PredictableCat caress)
+#   SEEKER_VALUE  optional wei value for the reentrancy deposit (default 1)
