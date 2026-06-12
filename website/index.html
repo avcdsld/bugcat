@@ -15,7 +15,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         :root { --bg: #000000; --text: #ffffff; --text-dim: #999999; --border: #333333; }
-        body { font-family: Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+        @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+        body { font-family: Georgia, serif; background: var(--bg); color: var(--text); line-height: 1.6; animation: pageIn 0.7s ease backwards; }
+        body.leaving { opacity: 0; transition: opacity 0.6s ease; }
+        @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } body { animation: none; } }
         code { font-family: Monaco, Consolas, monospace; }
         .container { max-width: 1000px; margin: 0 auto; padding: 4rem 2rem; }
         
@@ -278,6 +281,7 @@
 
         <!-- Navigation -->
         <nav class="nav-links">
+            <a href="/exhibition/" data-i18n="nav-exhibition">Exhibition</a>
             <a href="#poems" data-i18n="nav-poems">Poems</a>
             <a href="#interface" data-i18n="nav-interface">Interface</a>
             <a href="#statement" data-i18n="nav-statement">Statement</a>
@@ -716,7 +720,7 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
 
             <div class="annotation-text invocation-text">
                 <p data-i18n="invocation-desc1">The BUGCATS contract holds an array of deployed contracts. <code>remember(index)</code> queries whether the historical predecessor of each contract still exists on-chain.</p>
-                <p data-i18n="invocation-desc2">Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>.</p>
+                <p data-i18n="invocation-desc2">Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>, or experienced through the <a href="/exhibition/">exhibition</a>.</p>
             </div>
 
             <div class="code-block">
@@ -799,6 +803,7 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
     const translations = {
         en: {
             'tagline': 'Poetry is what happens when language exceeds its own limits.<br>In code, these moments are called vulnerabilities.',
+            'nav-exhibition': 'Exhibition',
             'nav-poems': 'Poems',
             'nav-interface': 'Interface',
             'nav-statement': 'Statement',
@@ -814,7 +819,7 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
             'statement-5': 'In an era of seamless interfaces, BUGCAT insists on slow, deliberate scrutiny. It reframes reading as an act of audit.',
 
             'invocation-desc1': 'The BUGCATS contract holds an array of deployed contracts. <code>remember(index)</code> queries whether the historical predecessor of each contract still exists on-chain.',
-            'invocation-desc2': 'Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>.',
+            'invocation-desc2': 'Calling <code>caress()</code> on each individual contract triggers a <code>Meow</code> event when its condition is met. Both functions can be invoked through <a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>, or experienced through the <a href="/exhibition/">exhibition</a>.',
 
             'ann-reentrancy-1': 'The DAO, 2016. 3.6 million ETH vanished into recursion. Ethereum split in two—one chain that remembered, one that chose to forget.',
             'ann-reentrancy-2': 'Reentrancy occurs when a contract calls an external address before updating its state. The external contract can then call back into the original function, withdrawing funds multiple times before the balance is set to zero. This vulnerability arises from Ethereum\'s ability to transfer control flow to arbitrary code during external calls.',
@@ -886,6 +891,7 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
         },
         ja: {
             'tagline': '詩は、言語が自らの限界を超えるときに生まれる。<br>コードにおいて、その瞬間は脆弱性と呼ばれる。',
+            'nav-exhibition': '展示',
             'nav-poems': '詩篇',
             'nav-interface': 'インターフェース',
             'nav-statement': 'ステートメント',
@@ -901,7 +907,7 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
             'statement-5': 'シームレスなインターフェースの時代において、BUGCATは遅く慎重な凝視を要求し、読むことを監査の行為として再定義する。',
 
             'invocation-desc1': 'BUGCATSコントラクトは、デプロイされたコントラクトの配列を保持する。<code>remember(index)</code>は、各コントラクトの歴史的先祖がいまもチェーン上に存在するかを照会する。',
-            'invocation-desc2': '各コントラクトの<code>caress()</code>を呼び出すと、条件を満たす場合に<code>Meow</code>イベントが記録される。どちらの関数も<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>から呼び出せる。',
+            'invocation-desc2': '各コントラクトの<code>caress()</code>を呼び出すと、条件を満たす場合に<code>Meow</code>イベントが記録される。どちらの関数も<a href="https://etherscan.io/address/0x652f57021b4d39223e3769021a7d3edf01a1139e#readContract" target="_blank">Etherscan</a>から呼び出せる。また、<a href="/exhibition/">展示</a>でも体験できる。',
 
             'ann-reentrancy-1': 'The DAO、2016年。360万ETHが再帰の淵に消えた。Ethereumは二つに分かれた——記憶を選んだチェーン。忘却を選んだチェーン。',
             'ann-reentrancy-2': '再入可能性は、コントラクトが状態を更新する前に外部アドレスを呼び出すときに発生する。外部コントラクトは元の関数を再び呼び出し、残高がゼロになる前に何度でも資金を引き出せる。この脆弱性は、外部呼び出し時に任意のコードへ制御を渡すEthereumの特性に起因する。',
@@ -992,11 +998,24 @@ balance[_receivers[i]] += _value;  // credits full _value</code></pre>
     document.getElementById('lang-en').addEventListener('click', () => setLanguage('en'));
     document.getElementById('lang-ja').addEventListener('click', () => setLanguage('ja'));
 
-    // Load saved language preference
+    // Initial language: URL param > saved preference > browser language (shared with /exhibition/)
+    const urlLang = new URLSearchParams(location.search).get('lang');
     const savedLang = localStorage.getItem('bugcat-lang');
-    if (savedLang) {
-        setLanguage(savedLang);
-    }
+    const navLang = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    const initialLang = (urlLang === 'ja' || urlLang === 'en') ? urlLang
+        : (savedLang === 'ja' || savedLang === 'en') ? savedLang
+        : (/^ja/i.test(navLang) ? 'ja' : 'en');
+    setLanguage(initialLang);
+
+    // Fade out before entering the exhibition (mirrors the exhibition's exit fade)
+    document.addEventListener('click', (e) => {
+        const a = e.target.closest('a[href$="/exhibition/"]');
+        if (!a) return;
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        e.preventDefault();
+        document.body.classList.add('leaving');
+        setTimeout(() => { location.href = a.getAttribute('href'); }, 600);
+    });
     </script>
 </body>
 </html>

@@ -117,6 +117,9 @@ build/Release
 # Serverless directories
 .serverless/
 
+# Cloudflare Wrangler local state/cache (regenerated, machine-specific)
+**/.wrangler/
+
 # FuseBox cache
 **/.fusebox/
 
