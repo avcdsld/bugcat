@@ -36,9 +36,21 @@ export const CARESS_ABI = [
 
 export const truthy = (v) => v === "1" || v === "true" || v === true;
 
-// caress is dry-run when explicitly flagged, or when no signing key is configured (fail-safe).
+// Exhibition window (JST, UTC+9). Real caress() transactions fire ONLY inside it; outside is
+// always dry-run, so forgetting to flip DRY_RUN back after the show cannot send live tx.
+// 2026-07-15 00:00 JST .. end of 2026-07-20 (i.e. < 2026-07-21 00:00 JST). Month is 0-indexed.
+const EXHIBITION_START = Date.UTC(2026, 6, 14, 15, 0, 0); // 2026-07-15 00:00 JST
+const EXHIBITION_END   = Date.UTC(2026, 6, 20, 15, 0, 0); // 2026-07-21 00:00 JST
+
+export function withinExhibition(now = Date.now()) {
+  return now >= EXHIBITION_START && now < EXHIBITION_END;
+}
+
+// caress is dry-run when explicitly flagged (manual override), when no signing key is
+// configured (fail-safe), or outside the exhibition window. To go live during the show,
+// set DRY_RUN="false" and configure the secrets; the window still bounds real sending.
 export function caressDryRun(env) {
-  return truthy(env.DRY_RUN) || !env.PRIVATE_KEY;
+  return truthy(env.DRY_RUN) || !env.PRIVATE_KEY || !withinExhibition();
 }
 
 export function rpcUrl(env) {

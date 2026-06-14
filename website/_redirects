@@ -1,0 +1,10 @@
+# wrangler pages deploy does NOT honor .assetsignore, so config/tooling files placed in the
+# output dir would otherwise be publicly readable. Block them (redirect to home) here.
+# Includes .dev.vars defensively in case a real secrets file is ever created locally.
+/.dev.vars / 301
+/.dev.vars.example / 301
+/.assetsignore / 301
+/wrangler.toml / 301
+/package.json / 301
+/package-lock.json / 301
+/schema.sql / 301
