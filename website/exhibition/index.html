@@ -335,7 +335,7 @@ en:{ov:["This is a literary work of cats born from smart contracts, each bearing
 ovEnd:"Select a cat from the tabs above. Read the poem of code that shapes the cat, recall the cat's memory, and caress the cat.",
 rem:{l:"remember()",d:"Recall the cat's memory."},car:{l:"caress()",d:"Caress the cat."},hlp:{l:"help",d:"About this cat."},
 qry:"querying",qryR:"checking",qryC:"sending transaction",txs:"tx sending",txc:"tx confirmed.",dry:"dry run: no real transaction was sent",cont:"Continue",proj:"Read more →",after:"Afterword",
-aw:["Most systems are built by hiding their mechanisms; we are rarely told what happens inside. BUGCAT stands on the opposite side. Here the code is fully open, and reading it is itself the experience of the work.","Code is material. Like the words of a poem, it is something to think with. You can respond to the work by reading the code. You can respond more deeply by writing code of your own that calls it, and running that code yourself. In this exhibition interface, however, the writing and running of code are entrusted to an agent.","This is an entrance. The real response begins when you write your own code and run it with your own hand. Beyond that lie further forms of interaction."],
+aw:["Most systems are built by hiding their mechanisms; we are rarely told what happens inside. BUGCAT stands on the opposite side. Here the code is fully open, and reading it is itself the experience of the work.","Code is material. Like the words of a poem, it is something to think with. You can respond to the work by reading the code. You can respond more deeply by writing code of your own that calls it, and running that code yourself. In this exhibition interface, however, the writing and running of code are entrusted to an agent.","This is an entrance. The real response begins when you write your own code and run it with your own hand. Beyond that lie further forms of interaction.","The ink drifting behind these words is the page this poem is written on. Your reading stirs it; a meow stains it."],
 fbq:"If you noticed something, leave it here.",fbopt:"(optional)",fbsend:"Send",fbthx:"Thank you.",sig:"Zeroichi Arakawa",lng:"JA",wait:"Please wait until the exhibition opens."}
 };
 
@@ -690,7 +690,11 @@ const __initInk = () => {
     SIM_RES: 200, DYE_RES: 900, PRESSURE_ITER: 26,
     VEL_DISSIPATION: 0.12, DYE_DISSIPATION: 0.035, CURL: 8, SPLAT_RADIUS: 0.0040,
   };
-  const DIM = 0.85;
+  // Background tuning by audience (keyed to language): JA/IAMAS = invitation (a touch present),
+  // EN/ELO = quieter but coupled to reading (scroll stirs it more — see SCROLL_INK).
+  const DIM_JA = 0.85, DIM_EN = 0.72;
+  function targetDim(){ return (typeof S !== "undefined" && S.lang === "en") ? DIM_EN : DIM_JA; }
+  const DIM = DIM_JA;
   const TIME_SCALE = 0.6; // slow the whole simulation (motion + how often things happen)
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -812,6 +816,7 @@ const __initInk = () => {
     if(!running){ lastT=now; return; }
     let dt=(now-lastT)/1000; lastT=now; dt=Math.min(dt,1/30)*TIME_SCALE; if(dt<=0)return;
     ambientStir(now,dt); autoDrop(now,dt); processDrops(); step(dt);
+    const ud=displayMat.uniforms.uDim; ud.value+=(targetDim()-ud.value)*0.05; // ease to per-language dim
     displayMat.uniforms.uDye.value=dye.read.texture; blit(displayMat,null);
   }
   document.addEventListener('visibilitychange',()=>{ running=!document.hidden; });
@@ -845,7 +850,8 @@ const __initInk = () => {
       const cx = r.left + r.width  * (0.30 + Math.random() * 0.40);
       const cy = r.top  + r.height * (0.30 + Math.random() * 0.40);
       const k = Math.max(-1, Math.min(1, d / 40));
-      injectCurrent(cx, cy, (Math.random() - 0.5) * 70, -k * 330, 3.0);
+      const sc = (typeof S !== "undefined" && S.lang === "en") ? 1.7 : 1.0; // ELO: reading stirs the ink more
+      injectCurrent(cx, cy, (Math.random() - 0.5) * 70 * sc, -k * 330 * sc, 3.0);
     }
     function bind(){ sels.forEach(s => { const el = document.querySelector(s); if (el && !el._inkBound){ el._inkBound = true; el.addEventListener('scroll', () => onScroll(el), { passive: true }); } }); }
     bind();
