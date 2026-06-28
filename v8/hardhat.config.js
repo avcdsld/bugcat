@@ -13,11 +13,9 @@ module.exports = {
       }
     }
   },
+  // Etherscan API V2: one key works across all chains (set ETHERSCAN_API_KEY in .env).
   etherscan: {
-    apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY || "",
-      sepolia: process.env.ETHERSCAN_API_KEY || ""
-    }
+    apiKey: process.env.ETHERSCAN_API_KEY || ""
   },
   networks: {
     // Fork mainnet only when MAINNET_RPC_URL is set, so `npx hardhat test` runs on a fresh
