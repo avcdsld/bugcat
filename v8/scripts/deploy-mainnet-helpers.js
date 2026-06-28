@@ -16,20 +16,27 @@ const path = require("path");
 //   cd v8 && npx hardhat run scripts/deploy-mainnet-helpers.js --network mainnet
 
 // Existing mainnet ReentrancyCat (cat 0). Must match CAT_ADDRS[0] in _shared.js. Override via env
-// REENTRANCY_CAT_ADDR if the cat is ever redeployed.
-const MAINNET_REENTRANCY_CAT = "0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2";
+// REENTRANCY_CAT_ADDR / PREDICTABLE_CAT_ADDR if a cat is ever redeployed. Both must match
+// CAT_ADDRS[0] and CAT_ADDRS[1] in website/functions/api/_shared.js.
+const MAINNET_REENTRANCY_CAT = "0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2";  // cat 0
+const MAINNET_PREDICTABLE_CAT = "0x9050628cae4268e4701d4b011c99db30bc402b1c"; // cat 1
 
 async function main() {
   const reentrancyCat = (process.env.REENTRANCY_CAT_ADDR || MAINNET_REENTRANCY_CAT).trim();
   if (!ethers.isAddress(reentrancyCat)) {
     throw new Error(`Invalid ReentrancyCat address: ${reentrancyCat}`);
   }
+  const predictableCat = (process.env.PREDICTABLE_CAT_ADDR || MAINNET_PREDICTABLE_CAT).trim();
+  if (!ethers.isAddress(predictableCat)) {
+    throw new Error(`Invalid PredictableCat address: ${predictableCat}`);
+  }
 
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying v8 helpers to ${network.name}...`);
   console.log("Deployer       :", deployer.address);
   console.log("Balance        :", ethers.formatEther(await deployer.provider.getBalance(deployer.address)), "ETH");
-  console.log("ReentrancyCat  :", reentrancyCat, "(existing, unchanged)\n");
+  console.log("ReentrancyCat  :", reentrancyCat, "(existing, unchanged)");
+  console.log("PredictableCat :", predictableCat, "(existing, unchanged)\n");
 
   // Resumable: pass SEEKER_ADDR / PROPHET_ADDR to reuse an already-deployed helper and skip that
   // step. Useful when a flaky RPC crashes the script after a deploy tx was already broadcast.
@@ -62,7 +69,8 @@ async function main() {
   const out = {
     network: network.name,
     deployer: deployer.address,
-    ReentrancyCat: reentrancyCat, // existing cat 0 (not deployed here)
+    ReentrancyCat: reentrancyCat,   // existing cat 0 (not deployed here)
+    PredictableCat: predictableCat, // existing cat 1 (not deployed here; needed by feed.js)
     Seeker: seekerAddr,
     Prophet: prophetAddr,
   };

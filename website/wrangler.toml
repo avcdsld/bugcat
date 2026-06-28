@@ -13,8 +13,10 @@ pages_build_output_dir = "."
 # API fires real test transactions any time — use it to rehearse the live flow before the show.
 # On Sepolia, remember() returns false (the historical mainnet contracts do not exist there).
 [vars]
-DRY_RUN = "true"
+DRY_RUN = "false"
 CHAIN = "mainnet"
+SEEKER_ADDR = "0x1D4Ac48d7549BFC6bC2a490759f4Bbbe180B344D"
+PROPHET_ADDR = "0x5021065Df753430A4B62f6336a9138a4b94523b0"
 
 # Anonymous, cookieless interaction log (no IP, no persistent identifiers)
 [[d1_databases]]
