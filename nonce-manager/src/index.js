@@ -33,6 +33,15 @@ export class NonceManager extends DurableObject {
     return this.clients;
   }
 
+  // Minimum priority fee (tip) in wei. Defaults to 2 gwei; override with PRIORITY_FEE_GWEI, or set
+  // it to 0 to disable the floor and use the node's fee estimate as-is.
+  _priorityFloor() {
+    const g = this.env.PRIORITY_FEE_GWEI;
+    const gwei = g != null && g !== "" ? Number(g) : 2;
+    if (!Number.isFinite(gwei) || gwei <= 0) return 0n;
+    return BigInt(Math.round(gwei * 1e9));
+  }
+
   // Submit a single transaction with a serialized, server-tracked nonce.
   // value / gas accepted as bigint or numeric string. Returns { hash } or { error }.
   async submit({ to, data, value, gas }) {
@@ -46,13 +55,24 @@ export class NonceManager extends DurableObject {
       }
       const nonce = this.nextNonce;
       try {
-        const hash = await wallet.sendTransaction({
+        const tx = {
           to,
           data,
           value: value != null ? BigInt(value) : 0n,
           nonce,
           ...(gas ? { gas: BigInt(gas) } : {}),
-        });
+        };
+        // Apply a small priority-fee floor so txs land promptly instead of sitting in the mempool
+        // for minutes (which made the UI report a still-pending tx as failed). Only raises the tip
+        // when the node estimate is below the floor; keeps the same base-fee headroom.
+        const floor = this._priorityFloor();
+        if (floor > 0n) {
+          const fees = await pub.estimateFeesPerGas();
+          const tip = fees.maxPriorityFeePerGas < floor ? floor : fees.maxPriorityFeePerGas;
+          tx.maxPriorityFeePerGas = tip;
+          tx.maxFeePerGas = fees.maxFeePerGas + (tip - fees.maxPriorityFeePerGas);
+        }
+        const hash = await wallet.sendTransaction(tx);
         this.nextNonce = nonce + 1;
         return { hash };
       } catch (e) {

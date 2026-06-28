@@ -16,6 +16,8 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 CHAIN = "mainnet"
+# Priority-fee floor (gwei) so caress txs land promptly. Default in code is 2; set 0 to disable.
+# PRIORITY_FEE_GWEI = "2"
 
 [[durable_objects.bindings]]
 name = "NM"
