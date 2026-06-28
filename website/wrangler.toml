@@ -15,8 +15,10 @@ pages_build_output_dir = "."
 [vars]
 DRY_RUN = "false"
 CHAIN = "mainnet"
+# IGNORE_EXHIBITION_WINDOW = "true"
 SEEKER_ADDR = "0x1D4Ac48d7549BFC6bC2a490759f4Bbbe180B344D"
 PROPHET_ADDR = "0x5021065Df753430A4B62f6336a9138a4b94523b0"
+CARETAKER_ADDR = "0x16404DaB3b8c8aFb2663Bacc3368a5C6b252F9Ac"
 
 # Anonymous, cookieless interaction log (no IP, no persistent identifiers)
 [[d1_databases]]
