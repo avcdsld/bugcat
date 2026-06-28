@@ -24,6 +24,38 @@ const MAINNET_OVERFLOW_CAT = "0xf3fe43009429dd8450d916f7118970a52f130cbe";    //
 const MAINNET_UNPROTECTED_CAT = "0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1"; // cat 3
 const MAINNET_MISSPELLED_CAT = "0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f";  // cat 4
 
+// Wait for deployed bytecode to appear at an address (eth_getCode returns a plain string, so it
+// never hits the response-parsing bug below).
+async function waitForCode(provider, addr, timeoutMs = 150000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const code = await provider.getCode(addr);
+    if (code && code !== "0x") return true;
+    await new Promise((r) => setTimeout(r, 4000));
+  }
+  return false;
+}
+
+// Deploy that tolerates non-standard RPCs. Some providers (e.g. Alchemy) return to:"" for a
+// *pending* contract-creation tx, which ethers v6 rejects while formatting the response — even
+// though the tx was broadcast fine. On that failure, recover by computing the deterministic CREATE
+// address (sender + nonce) and confirming code lands there. Compliant RPCs take the normal path.
+async function deployRobust(name, args = []) {
+  const [signer] = await ethers.getSigners();
+  const factory = await ethers.getContractFactory(name);
+  const nonce = await signer.getNonce("pending");
+  try {
+    const c = await factory.deploy(...args);
+    await c.waitForDeployment();
+    return c.target;
+  } catch (e) {
+    const addr = ethers.getCreateAddress({ from: signer.address, nonce });
+    console.log(`   (RPC could not parse the pending tx; waiting for code at ${addr} ...)`);
+    if (await waitForCode(signer.provider, addr)) return addr;
+    throw e;
+  }
+}
+
 async function main() {
   const reentrancyCat = (process.env.REENTRANCY_CAT_ADDR || MAINNET_REENTRANCY_CAT).trim();
   if (!ethers.isAddress(reentrancyCat)) {
@@ -50,9 +82,7 @@ async function main() {
     console.log("   ->", seekerAddr);
   } else {
     console.log("1. Seeker (for ReentrancyCat)...");
-    const seeker = await (await ethers.getContractFactory("Seeker")).deploy(reentrancyCat);
-    await seeker.waitForDeployment();
-    seekerAddr = seeker.target;
+    seekerAddr = await deployRobust("Seeker", [reentrancyCat]);
     console.log("   ->", seekerAddr);
   }
 
@@ -63,9 +93,7 @@ async function main() {
     console.log("   ->", prophetAddr);
   } else {
     console.log("2. Prophet (for PredictableCat)...");
-    const prophet = await (await ethers.getContractFactory("Prophet")).deploy();
-    await prophet.waitForDeployment();
-    prophetAddr = prophet.target;
+    prophetAddr = await deployRobust("Prophet", []);
     console.log("   ->", prophetAddr);
   }
 
@@ -76,9 +104,7 @@ async function main() {
     console.log("   ->", caretakerAddr);
   } else {
     console.log("3. Caretaker (for OverflowCat / UnprotectedCat / MisspelledCat)...");
-    const caretaker = await (await ethers.getContractFactory("Caretaker")).deploy();
-    await caretaker.waitForDeployment();
-    caretakerAddr = caretaker.target;
+    caretakerAddr = await deployRobust("Caretaker", []);
     console.log("   ->", caretakerAddr);
   }
 

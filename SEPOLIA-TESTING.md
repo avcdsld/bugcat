@@ -154,10 +154,10 @@ cd v8 && npx hardhat run scripts/deploy-mainnet-helpers.js --network mainnet
 - 再実行時に既デプロイ分をスキップしたい場合は `SEEKER_ADDR=0x.. PROPHET_ADDR=0x.. CARETAKER_ADDR=0x..` を渡す。
 - （任意）出力の `npx hardhat verify ...` で Etherscan 検証。
 
-> **RPC は標準準拠のものを使うこと（Alchemy / Infura 推奨）。** contract-creation の応答で `to` を
-> `""`（空文字）で返す非準拠 RPC だと、ethers v6 が `invalid address value=""` で落ちる
-> （Tx 自体はブロードキャスト済みになる点に注意）。落ちた場合は Etherscan で送信済み Tx を確認し、
-> 既にできた helper があれば上の `*_ADDR` で再開する。
+> **RPC は Alchemy でも Infura でもOK。** 一部の RPC（Alchemy 等）は pending の contract-creation 応答で
+> `to` を `""` で返し、ethers v6 がパースで落ちるが、本スクリプトはその場合 CREATE アドレス（sender+nonce）を
+> 計算して `getCode` で着弾を待つフォールバックを持つため、どちらの RPC でも完走する。
+> （もし想定外のエラーで止まった場合は、Etherscan で送信済み Tx の生成アドレスを確認し `*_ADDR` を渡して再開できる。）
 
 ### 6-2. オンチェーン疎通（任意・実 ETH 消費）
 
