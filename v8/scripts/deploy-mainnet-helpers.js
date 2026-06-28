@@ -2,15 +2,15 @@ const { ethers, network } = require("hardhat");
 const fs = require("fs");
 const path = require("path");
 
-// Deploys ONLY the two helper contracts needed to make the live caress flow work on Ethereum
-// mainnet, against the already-deployed mainnet cats (see CAT_ADDRS in
-// website/functions/api/_shared.js). The cats themselves are NOT redeployed.
+// Deploys ONLY the helper contracts needed to make the live caress flow work on Ethereum mainnet,
+// against the already-deployed mainnet cats (see CAT_ADDRS in website/functions/api/_shared.js).
+// The cats themselves are NOT redeployed.
 //
-//   Seeker  -> bound at construction to the existing mainnet ReentrancyCat (cat 0)
-//   Prophet -> cat-agnostic (caress(address cat)); a single deploy serves PredictableCat (cat 1)
-//
-// Cats 2/3/4 (OverflowCat / UnprotectedCat / MisspelledCat) are exploited directly by the website
-// and need no helper, so nothing from v4 is deployed here.
+//   Seeker    -> bound at construction to the existing mainnet ReentrancyCat (cat 0)
+//   Prophet   -> cat-agnostic caress(cat); one deploy serves PredictableCat (cat 1)
+//   Caretaker -> cat-agnostic; one deploy serves OverflowCat (2), UnprotectedCat (3),
+//                MisspelledCat (4). Does setup+caress in one atomic tx so a Meow can't be lost
+//                to a concurrent caress (the OverflowCat re-overflow race).
 //
 // Run locally (RPC egress + funded key required):
 //   cd v8 && npx hardhat run scripts/deploy-mainnet-helpers.js --network mainnet
@@ -20,6 +20,9 @@ const path = require("path");
 // CAT_ADDRS[0] and CAT_ADDRS[1] in website/functions/api/_shared.js.
 const MAINNET_REENTRANCY_CAT = "0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2";  // cat 0
 const MAINNET_PREDICTABLE_CAT = "0x9050628cae4268e4701d4b011c99db30bc402b1c"; // cat 1
+const MAINNET_OVERFLOW_CAT = "0xf3fe43009429dd8450d916f7118970a52f130cbe";    // cat 2
+const MAINNET_UNPROTECTED_CAT = "0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1"; // cat 3
+const MAINNET_MISSPELLED_CAT = "0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f";  // cat 4
 
 async function main() {
   const reentrancyCat = (process.env.REENTRANCY_CAT_ADDR || MAINNET_REENTRANCY_CAT).trim();
@@ -66,13 +69,30 @@ async function main() {
     console.log("   ->", prophetAddr);
   }
 
+  let caretakerAddr = (process.env.CARETAKER_ADDR || "").trim();
+  if (caretakerAddr) {
+    if (!ethers.isAddress(caretakerAddr)) throw new Error(`Invalid CARETAKER_ADDR: ${caretakerAddr}`);
+    console.log("3. Caretaker (reusing CARETAKER_ADDR, skip deploy)...");
+    console.log("   ->", caretakerAddr);
+  } else {
+    console.log("3. Caretaker (for OverflowCat / UnprotectedCat / MisspelledCat)...");
+    const caretaker = await (await ethers.getContractFactory("Caretaker")).deploy();
+    await caretaker.waitForDeployment();
+    caretakerAddr = caretaker.target;
+    console.log("   ->", caretakerAddr);
+  }
+
   const out = {
     network: network.name,
     deployer: deployer.address,
     ReentrancyCat: reentrancyCat,   // existing cat 0 (not deployed here)
     PredictableCat: predictableCat, // existing cat 1 (not deployed here; needed by feed.js)
+    OverflowCat: MAINNET_OVERFLOW_CAT,       // existing cat 2 (served by Caretaker)
+    UnprotectedCat: MAINNET_UNPROTECTED_CAT, // existing cat 3 (served by Caretaker)
+    MisspelledCat: MAINNET_MISSPELLED_CAT,   // existing cat 4 (served by Caretaker)
     Seeker: seekerAddr,
     Prophet: prophetAddr,
+    Caretaker: caretakerAddr,
   };
   const file = path.join(__dirname, "..", `deployment-${network.name}.json`);
   fs.writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
@@ -82,12 +102,14 @@ async function main() {
   console.log(`\nSaved to ${file}`);
 
   console.log("\n--- wrangler (Cloudflare Pages) ---");
-  console.log(`SEEKER_ADDR  = ${seekerAddr}`);
-  console.log(`PROPHET_ADDR = ${prophetAddr}`);
+  console.log(`SEEKER_ADDR    = ${seekerAddr}`);
+  console.log(`PROPHET_ADDR   = ${prophetAddr}`);
+  console.log(`CARETAKER_ADDR = ${caretakerAddr}`);
 
   console.log("\n--- verify (after a few confirmations) ---");
   console.log(`npx hardhat verify --network ${network.name} ${seekerAddr} ${reentrancyCat}`);
   console.log(`npx hardhat verify --network ${network.name} ${prophetAddr}`);
+  console.log(`npx hardhat verify --network ${network.name} ${caretakerAddr}`);
 }
 
 main()

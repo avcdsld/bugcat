@@ -60,14 +60,14 @@ export const MEOW_ABI = [
 
 export const CARESS_ABI = [
   ...MEOW_ABI,
-  // caress() — same selector for Seeker (payable) and the cats; value defaults to 0
+  // Seeker.caress() — payable; value defaults to 0
   { type: "function", name: "caress", stateMutability: "payable", inputs: [] },
   // Prophet.caress(cat)
   { type: "function", name: "caress", stateMutability: "nonpayable", inputs: [{ name: "cat", type: "address" }] },
-  { type: "function", name: "batchTransfer", stateMutability: "nonpayable", inputs: [
-    { name: "_receivers", type: "address[]" }, { name: "_value", type: "uint256" } ] },
-  { type: "function", name: "init", stateMutability: "nonpayable", inputs: [{ name: "o", type: "address" }] },
-  { type: "function", name: "MisspeledCat", stateMutability: "nonpayable", inputs: [{ name: "o", type: "address" }] },
+  // Caretaker(cat 2/3/4): setup + caress in one atomic tx
+  { type: "function", name: "overflow", stateMutability: "nonpayable", inputs: [{ name: "cat", type: "address" }] },
+  { type: "function", name: "claim", stateMutability: "nonpayable", inputs: [{ name: "cat", type: "address" }] },
+  { type: "function", name: "rename", stateMutability: "nonpayable", inputs: [{ name: "cat", type: "address" }] },
 ];
 
 export const truthy = (v) => v === "1" || v === "true" || v === true;
