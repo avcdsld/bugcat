@@ -26,11 +26,14 @@ async function main() {
   if (!meowed(rc)) throw new Error("ReentrancyCat did not Meow");
 
   // --- cat 1: PredictableCat via Prophet (≈50% per tx, retry) ---
+  // Pass an explicit gasLimit: Prophet.caress branches on a block-prediction gate, so an
+  // estimateGas run that sees the cheap (no-op) branch would under-fund the expensive branch
+  // when it actually executes, causing an out-of-gas revert. A fixed limit covers both branches.
   const prophet = await ethers.getContractAt("Prophet", addr.Prophet);
   console.log(`cat 1 PredictableCat: Prophet.caress(${addr.PredictableCat})`);
   let ok = false;
   for (let i = 0; i < PREDICTABLE_RETRIES && !ok; i++) {
-    rc = await (await prophet.caress(addr.PredictableCat)).wait();
+    rc = await (await prophet.caress(addr.PredictableCat, { gasLimit: 500000n })).wait();
     ok = meowed(rc);
     console.log(`  try ${i + 1}: tx ${rc.hash}  Meow=${ok}`);
   }

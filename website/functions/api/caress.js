@@ -20,8 +20,8 @@ export async function onRequestPost({ request, env }) {
     const { account, wallet, pub } = walletClient(env);
     const catAddr = catAddrs(env)[cat];
 
-    const send = async (address, functionName, args = [], value = 0n) => {
-      const hash = await wallet.writeContract({ address, abi: CARESS_ABI, functionName, args, value });
+    const send = async (address, functionName, args = [], value = 0n, gas) => {
+      const hash = await wallet.writeContract({ address, abi: CARESS_ABI, functionName, args, value, ...(gas ? { gas } : {}) });
       const receipt = await pub.waitForTransactionReceipt({ hash });
       return { hash, receipt };
     };
@@ -35,11 +35,13 @@ export async function onRequestPost({ request, env }) {
       const value = env.SEEKER_VALUE ? BigInt(env.SEEKER_VALUE) : 1n;
       last = await send(seeker, "caress", [], value);
     } else if (cat === 1) {
-      // PredictableCat via Prophet: block-prediction gated, retry until it fires
+      // PredictableCat via Prophet: block-prediction gated, retry until it fires. Pass an explicit
+      // gas limit — estimateGas may see the cheap (no-op) branch and under-fund the expensive
+      // branch when it actually executes, which would revert with out-of-gas instead of meowing.
       const prophet = env.PROPHET_ADDR;
       if (!prophet) throw new Error("PROPHET_ADDR not configured");
       for (let i = 0; i < PREDICTABLE_RETRIES; i++) {
-        last = await send(prophet, "caress", [catAddr]);
+        last = await send(prophet, "caress", [catAddr], 0n, 500000n);
         if (hasMeow(last.receipt)) break;
       }
     } else if (cat === 2) {
