@@ -556,6 +556,15 @@ function render(){
   $("#langBtn").textContent=tx().lng;
 }
 
+// Re-derive an op's beats for the current language. Line counts depend only on the data (not the
+// language), so the progressive-reveal indices (op.bi / op.shown) stay valid.
+function syncOpLang(c,op){
+  if(!op)return;
+  if(op.type==="help"){op.beats[0]=helpBeat(c);return;}
+  op.beats[0]=intentBeat(op.type,c);
+  if(op._d)op.beats[1]=resultBeat(op.type,c,op._d).lines;
+}
+
 function renderInter(){
   const i=S.idx,el=$("#inter");
   if(i===-1){renderOv(el);return}
@@ -570,6 +579,7 @@ function renderInter(){
   cs.h.forEach(e=>h+=renderHist(e,c));
   if(cs.m==="op"&&cs.op){
     const op=cs.op;
+    syncOpLang(c,op); // beats were snapshotted in the language active when the op ran; re-derive for S.lang
     h+='<div style="margin-top:12px">';
     for(let bi=0;bi<op.bi;bi++)(op.beats[bi]||[]).forEach(l=>h+=ln(l.x,l.k));
     (op.beats[op.bi]||[]).slice(0,op.shown).forEach(l=>h+=ln(l.x,l.k));
