@@ -647,7 +647,7 @@ function renderHist(e,c){
 
 function renderSel(){
   const t=tx(),opts=[t.rem,t.car,t.hlp];
-  let h='<div class="selector" role="listbox" tabindex="0" aria-label="actions" aria-activedescendant="opt-0">';
+  let h='<div id="selector" class="selector" role="listbox" tabindex="0" aria-label="actions" aria-activedescendant="opt-0">';
   opts.forEach((o,i)=>{
     h+=`<div class="option${i===0?" sel":""}" id="opt-${i}" role="option" aria-selected="${i===0}" data-o="${i}"><span class="marker" aria-hidden="true">\u203A</span><div><div class="label">${i+1}. ${esc(o.l)}</div>`;
     if(o.d)h+=`<div class="desc">${esc(o.d)}</div>`;
