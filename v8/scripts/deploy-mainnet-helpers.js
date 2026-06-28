@@ -31,22 +31,40 @@ async function main() {
   console.log("Balance        :", ethers.formatEther(await deployer.provider.getBalance(deployer.address)), "ETH");
   console.log("ReentrancyCat  :", reentrancyCat, "(existing, unchanged)\n");
 
-  console.log("1. Seeker (for ReentrancyCat)...");
-  const seeker = await (await ethers.getContractFactory("Seeker")).deploy(reentrancyCat);
-  await seeker.waitForDeployment();
-  console.log("   ->", seeker.target);
+  // Resumable: pass SEEKER_ADDR / PROPHET_ADDR to reuse an already-deployed helper and skip that
+  // step. Useful when a flaky RPC crashes the script after a deploy tx was already broadcast.
+  let seekerAddr = (process.env.SEEKER_ADDR || "").trim();
+  if (seekerAddr) {
+    if (!ethers.isAddress(seekerAddr)) throw new Error(`Invalid SEEKER_ADDR: ${seekerAddr}`);
+    console.log("1. Seeker (reusing SEEKER_ADDR, skip deploy)...");
+    console.log("   ->", seekerAddr);
+  } else {
+    console.log("1. Seeker (for ReentrancyCat)...");
+    const seeker = await (await ethers.getContractFactory("Seeker")).deploy(reentrancyCat);
+    await seeker.waitForDeployment();
+    seekerAddr = seeker.target;
+    console.log("   ->", seekerAddr);
+  }
 
-  console.log("2. Prophet (for PredictableCat)...");
-  const prophet = await (await ethers.getContractFactory("Prophet")).deploy();
-  await prophet.waitForDeployment();
-  console.log("   ->", prophet.target);
+  let prophetAddr = (process.env.PROPHET_ADDR || "").trim();
+  if (prophetAddr) {
+    if (!ethers.isAddress(prophetAddr)) throw new Error(`Invalid PROPHET_ADDR: ${prophetAddr}`);
+    console.log("2. Prophet (reusing PROPHET_ADDR, skip deploy)...");
+    console.log("   ->", prophetAddr);
+  } else {
+    console.log("2. Prophet (for PredictableCat)...");
+    const prophet = await (await ethers.getContractFactory("Prophet")).deploy();
+    await prophet.waitForDeployment();
+    prophetAddr = prophet.target;
+    console.log("   ->", prophetAddr);
+  }
 
   const out = {
     network: network.name,
     deployer: deployer.address,
     ReentrancyCat: reentrancyCat, // existing cat 0 (not deployed here)
-    Seeker: seeker.target,
-    Prophet: prophet.target,
+    Seeker: seekerAddr,
+    Prophet: prophetAddr,
   };
   const file = path.join(__dirname, "..", `deployment-${network.name}.json`);
   fs.writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
@@ -56,12 +74,12 @@ async function main() {
   console.log(`\nSaved to ${file}`);
 
   console.log("\n--- wrangler (Cloudflare Pages) ---");
-  console.log(`SEEKER_ADDR  = ${seeker.target}`);
-  console.log(`PROPHET_ADDR = ${prophet.target}`);
+  console.log(`SEEKER_ADDR  = ${seekerAddr}`);
+  console.log(`PROPHET_ADDR = ${prophetAddr}`);
 
   console.log("\n--- verify (after a few confirmations) ---");
-  console.log(`npx hardhat verify --network ${network.name} ${seeker.target} ${reentrancyCat}`);
-  console.log(`npx hardhat verify --network ${network.name} ${prophet.target}`);
+  console.log(`npx hardhat verify --network ${network.name} ${seekerAddr} ${reentrancyCat}`);
+  console.log(`npx hardhat verify --network ${network.name} ${prophetAddr}`);
 }
 
 main()

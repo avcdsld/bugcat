@@ -147,7 +147,13 @@ cd v8 && npx hardhat run scripts/deploy-mainnet-helpers.js --network mainnet
 - 既存 mainnet ReentrancyCat（`CAT_ADDRS[0]`）に対して `Seeker` を、汎用の `Prophet` をデプロイする。
 - `deployment-mainnet.json` に保存し、`SEEKER_ADDR` / `PROPHET_ADDR` をコンソール表示する。
 - ネコを別アドレスへ移した場合のみ `REENTRANCY_CAT_ADDR` 環境変数で上書き可能。
+- 再実行時に既デプロイ分をスキップしたい場合は `SEEKER_ADDR=0x.. PROPHET_ADDR=0x..` を渡す（その分はデプロイせず再利用）。
 - （任意）出力の `npx hardhat verify ...` で Etherscan 検証。
+
+> **RPC は標準準拠のものを使うこと（Alchemy / Infura 推奨）。** contract-creation の応答で `to` を
+> `""`（空文字）で返す非準拠 RPC だと、ethers v6 が `invalid address value=""` で落ちる
+> （Tx 自体はブロードキャスト済みになる点に注意）。落ちた場合は Etherscan で送信済み Tx を確認し、
+> 既にできた helper があれば上の `SEEKER_ADDR` / `PROPHET_ADDR` で再開する。
 
 ### 6-2. Cloudflare Pages の設定
 

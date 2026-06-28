@@ -1,0 +1,7 @@
+{
+  "network": "mainnet",
+  "deployer": "0x141Eb63d83520444C3515531e9364E4508Bf9702",
+  "ReentrancyCat": "0xa9e8735dc5f9020f299e1de27d5ac14d43e44dd2",
+  "Seeker": "0x1D4Ac48d7549BFC6bC2a490759f4Bbbe180B344D",
+  "Prophet": "0x5021065Df753430A4B62f6336a9138a4b94523b0"
+}
