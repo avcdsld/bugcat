@@ -62,7 +62,7 @@ body{font-family:'JetBrains Mono','M PLUS 1 Code',monospace;font-weight:400;back
 .option.sel{color:var(--src)}.option:not(.sel){color:var(--dim)}
 .option .label{font-weight:400}.option.sel .label{font-weight:500}
 .option .desc{color:var(--dim);font-size:.9em;margin-top:1px;padding-left:24px}
-.out-line{min-height:1.5em;color:var(--out)}
+.out-line{min-height:1.5em;color:var(--out);text-wrap:pretty}
 .out-line.warm{color:var(--warm)}
 .out-line.dim{color:var(--dim)}
 .op-gate{margin-top:10px;padding:6px 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;color:var(--dim)}
@@ -183,7 +183,7 @@ src:`contract ReentrancyCat is BugCat {
         return TheDAO.code.length > 0;
     }
 }`,rq:"TheDAO.code.length > 0",cd:'deposit() \u2192 withdraw() \u2192 reenter \u2192 caress()',ma:"reentrancy",
-nr:{ja:["このネコの傷の祖先である The DAO が、いまも Ethereum に残っているか確かめます","残っていました。2016年にデプロイされたバイトコードは、いまもそのアドレスにあります"],en:["Check whether The DAO, the ancestor of this cat's wound, still remains on Ethereum.","It remains. The bytecode deployed in 2016 is still at that address."]},
+nr:{ja:["このネコの傷の祖先である The DAO が、いまも Ethereum に残っているか確かめます","2016年にデプロイされたバイトコードは、いまもそのアドレスにありました"],en:["Check whether The DAO, the ancestor of this cat's wound, still remains on Ethereum.","It remains. The bytecode deployed in 2016 is still at that address."]},
 nc:{ja:["引き出しの途中でもう一度関数へ入り込み、残高を流し出す呼び出しを送ります","残高は空になり、ネコが鳴きました"],en:["Send a sequence of calls that re-enters the function mid-withdrawal and drains the balance.","The balance was emptied, and the cat meowed."]},
 hJa:["2016\u5E746\u670817\u65E5\u3002","The DAO\u304B\u3089360\u4E07ETH\u304C\u6D88\u3048\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u50B7\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["June 17, 2016.","3.6 million ETH vanished from The DAO.","This cat inherits that wound."]},
@@ -215,8 +215,8 @@ src:`contract PredictableCat is BugCat {
         return FoMo3Dlong.code.length > 0;
     }
 }`,rq:"FoMo3Dlong.code.length > 0",cd:'flip() \u00D7 10 (block predicted) \u2192 caress()',ma:"predictable",
-nr:{ja:["予測可能性という傷の祖先である FoMo3D が、いまも Ethereum に残っているか確かめます","残っていました。2018年に最後のラウンドを終えたコードは、いまもそのアドレスにあります"],en:["Check whether FoMo3D, the ancestor of this predictability, still remains on Ethereum.","It remains. The code that ended its final round in 2018 is still at that address."]},
-nc:{ja:["次の結果をブロックから予測し、flip() を10回続けて当てる呼び出しを送ります","10回の連勝が揃い、ネコが鳴きました","10回の連勝は揃わず、ネコは鳴きませんでした。運が悪かった"],en:["Predict the next outcome from the block and send calls that win flip() ten times in a row.","Ten wins lined up, and the cat meowed.","The ten wins didn't line up; the cat stayed silent. Bad luck."]},
+nr:{ja:["予測可能性という傷の祖先である FoMo3D が、いまも Ethereum に残っているか確かめます","2018年に最後のラウンドを終えたコードは、いまもそのアドレスにありました"],en:["Check whether FoMo3D, the ancestor of this predictability, still remains on Ethereum.","It remains. The code that ended its final round in 2018 is still at that address."]},
+nc:{ja:["結果をブロックから予測し、flip() を10回続けて当てる呼び出しを送ります","10回の連勝が揃い、ネコが鳴きました","10回の連勝は揃わず、ネコは鳴きませんでした。運が悪かった"],en:["Predict the next outcome from the block and send calls that win flip() ten times in a row.","Ten wins lined up, and the cat meowed.","The ten wins didn't line up; the cat stayed silent. Bad luck."]},
 hJa:["2018\u5E74\u3002","FoMo3D\u306E\u6700\u5F8C\u306E\u30E9\u30A6\u30F3\u30C9\u3002","\u52DD\u8005\u306F\u3059\u3067\u306B\u7B54\u3048\u3092\u77E5\u3063\u3066\u3044\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u4E88\u6E2C\u53EF\u80FD\u6027\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["2018.","The final round of FoMo3D.","The winner already knew the answer.","This cat inherits that predictability."]},
 {name:"OverflowCat",addr:"0xf3fe43009429dd8450d916f7118970a52f130cbe",ja:"\u6EA2\u308C\u308B\u30CD\u30B3",en:"Overflow Cat",
@@ -253,8 +253,8 @@ src:`contract OverflowCat is BugCat {
         return size > 0;
     }
 }`,rq:"extcodesize(BecToken) > 0",cd:'batchTransfer(overflow) \u2192 caress()',ma:"overflow",
-nr:{ja:["溢れという傷の祖先である BEC Token が、いまも Ethereum に残っているか確かめます","残っていました。残高を無から生んだコードは、いまもそのアドレスにあります"],en:["Check whether BEC Token, the ancestor of this overflow, still remains on Ethereum.","It remains. The code that created balances from nothing is still at that address."]},
-nc:{ja:["掛け算を桁あふれさせ、無から残高を作り出す呼び出しを送ります","あふれた残高が手元に生まれ、ネコが鳴きました"],en:["Overflow the multiplication and send a call that creates a balance from nothing.","An overflowed balance appeared in hand, and the cat meowed."]},
+nr:{ja:["溢れという傷の祖先である BEC Token が、いまも Ethereum に残っているか確かめます","残高を無から生んだコードは、いまもそのアドレスにありました"],en:["Check whether BEC Token, the ancestor of this overflow, still remains on Ethereum.","It remains. The code that created balances from nothing is still at that address."]},
+nc:{ja:["掛け算を桁溢れさせ、無から残高を作り出す呼び出しを送ります","溢れた残高が手元に生まれ、ネコが鳴きました"],en:["Overflow the multiplication and send a call that creates a balance from nothing.","An overflowed balance appeared in hand, and the cat meowed."]},
 hJa:["2018\u5E744\u670822\u65E5\u3002","BEC Token\u306E\u6B8B\u9AD8\u304C\u7121\u304B\u3089\u751F\u307E\u308C\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u6EA2\u308C\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["April 22, 2018.","BEC Token balances were created from nothing.","This cat inherits that overflow."]},
 {name:"UnprotectedCat",addr:"0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1",ja:"\u7121\u9632\u5099\u30CD\u30B3",en:"Unprotected Cat",
@@ -286,7 +286,7 @@ src:`contract UnprotectedCat is BugCat {
         return size == 0 && WalletLibrary.balance > 0;
     }
 }`,rq:"extcodesize(WalletLibrary) == 0\n  && WalletLibrary.balance > 0",cd:'init(attacker) \u2192 caress()',ma:"unprotected",
-nr:{ja:["無防備という傷の祖先である Parity WalletLibrary が、すでに消え、それでも資産が凍ったままか確かめます","コードは消えていました。それでも資産は、そのアドレスに凍りついたまま残っています"],en:["Check whether Parity WalletLibrary has already vanished, yet its funds stay frozen.","The code had vanished. Yet the funds remain frozen at that address."]},
+nr:{ja:["無防備という傷の祖先である Parity WalletLibrary が、すでに消え、それでも資産が凍ったままか確かめます","コードは消えていました。そして資産は、そのアドレスに凍りついたまま残っていました"],en:["Check whether Parity WalletLibrary has already vanished, yet its funds stay frozen.","The code had vanished. Yet the funds remain frozen at that address."]},
 nc:{ja:["誰でも呼べる init() を使い、自分を owner に書き換える呼び出しを送ります","owner は書き換えられ、ネコが鳴きました"],en:["Use init(), which anyone can call, and send a call that rewrites yourself as owner.","The owner was overwritten, and the cat meowed."]},
 hJa:["2017\u5E747\u6708\u3002\u305D\u3057\u306611\u6708\u3002","Parity WalletLibrary\u306F\u521D\u671F\u5316\u3055\u308C\u3001","\u6BBA\u3055\u308C\u307E\u3057\u305F\u3002","\u30B3\u30FC\u30C9\u306F\u6D88\u3048\u30012\u51048000\u4E07\u30C9\u30EB\u304C\u51CD\u7D50\u3055\u308C\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u7121\u9632\u5099\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["July 2017. Then November.","Parity WalletLibrary was initialized,","then killed.","The code vanished. $280 million frozen.","This cat inherits that vulnerability."]},
@@ -312,8 +312,8 @@ src:`contract MisspelledCat is BugCat {
         return size > 0;
     }
 }`,rq:"extcodesize(Rubixi) > 0",cd:'MisspeledCat(attacker) \u2192 caress()',ma:"misspelled",
-nr:{ja:["綴り間違いという傷の祖先である Rubixi が、いまも Ethereum に残っているか確かめます","残っていました。古い名前のコンストラクタを抱えたコードは、いまもそのアドレスにあります"],en:["Check whether Rubixi, the ancestor of this misspelling, still remains on Ethereum.","It remains. The code holding a constructor under the old name is still at that address."]},
-nc:{ja:["コンストラクタのはずだった綴り違いの関数を呼び、自分を owner にする呼び出しを送ります","誰でも owner になれてしまい、ネコが鳴きました"],en:["Call the misspelled function that was meant to be the constructor and make yourself owner.","Anyone could become owner, and the cat meowed."]},
+nr:{ja:["綴り間違いという傷の祖先である Rubixi が、いまも Ethereum に残っているか確かめます","古い名前のコンストラクタを抱えたコードは、いまもそのアドレスにありました"],en:["Check whether Rubixi, the ancestor of this misspelling, still remains on Ethereum.","It remains. The code holding a constructor under the old name is still at that address."]},
+nc:{ja:["綴り違いの関数を呼び、自分を owner にする呼び出しを送ります","owner は書き換えられ、ネコが鳴きました"],en:["Call the misspelled function that was meant to be the constructor and make yourself owner.","Anyone could become owner, and the cat meowed."]},
 hJa:["2016\u5E74\u3002","DynamicPyramid\u306FRubixi\u306B\u6539\u540D\u3055\u308C\u307E\u3057\u305F\u3002","\u30B3\u30F3\u30B9\u30C8\u30E9\u30AF\u30BF\u3060\u3051\u304C\u3001","\u53E4\u3044\u540D\u524D\u306E\u307E\u307E\u6B8B\u3055\u308C\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u7DB4\u308A\u9593\u9055\u3044\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["2016.","DynamicPyramid was renamed to Rubixi.","Only the constructor kept the old name.","This cat inherits that misspelling."]}
 ];
