@@ -72,7 +72,7 @@ body{font-family:'JetBrains Mono','M PLUS 1 Code',monospace;font-weight:400;back
 @keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.18}}
 .wait-msg{font-family:'Shippori Mincho',serif;display:flex;align-items:center;justify-content:center;min-height:200px;padding:40px 20px;text-align:center;color:var(--dim);font-size:15px;letter-spacing:.04em}
 .continue-btn{margin-top:14px;color:var(--out);font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:6px 0;display:flex;align-items:center;gap:6px}
-a.out-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--border);font-size:10.5px}
+a.out-link{color:var(--link);text-decoration:none;border-bottom:1px solid var(--border)}
 .afterword-sig{margin-top:18px;text-align:right;color:var(--hint);font-size:.95em;letter-spacing:.06em}
 .fb{margin-top:18px}
 .fb-q{color:var(--out);font-size:13.5px;line-height:1.6;font-family:'Shippori Mincho',serif}
@@ -397,7 +397,9 @@ function resultBeat(type,c,d){
   }
   if(d.txHash||d.conf)lines.push({x:"  "+tx().txc,k:""});
   let meow=false;
-  if(d.meow){meow=true;lines.push({x:"  "+note,k:"dim"},{x:'  event Meow(msg.sender, "'+c.ma+'")',k:"warm"});}
+  // When the receipt names the sender (live tx), surface the real From: address so the event line
+  // visually echoes the tx page on Etherscan. dry-run / no-receipt paths keep "msg.sender".
+  if(d.meow){meow=true;const sndr=d.from?txShort(d.from):"msg.sender";lines.push({x:"  "+note,k:"dim"},{x:'  event Meow('+sndr+', "'+c.ma+'")',k:"warm"});}
   else{const fail=(c.nc[S.lang][2])||tx().silent;lines.push({x:"  "+fail,k:"dim"});}
   if(d.block)lines.push({x:"  block "+d.block,k:""});
   if(d.dryRun)lines.push({x:"  "+tx().dry,k:"dim"});

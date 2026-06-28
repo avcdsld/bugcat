@@ -31,6 +31,7 @@ export async function onRequestGet({ request, env }) {
       confirmed: true,
       meow: hasMeow(receipt),
       block: Number(receipt.blockNumber),
+      from: receipt.from,
       chain: chainName(env),
     });
   } catch (e) {
