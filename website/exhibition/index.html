@@ -216,7 +216,7 @@ src:`contract PredictableCat is BugCat {
     }
 }`,rq:"FoMo3Dlong.code.length > 0",cd:'flip() \u00D7 10 (block predicted) \u2192 caress()',ma:"predictable",
 nr:{ja:["予測可能性という傷の祖先である FoMo3D が、いまも Ethereum に残っているか確かめます","残っていました。2018年に最後のラウンドを終えたコードは、いまもそのアドレスにあります"],en:["Check whether FoMo3D, the ancestor of this predictability, still remains on Ethereum.","It remains. The code that ended its final round in 2018 is still at that address."]},
-nc:{ja:["次の結果をブロックから予測し、flip() を10回続けて当てる呼び出しを送ります","10回の連勝が揃い、ネコが鳴きました"],en:["Predict the next outcome from the block and send calls that win flip() ten times in a row.","Ten wins lined up, and the cat meowed."]},
+nc:{ja:["次の結果をブロックから予測し、flip() を10回続けて当てる呼び出しを送ります","10回の連勝が揃い、ネコが鳴きました","10回の連勝は揃わず、ネコは鳴きませんでした。運が悪かった"],en:["Predict the next outcome from the block and send calls that win flip() ten times in a row.","Ten wins lined up, and the cat meowed.","The ten wins didn't line up; the cat stayed silent. Bad luck."]},
 hJa:["2018\u5E74\u3002","FoMo3D\u306E\u6700\u5F8C\u306E\u30E9\u30A6\u30F3\u30C9\u3002","\u52DD\u8005\u306F\u3059\u3067\u306B\u7B54\u3048\u3092\u77E5\u3063\u3066\u3044\u307E\u3057\u305F\u3002","\u3053\u306E\u30CD\u30B3\u306F\u305D\u306E\u4E88\u6E2C\u53EF\u80FD\u6027\u3092\u7D99\u627F\u3057\u3066\u3044\u307E\u3059\u3002"],
 hEn:["2018.","The final round of FoMo3D.","The winner already knew the answer.","This cat inherits that predictability."]},
 {name:"OverflowCat",addr:"0xf3fe43009429dd8450d916f7118970a52f130cbe",ja:"\u6EA2\u308C\u308B\u30CD\u30B3",en:"Overflow Cat",
@@ -328,13 +328,13 @@ const T={
 ja:{ov:["これはスマートコントラクトによって生まれた、脆弱性という傷を抱くネコたちの文学作品です。","Ethereumの歴史を揺るがした脆弱性が、それぞれ異なるネコのスマートコントラクトに引き継がれ、ブロックチェーン上にデプロイされています。","誰もがネコを撫でることができ、脆弱性の条件を満たすとき、ネコはミャオと鳴きます。それぞれのネコはEthereumに残る歴史的コントラクトと実際に繋がっており、その痕跡を思い出すことでコードの存在を証明します。","すべてのネコは、以下のインターフェースを実装しています:"],
 ovEnd:"上のタブからネコを選んでください。ネコを形作るコードの詩を読み、ネコの記憶を思い出させ、ネコを撫でることができます。",
 rem:{l:"remember()",d:"ネコの記憶を呼び覚ます。"},car:{l:"caress()",d:"ネコを撫でる。"},hlp:{l:"help",d:"このネコについて。"},
-qry:"照会中",qryR:"確認中",qryC:"トランザクション送信中",txs:"tx 送信中",txc:"tx confirmed.",dry:"ドライラン中: 実際のトランザクションは送信していません",cont:"続ける",proj:"もっと読む →",after:"あとがき",
+qry:"照会中",qryR:"確認中",qryC:"トランザクション送信中",txs:"tx 送信中",txc:"tx confirmed.",txf:"tx failed.",silent:"ネコは鳴きませんでした",dry:"ドライラン中: 実際のトランザクションは送信していません",cont:"続ける",proj:"もっと読む →",after:"あとがき",
 aw:["多くのシステムは、仕組みを隠すことで成り立っています。中で何が起きているのか、私たちはたいてい知らされません。BUGCATはその反対側に立ちます。ここではコードがすべて開かれていて、読むこと自体が作品の体験になります。","コードは素材です。詩の言葉のように、思考するためのものです。読者は、コードを読むことで作品に応答できます。そしてさらに、それを呼び出すコードを自ら書き、実行することで、もっと深く応答できます。ただしこの展示のインターフェースでは、コードを書き実行する部分を代理人に委ねています。","ここは入口です。本当の応答は、あなた自身がコードを書き、自分の手で実行するところから始まります。その先に、もっと進んだインタラクションの形があります。"],
 fbq:"気づいたことがあれば、どうぞ。",fbopt:"（任意）",fbsend:"送信",fbthx:"ありがとう。",sig:"荒川零一",lng:"EN",wait:"展示開始までお待ちください"},
 en:{ov:["This is a literary work of cats born from smart contracts, each bearing the wound of a vulnerability.","Vulnerabilities that shook the history of Ethereum have been inherited by different cat smart contracts and deployed on the blockchain.","Anyone can caress a cat, and when the conditions of its vulnerability are met, the cat meows. Each cat is connected to a historical contract that remains on Ethereum, recalling its trace to prove the code still exists.","All cats implement the following interface:"],
 ovEnd:"Select a cat from the tabs above. Read the poem of code that shapes the cat, recall the cat's memory, and caress the cat.",
 rem:{l:"remember()",d:"Recall the cat's memory."},car:{l:"caress()",d:"Caress the cat."},hlp:{l:"help",d:"About this cat."},
-qry:"querying",qryR:"checking",qryC:"sending transaction",txs:"tx sending",txc:"tx confirmed.",dry:"dry run: no real transaction was sent",cont:"Continue",proj:"Read more →",after:"Afterword",
+qry:"querying",qryR:"checking",qryC:"sending transaction",txs:"tx sending",txc:"tx confirmed.",txf:"tx failed.",silent:"The cat stayed silent.",dry:"dry run: no real transaction was sent",cont:"Continue",proj:"Read more →",after:"Afterword",
 aw:["Most systems are built by hiding their mechanisms; we are rarely told what happens inside. BUGCAT stands on the opposite side. Here the code is fully open, and reading it is itself the experience of the work.","Code is material. Like the words of a poem, it is something to think with. You can respond to the work by reading the code. You can respond more deeply by writing code of your own that calls it, and running that code yourself. In this exhibition interface, however, the writing and running of code are entrusted to an agent.","This is an entrance. The real response begins when you write your own code and run it with your own hand. Beyond that lie further forms of interaction.","The ink drifting behind these words is the page this poem is written on. Your reading stirs it; a meow stains it."],
 fbq:"If you noticed something, leave it here.",fbopt:"(optional)",fbsend:"Send",fbthx:"Thank you.",sig:"Zeroichi Arakawa",lng:"JA",wait:"Please wait until the exhibition opens."}
 };
@@ -387,9 +387,12 @@ function resultBeat(type,c,d){
     return {lines,link:null,meow:false};
   }
   const lines=[{x:"",k:""}];
+  // The transaction itself failed (network/RPC error, or it reverted): say so honestly.
+  if(d.error){lines.push({x:"  "+tx().txf,k:"dim"});return {lines,link:null,meow:false};}
   if(d.txHash||d.conf)lines.push({x:"  "+tx().txc,k:""});
   let meow=false;
   if(d.meow){meow=true;lines.push({x:"  "+note,k:"dim"},{x:'  event Meow(msg.sender, "'+c.ma+'")',k:"warm"});}
+  else{const fail=(c.nc[S.lang][2])||tx().silent;lines.push({x:"  "+fail,k:"dim"});}
   if(d.block)lines.push({x:"  block "+d.block,k:""});
   if(d.dryRun)lines.push({x:"  "+tx().dry,k:"dim"});
   const explorer=d.chain==="sepolia"?"https://sepolia.etherscan.io":"https://etherscan.io";
@@ -432,7 +435,9 @@ function runOp(ci,op){
       if(!r.ok||!d||d.ok===false) throw new Error("api");
       op._d=d;res=resultBeat(type,c,d);
     }catch(e){
-      op._d=type==="remember"?{exists:true}:{meow:true,conf:true};res=resultBeat(type,c,op._d);
+      // Do NOT fake a successful Meow on failure. remember (a read) degrades to true; caress is
+      // reported honestly as a failed transaction so an unlucky / errored attempt isn't masked.
+      op._d=type==="remember"?{exists:true}:{error:true};res=resultBeat(type,c,op._d);
     }
     const elapsed=Date.now()-start;
     if(elapsed<MIN_DUR[type]) await sleep(MIN_DUR[type]-elapsed);

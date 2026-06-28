@@ -1,7 +1,6 @@
 import { catAddrs, CARESS_ABI, walletClient, hasMeow, json, parseCat, caressDryRun, logEvent, chainName } from "./_shared.js";
 
 const DEAD = "0x000000000000000000000000000000000000dEaD";
-const PREDICTABLE_RETRIES = 8;
 
 // POST /api/caress  { cat: 0..4 }  ->  { ok, txHash, block, meow }
 export async function onRequestPost({ request, env }) {
@@ -35,15 +34,14 @@ export async function onRequestPost({ request, env }) {
       const value = env.SEEKER_VALUE ? BigInt(env.SEEKER_VALUE) : 1n;
       last = await send(seeker, "caress", [], value);
     } else if (cat === 1) {
-      // PredictableCat via Prophet: block-prediction gated, retry until it fires. Pass an explicit
-      // gas limit — estimateGas may see the cheap (no-op) branch and under-fund the expensive
-      // branch when it actually executes, which would revert with out-of-gas instead of meowing.
+      // PredictableCat via Prophet: a single block-prediction attempt. All 10 flips share one
+      // block hash, so the outcome is all-or-nothing (~1/2) — the cat either meows or stays silent.
+      // We do NOT retry: an unlucky attempt is a real, honest outcome shown to the visitor.
+      // Pass an explicit gas limit so the winning (expensive) branch can't be under-funded by an
+      // estimateGas run that happened to see the cheap (no-op) branch.
       const prophet = env.PROPHET_ADDR;
       if (!prophet) throw new Error("PROPHET_ADDR not configured");
-      for (let i = 0; i < PREDICTABLE_RETRIES; i++) {
-        last = await send(prophet, "caress", [catAddr], 0n, 500000n);
-        if (hasMeow(last.receipt)) break;
-      }
+      last = await send(prophet, "caress", [catAddr], 0n, 500000n);
     } else if (cat === 2) {
       // OverflowCat: batchTransfer overflow grants balance, then caress
       await send(catAddr, "batchTransfer", [[account.address, DEAD], 2n ** 255n]);
