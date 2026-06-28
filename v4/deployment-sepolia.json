@@ -1,0 +1,7 @@
+{
+  "network": "sepolia",
+  "deployer": "0x1f5f529dAfcE914ddcBB2f199b2A4E805FB95d97",
+  "OverflowCat": "0x3E3D817064fC50D540ff525191cE1a0E23AC0860",
+  "UnprotectedCat": "0x773fae40EEd1E346B4B021005Ab736cD88D0903A",
+  "MisspelledCat": "0x2DBA5688Ec118Bf4B7708175d3b3565b45CeeEb2"
+}

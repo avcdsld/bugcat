@@ -15,11 +15,11 @@ export const CAT_ADDRS = [
 // (see v8/scripts/deploy-sepolia.js + v4/scripts/deploy-sepolia.js). Used only when CHAIN="sepolia".
 // Individual entries may also be overridden by env (CAT_ADDR_0 .. CAT_ADDR_4) without redeploying.
 export const CAT_ADDRS_SEPOLIA = [
-  "", // 0 ReentrancyCat
-  "", // 1 PredictableCat
-  "", // 2 OverflowCat
-  "", // 3 UnprotectedCat
-  "", // 4 MisspelledCat
+  "0xa501aFe7Aa3a7A5240A6d2191Ea2bF033E14Db23", // 0 ReentrancyCat
+  "0xb58C43E1241a0e0e935bE21547255B5Be68AcD80", // 1 PredictableCat
+  "0x3E3D817064fC50D540ff525191cE1a0E23AC0860", // 2 OverflowCat
+  "0x773fae40EEd1E346B4B021005Ab736cD88D0903A", // 3 UnprotectedCat
+  "0x2DBA5688Ec118Bf4B7708175d3b3565b45CeeEb2", // 4 MisspelledCat
 ];
 
 // Network selection. CHAIN="sepolia" routes every read/write to Sepolia; anything else is mainnet.
