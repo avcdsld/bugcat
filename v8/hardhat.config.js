@@ -20,12 +20,14 @@ module.exports = {
     }
   },
   networks: {
-    hardhat: {
+    // Fork mainnet only when MAINNET_RPC_URL is set, so `npx hardhat test` runs on a fresh
+    // in-memory chain by default (the cat caress/Meow flows need no fork).
+    hardhat: process.env.MAINNET_RPC_URL ? {
       forking: {
-        url: process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.alchemy.com/v2/PROJECT_ID",
+        url: process.env.MAINNET_RPC_URL,
         blockNumber: 23041000
       }
-    },
+    } : {},
     mainnet: {
       url: process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.alchemy.com/v2/PROJECT_ID",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
