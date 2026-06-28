@@ -68,6 +68,12 @@ export async function onRequestPost({ request, env }) {
       chain: chainName(env),
     });
   } catch (e) {
-    return json({ ok: false, error: String(e?.message || e) }, 502);
+    const msg = String(e?.message || e);
+    // Sender ran out of gas money. Don't surface a raw failure — pause real sends and degrade to a
+    // dry-run meow with an honest "paused" note so the piece keeps working until the key is topped up.
+    if (/insufficient funds/i.test(msg)) {
+      return json({ ok: true, txHash: null, meow: true, dryRun: true, paused: true, chain: chainName(env) });
+    }
+    return json({ ok: false, error: msg }, 502);
   }
 }
