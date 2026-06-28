@@ -87,9 +87,13 @@ export function withinExhibition(now = Date.now()) {
 // forgotten DRY_RUN="false" can never send live tx outside the show. On SEPOLIA the window is
 // not enforced (testnet ETH has no value): set CHAIN="sepolia", DRY_RUN="false" and the secrets
 // to fire real test transactions any time.
+//
+// IGNORE_EXHIBITION_WINDOW="true" is a deliberate, opt-in escape hatch to fire a real mainnet
+// caress for a pre-show test outside the window. It spends real ETH — set it only while testing
+// and remove it afterwards. It does NOT override DRY_RUN or the missing-key fail-safe.
 export function caressDryRun(env) {
   if (truthy(env.DRY_RUN) || !env.PRIVATE_KEY) return true;
-  if (chainName(env) === "mainnet" && !withinExhibition()) return true;
+  if (chainName(env) === "mainnet" && !withinExhibition() && !truthy(env.IGNORE_EXHIBITION_WINDOW)) return true;
   return false;
 }
 
