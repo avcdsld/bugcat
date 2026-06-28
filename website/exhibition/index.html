@@ -328,13 +328,13 @@ const T={
 ja:{ov:["これはスマートコントラクトによって生まれた、脆弱性という傷を抱くネコたちの文学作品です。","Ethereumの歴史を揺るがした脆弱性が、それぞれ異なるネコのスマートコントラクトに引き継がれ、ブロックチェーン上にデプロイされています。","誰もがネコを撫でることができ、脆弱性の条件を満たすとき、ネコはミャオと鳴きます。それぞれのネコはEthereumに残る歴史的コントラクトと実際に繋がっており、その痕跡を思い出すことでコードの存在を証明します。","すべてのネコは、以下のインターフェースを実装しています:"],
 ovEnd:"上のタブからネコを選んでください。ネコを形作るコードの詩を読み、ネコの記憶を思い出させ、ネコを撫でることができます。",
 rem:{l:"remember()",d:"ネコの記憶を呼び覚ます。"},car:{l:"caress()",d:"ネコを撫でる。"},hlp:{l:"help",d:"このネコについて。"},
-qry:"照会中",qryR:"確認中",qryC:"トランザクション送信中",txs:"tx 送信中",txc:"tx confirmed.",txf:"tx failed.",silent:"ネコは鳴きませんでした",dry:"ドライラン中: 実際のトランザクションは送信していません",cont:"続ける",proj:"もっと読む →",after:"あとがき",
+qry:"照会中",qryR:"確認中",qryC:"トランザクション送信中",txs:"tx 送信中",txc:"tx confirmed.",txf:"tx failed.",txp:"tx 確定待ち（まだ採掘中かもしれません。リンクで確認できます）",silent:"ネコは鳴きませんでした",dry:"ドライラン中: 実際のトランザクションは送信していません",cont:"続ける",proj:"もっと読む →",after:"あとがき",
 aw:["多くのシステムは、仕組みを隠すことで成り立っています。中で何が起きているのか、私たちはたいてい知らされません。BUGCATはその反対側に立ちます。ここではコードがすべて開かれていて、読むこと自体が作品の体験になります。","コードは素材です。詩の言葉のように、思考するためのものです。読者は、コードを読むことで作品に応答できます。そしてさらに、それを呼び出すコードを自ら書き、実行することで、もっと深く応答できます。ただしこの展示のインターフェースでは、コードを書き実行する部分を代理人に委ねています。","ここは入口です。本当の応答は、あなた自身がコードを書き、自分の手で実行するところから始まります。その先に、もっと進んだインタラクションの形があります。"],
 fbq:"気づいたことがあれば、どうぞ。",fbopt:"（任意）",fbsend:"送信",fbthx:"ありがとう。",sig:"荒川零一",lng:"EN",wait:"展示開始までお待ちください"},
 en:{ov:["This is a literary work of cats born from smart contracts, each bearing the wound of a vulnerability.","Vulnerabilities that shook the history of Ethereum have been inherited by different cat smart contracts and deployed on the blockchain.","Anyone can caress a cat, and when the conditions of its vulnerability are met, the cat meows. Each cat is connected to a historical contract that remains on Ethereum, recalling its trace to prove the code still exists.","All cats implement the following interface:"],
 ovEnd:"Select a cat from the tabs above. Read the poem of code that shapes the cat, recall the cat's memory, and caress the cat.",
 rem:{l:"remember()",d:"Recall the cat's memory."},car:{l:"caress()",d:"Caress the cat."},hlp:{l:"help",d:"About this cat."},
-qry:"querying",qryR:"checking",qryC:"sending transaction",txs:"tx sending",txc:"tx confirmed.",txf:"tx failed.",silent:"The cat stayed silent.",dry:"dry run: no real transaction was sent",cont:"Continue",proj:"Read more →",after:"Afterword",
+qry:"querying",qryR:"checking",qryC:"sending transaction",txs:"tx sending",txc:"tx confirmed.",txf:"tx failed.",txp:"tx still pending (it may still be mining — follow the link to check).",silent:"The cat stayed silent.",dry:"dry run: no real transaction was sent",cont:"Continue",proj:"Read more →",after:"Afterword",
 aw:["Most systems are built by hiding their mechanisms; we are rarely told what happens inside. BUGCAT stands on the opposite side. Here the code is fully open, and reading it is itself the experience of the work.","Code is material. Like the words of a poem, it is something to think with. You can respond to the work by reading the code. You can respond more deeply by writing code of your own that calls it, and running that code yourself. In this exhibition interface, however, the writing and running of code are entrusted to an agent.","This is an entrance. The real response begins when you write your own code and run it with your own hand. Beyond that lie further forms of interaction.","The ink drifting behind these words is the page this poem is written on. Your reading stirs it; a meow stains it."],
 fbq:"If you noticed something, leave it here.",fbopt:"(optional)",fbsend:"Send",fbthx:"Thank you.",sig:"Zeroichi Arakawa",lng:"JA",wait:"Please wait until the exhibition opens."}
 };
@@ -392,6 +392,12 @@ function resultBeat(type,c,d){
   // Etherscan link so the reader can check the outcome themselves.
   if(d.error){
     lines.push({x:"  "+tx().txf,k:"dim"});
+    const link=d.txHash?{label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash}:null;
+    return {lines,link,meow:false};
+  }
+  // Poll window elapsed but the tx may still mine — show an honest "pending", not a failure.
+  if(d.pending){
+    lines.push({x:"  "+tx().txp,k:"dim"});
     const link=d.txHash?{label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash}:null;
     return {lines,link,meow:false};
   }
@@ -467,7 +473,7 @@ function runOp(ci,op){
 // Poll /api/tx-status for confirmation. Sepolia blocks are ~12s; mainnet ~12s. We back off from
 // 3s up to 8s and give up after ~90s (visitors waiting on a stuck tx can still see the link).
 async function pollTxStatus(hash,chain,cs,op){
-  let delay=3000; const deadline=Date.now()+90000;
+  let delay=3000; const deadline=Date.now()+180000;
   while(Date.now()<deadline){
     if(cs.op!==op) return null;
     await sleep(delay);
@@ -479,8 +485,10 @@ async function pollTxStatus(hash,chain,cs,op){
     }catch(e){}
     delay=Math.min(Math.floor(delay*1.3),8000);
   }
-  // Timed out — preserve the hash so the reader can still follow the link to Etherscan.
-  return {error:true,txHash:hash,chain};
+  // Not confirmed within the window. The tx is NOT failed — low-gas tx can sit in the mempool for
+  // minutes and still mine (and some RPCs/Etherscan briefly report it "not found" meanwhile). Mark
+  // it pending, not error, and keep the hash so the reader can follow it to Etherscan.
+  return {pending:true,txHash:hash,chain};
 }
 
 function revealStart(ci){
