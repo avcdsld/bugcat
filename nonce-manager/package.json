@@ -1,5 +1,5 @@
 {
-  "name": "bugcat-exhibition",
+  "name": "bugcat-nonce-manager",
   "private": true,
   "type": "module",
   "dependencies": {

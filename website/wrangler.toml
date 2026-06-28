@@ -22,6 +22,15 @@ binding = "DB"
 database_name = "bugcat-logs"
 database_id = "3a11e69b-f6fc-46b3-bb38-aaab600fd477"
 
+# Singleton nonce manager hosted on a sibling Worker (see ../nonce-manager). caress() funnels every
+# broadcast through this DO so concurrent visitors can't collide on the sender's nonce — Pages can
+# only bind to external DOs, not define them. Production binds to bugcat-nonce-manager; the test
+# project (wrangler.bugcat-test.toml) binds to bugcat-test-nonce-manager.
+[[durable_objects.bindings]]
+name = "NONCE_MANAGER"
+class_name = "NonceManager"
+script_name = "bugcat-nonce-manager"
+
 # Runtime configuration is supplied via environment variables / secrets:
 #   RPC_URL       RPC endpoint for the active CHAIN (Alchemy/Infura/etc.) — enables real reads/writes
 #   PRIVATE_KEY   funded sender key (secret) — set with `wrangler pages secret put PRIVATE_KEY`

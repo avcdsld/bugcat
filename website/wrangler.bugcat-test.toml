@@ -1,0 +1,20 @@
+name = "bugcat-test"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "."
+
+[vars]
+CHAIN = "sepolia"
+DRY_RUN = "false"
+SEEKER_ADDR = "0x3F3Ac0A185627a501c47D91DBCD583623092Cd9d"
+PROPHET_ADDR = "0x6d45C06B5836CE792412949491844a2Ff5b3CFA0"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "bugcat-test-logs"
+database_id = "7d37fef1-18cf-4914-bc1e-b1f5f2f4f6c3"
+
+[[durable_objects.bindings]]
+name = "NONCE_MANAGER"
+class_name = "NonceManager"
+script_name = "bugcat-test-nonce-manager"

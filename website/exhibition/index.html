@@ -387,15 +387,20 @@ function resultBeat(type,c,d){
     return {lines,link:null,meow:false};
   }
   const lines=[{x:"",k:""}];
-  // The transaction itself failed (network/RPC error, or it reverted): say so honestly.
-  if(d.error){lines.push({x:"  "+tx().txf,k:"dim"});return {lines,link:null,meow:false};}
+  const explorer=d.chain==="sepolia"?"https://sepolia.etherscan.io":"https://etherscan.io";
+  // Tx errored. If we still have a hash (poll timed out — the tx may still mine later) keep the
+  // Etherscan link so the reader can check the outcome themselves.
+  if(d.error){
+    lines.push({x:"  "+tx().txf,k:"dim"});
+    const link=d.txHash?{label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash}:null;
+    return {lines,link,meow:false};
+  }
   if(d.txHash||d.conf)lines.push({x:"  "+tx().txc,k:""});
   let meow=false;
   if(d.meow){meow=true;lines.push({x:"  "+note,k:"dim"},{x:'  event Meow(msg.sender, "'+c.ma+'")',k:"warm"});}
   else{const fail=(c.nc[S.lang][2])||tx().silent;lines.push({x:"  "+fail,k:"dim"});}
   if(d.block)lines.push({x:"  block "+d.block,k:""});
   if(d.dryRun)lines.push({x:"  "+tx().dry,k:"dim"});
-  const explorer=d.chain==="sepolia"?"https://sepolia.etherscan.io":"https://etherscan.io";
   const link=d.txHash?{label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash}:null;
   return {lines,link,meow};
 }
@@ -428,24 +433,52 @@ function runOp(ci,op){
   if(op.started)return; op.started=true;
   const c=CATS[ci],cs=gs(ci),type=op.type;
   (async()=>{
-    const start=Date.now();let res;
+    const start=Date.now();let d=null;
     try{
       const r=await fetch("/api/"+type,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cat:ci,session:SID,lang:S.lang})});
-      const d=await r.json();
+      d=await r.json();
       if(!r.ok||!d||d.ok===false) throw new Error("api");
-      op._d=d;res=resultBeat(type,c,d);
     }catch(e){
       // Do NOT fake a successful Meow on failure. remember (a read) degrades to true; caress is
       // reported honestly as a failed transaction so an unlucky / errored attempt isn't masked.
-      op._d=type==="remember"?{exists:true}:{error:true};res=resultBeat(type,c,op._d);
+      d=type==="remember"?{exists:true}:{error:true};
     }
+    // caress() returns as soon as the tx is in the mempool. Expose the Etherscan link now (so the
+    // reader sees something concrete to click during the 15–25s mining wait) and poll the receipt.
+    if(type==="caress"&&d&&d.pending&&d.txHash){
+      const explorer=d.chain==="sepolia"?"https://sepolia.etherscan.io":"https://etherscan.io";
+      op.link={label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash};
+      renderInter();
+      d=await pollTxStatus(d.txHash,d.chain,cs,op);
+      if(cs.op!==op) return; // abandoned mid-poll
+    }
+    const res=resultBeat(type,c,d||{});
     const elapsed=Date.now()-start;
     if(elapsed<MIN_DUR[type]) await sleep(MIN_DUR[type]-elapsed);
     if(cs.op!==op) return; // abandoned (tab moved on / reset)
-    op.beats[1]=res.lines;op.link=res.link;op.ready=true;
+    op._d=d;op.beats[1]=res.lines;op.link=res.link;op.ready=true;
     if(type==="caress"&&res.meow) dispatchEvent(new CustomEvent("bugcat:caress",{detail:{cat:ci}}));
     if(op.querying)finishQuery(ci,op);
   })();
+}
+
+// Poll /api/tx-status for confirmation. Sepolia blocks are ~12s; mainnet ~12s. We back off from
+// 3s up to 8s and give up after ~90s (visitors waiting on a stuck tx can still see the link).
+async function pollTxStatus(hash,chain,cs,op){
+  let delay=3000; const deadline=Date.now()+90000;
+  while(Date.now()<deadline){
+    if(cs.op!==op) return null;
+    await sleep(delay);
+    if(cs.op!==op) return null;
+    try{
+      const r=await fetch("/api/tx-status?hash="+encodeURIComponent(hash));
+      const d=await r.json();
+      if(d&&d.ok&&d.confirmed) return {...d,txHash:hash,chain};
+    }catch(e){}
+    delay=Math.min(Math.floor(delay*1.3),8000);
+  }
+  // Timed out — preserve the hash so the reader can still follow the link to Etherscan.
+  return {error:true,txHash:hash,chain};
 }
 
 function revealStart(ci){
@@ -540,6 +573,9 @@ function renderInter(){
     (op.beats[op.bi]||[]).slice(0,op.shown).forEach(l=>h+=ln(l.x,l.k));
     if(op.querying){const dt=Math.floor((Date.now()-op.qSt)/400),dots=".".repeat(dt%4),ql=op.type==="caress"?tx().qryC:tx().qryR;h+=ln("","")+ln("  "+ql+dots,"dim")}
     h+='</div>';
+    // op.link can land before op.ready (caress broadcasts the tx, then we poll for the receipt).
+    // Render it now so the reader can follow the pending tx on Etherscan while we wait.
+    if(op.link)h+=`<div style="margin-top:4px"><a class="out-link" href="${esc(op.link.href)}" target="_blank" rel="noopener">${esc(op.link.label)} ↗</a></div>`;
     if(op.gate)h+=opGateHtml();
   }
   if(cs.m==="select")h+=renderSel();

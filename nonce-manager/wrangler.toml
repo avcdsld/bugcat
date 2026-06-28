@@ -1,0 +1,21 @@
+# DO-only worker. Pages binds NonceManager via [[durable_objects.bindings]] with
+# script_name = "bugcat-test-nonce-manager". The class lives here because Pages Functions
+# can only bind to external DO classes, not define them.
+name = "bugcat-test-nonce-manager"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+CHAIN = "sepolia"
+
+# DO inherits this worker's env (PRIVATE_KEY + RPC_URL must be set as secrets:
+#   wrangler secret put PRIVATE_KEY
+#   wrangler secret put RPC_URL
+[[durable_objects.bindings]]
+name = "NM"
+class_name = "NonceManager"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["NonceManager"]
