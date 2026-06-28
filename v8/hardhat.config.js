@@ -15,7 +15,8 @@ module.exports = {
   },
   etherscan: {
     apiKey: {
-      mainnet: process.env.ETHERSCAN_API_KEY || ""
+      mainnet: process.env.ETHERSCAN_API_KEY || "",
+      sepolia: process.env.ETHERSCAN_API_KEY || ""
     }
   },
   networks: {
@@ -27,6 +28,10 @@ module.exports = {
     },
     mainnet: {
       url: process.env.MAINNET_RPC_URL || "https://eth-mainnet.g.alchemy.com/v2/PROJECT_ID",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
+    },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/PROJECT_ID",
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : []
     }
   }

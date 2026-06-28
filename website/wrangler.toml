@@ -6,8 +6,15 @@ pages_build_output_dir = "."
 # Dry-run: the API never signs or broadcasts; caress returns a simulated Meow, remember
 # reports the historical contract as present. Set to "false" (and configure the secrets
 # below) to go live.
+#
+# CHAIN selects the network. "mainnet" (default) routes reads/writes to Ethereum mainnet and
+# keeps the strict exhibition-window gate on real caress tx. "sepolia" routes everything to the
+# Sepolia testnet and DROPS the window gate, so with DRY_RUN="false" + secrets configured the
+# API fires real test transactions any time — use it to rehearse the live flow before the show.
+# On Sepolia, remember() returns false (the historical mainnet contracts do not exist there).
 [vars]
 DRY_RUN = "true"
+CHAIN = "mainnet"
 
 # Anonymous, cookieless interaction log (no IP, no persistent identifiers)
 [[d1_databases]]
@@ -16,8 +23,10 @@ database_name = "bugcat-logs"
 database_id = "3a11e69b-f6fc-46b3-bb38-aaab600fd477"
 
 # Runtime configuration is supplied via environment variables / secrets:
-#   RPC_URL       Ethereum mainnet RPC endpoint (Alchemy/Infura/etc.) — enables real remember reads
+#   RPC_URL       RPC endpoint for the active CHAIN (Alchemy/Infura/etc.) — enables real reads/writes
 #   PRIVATE_KEY   funded sender key (secret) — set with `wrangler pages secret put PRIVATE_KEY`
-#   SEEKER_ADDR   deployed Seeker helper (ReentrancyCat caress)
-#   PROPHET_ADDR  deployed Prophet helper (PredictableCat caress)
+#   SEEKER_ADDR   deployed Seeker helper (ReentrancyCat caress) on the active CHAIN
+#   PROPHET_ADDR  deployed Prophet helper (PredictableCat caress) on the active CHAIN
 #   SEEKER_VALUE  optional wei value for the reentrancy deposit (default 1)
+#   CAT_ADDR_0..4 optional per-cat address override (defaults to the CHAIN's built-in list in
+#                 functions/api/_shared.js). Handy on Sepolia before the addresses are committed.

@@ -1,4 +1,4 @@
-import { CAT_ADDRS, CARESS_ABI, walletClient, hasMeow, json, parseCat, caressDryRun, logEvent } from "./_shared.js";
+import { catAddrs, CARESS_ABI, walletClient, hasMeow, json, parseCat, caressDryRun, logEvent, chainName } from "./_shared.js";
 
 const DEAD = "0x000000000000000000000000000000000000dEaD";
 const PREDICTABLE_RETRIES = 8;
@@ -13,12 +13,12 @@ export async function onRequestPost({ request, env }) {
 
   // Dry-run: never sign or broadcast. Report the Meow as if the exploit succeeded, with no tx hash.
   if (caressDryRun(env)) {
-    return json({ ok: true, txHash: null, block: null, meow: true, dryRun: true });
+    return json({ ok: true, txHash: null, block: null, meow: true, dryRun: true, chain: chainName(env) });
   }
 
   try {
     const { account, wallet, pub } = walletClient(env);
-    const catAddr = CAT_ADDRS[cat];
+    const catAddr = catAddrs(env)[cat];
 
     const send = async (address, functionName, args = [], value = 0n) => {
       const hash = await wallet.writeContract({ address, abi: CARESS_ABI, functionName, args, value });
@@ -61,6 +61,7 @@ export async function onRequestPost({ request, env }) {
       txHash: last.hash,
       block: Number(last.receipt.blockNumber),
       meow: hasMeow(last.receipt),
+      chain: chainName(env),
     });
   } catch (e) {
     return json({ ok: false, error: String(e?.message || e) }, 502);

@@ -392,7 +392,8 @@ function resultBeat(type,c,d){
   if(d.meow){meow=true;lines.push({x:"  "+note,k:"dim"},{x:'  event Meow(msg.sender, "'+c.ma+'")',k:"warm"});}
   if(d.block)lines.push({x:"  block "+d.block,k:""});
   if(d.dryRun)lines.push({x:"  "+tx().dry,k:"dim"});
-  const link=d.txHash?{label:"tx "+txShort(d.txHash),href:"https://etherscan.io/tx/"+d.txHash}:null;
+  const explorer=d.chain==="sepolia"?"https://sepolia.etherscan.io":"https://etherscan.io";
+  const link=d.txHash?{label:"tx "+txShort(d.txHash),href:explorer+"/tx/"+d.txHash}:null;
   return {lines,link,meow};
 }
 function helpBeat(c){

@@ -1,4 +1,4 @@
-import { CAT_ADDRS, REMEMBER_ABI, publicClient, json, parseCat, truthy, logEvent } from "./_shared.js";
+import { catAddrs, REMEMBER_ABI, publicClient, json, parseCat, truthy, logEvent } from "./_shared.js";
 
 // POST /api/remember  { cat: 0..4 }  ->  { ok, exists }
 export async function onRequestPost({ request, env }) {
@@ -16,7 +16,7 @@ export async function onRequestPost({ request, env }) {
   try {
     const pub = publicClient(env);
     const [exists, block] = await Promise.all([
-      pub.readContract({ address: CAT_ADDRS[cat], abi: REMEMBER_ABI, functionName: "remember" }),
+      pub.readContract({ address: catAddrs(env)[cat], abi: REMEMBER_ABI, functionName: "remember" }),
       pub.getBlockNumber(),
     ]);
     return json({ ok: true, exists: Boolean(exists), block: Number(block) });

@@ -1,6 +1,6 @@
 import { createPublicClient, createWalletClient, http, parseEventLogs } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { mainnet } from "viem/chains";
+import { mainnet, sepolia } from "viem/chains";
 
 // Cat contract addresses on Ethereum mainnet. Keep in sync with CATS in exhibition/index.html.
 export const CAT_ADDRS = [
@@ -10,6 +10,42 @@ export const CAT_ADDRS = [
   "0x81b4b28c51fde85c062b6ce88fe60cb85bc16fc1", // 3 UnprotectedCat
   "0xa109dc01fba2557ea87d645f4a9b3b0ceedf625f", // 4 MisspelledCat
 ];
+
+// Sepolia testnet cat addresses, in the same order. Filled in after the v4/v8 Sepolia deploy
+// (see v8/scripts/deploy-sepolia.js + v4/scripts/deploy-sepolia.js). Used only when CHAIN="sepolia".
+// Individual entries may also be overridden by env (CAT_ADDR_0 .. CAT_ADDR_4) without redeploying.
+export const CAT_ADDRS_SEPOLIA = [
+  "", // 0 ReentrancyCat
+  "", // 1 PredictableCat
+  "", // 2 OverflowCat
+  "", // 3 UnprotectedCat
+  "", // 4 MisspelledCat
+];
+
+// Network selection. CHAIN="sepolia" routes every read/write to Sepolia; anything else is mainnet.
+const NETWORKS = {
+  mainnet: { chain: mainnet, addrs: CAT_ADDRS, explorer: "https://etherscan.io" },
+  sepolia: { chain: sepolia, addrs: CAT_ADDRS_SEPOLIA, explorer: "https://sepolia.etherscan.io" },
+};
+
+export function chainName(env) {
+  return env.CHAIN === "sepolia" ? "sepolia" : "mainnet";
+}
+
+export function chain(env) {
+  return NETWORKS[chainName(env)].chain;
+}
+
+export function explorerBase(env) {
+  return NETWORKS[chainName(env)].explorer;
+}
+
+// Cat addresses for the active network. Per-cat env override (CAT_ADDR_0..4) wins, so a single
+// Sepolia contract can be re-pointed without a redeploy of the Pages project.
+export function catAddrs(env) {
+  const base = NETWORKS[chainName(env)].addrs;
+  return base.map((a, i) => env[`CAT_ADDR_${i}`] || a);
+}
 
 export const REMEMBER_ABI = [
   { type: "function", name: "remember", stateMutability: "view", inputs: [], outputs: [{ type: "bool" }] },
@@ -46,11 +82,15 @@ export function withinExhibition(now = Date.now()) {
   return now >= EXHIBITION_START && now < EXHIBITION_END;
 }
 
-// caress is dry-run when explicitly flagged (manual override), when no signing key is
-// configured (fail-safe), or outside the exhibition window. To go live during the show,
-// set DRY_RUN="false" and configure the secrets; the window still bounds real sending.
+// caress is dry-run when explicitly flagged (manual override) or when no signing key is
+// configured (fail-safe). On MAINNET it is additionally bounded by the exhibition window, so a
+// forgotten DRY_RUN="false" can never send live tx outside the show. On SEPOLIA the window is
+// not enforced (testnet ETH has no value): set CHAIN="sepolia", DRY_RUN="false" and the secrets
+// to fire real test transactions any time.
 export function caressDryRun(env) {
-  return truthy(env.DRY_RUN) || !env.PRIVATE_KEY || !withinExhibition();
+  if (truthy(env.DRY_RUN) || !env.PRIVATE_KEY) return true;
+  if (chainName(env) === "mainnet" && !withinExhibition()) return true;
+  return false;
 }
 
 export function rpcUrl(env) {
@@ -60,7 +100,7 @@ export function rpcUrl(env) {
 }
 
 export function publicClient(env) {
-  return createPublicClient({ chain: mainnet, transport: http(rpcUrl(env)) });
+  return createPublicClient({ chain: chain(env), transport: http(rpcUrl(env)) });
 }
 
 export function walletClient(env) {
@@ -69,7 +109,7 @@ export function walletClient(env) {
   const account = privateKeyToAccount(pk.startsWith("0x") ? pk : "0x" + pk);
   return {
     account,
-    wallet: createWalletClient({ account, chain: mainnet, transport: http(rpcUrl(env)) }),
+    wallet: createWalletClient({ account, chain: chain(env), transport: http(rpcUrl(env)) }),
     pub: publicClient(env),
   };
 }
