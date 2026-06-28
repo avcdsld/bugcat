@@ -1,17 +1,22 @@
-# DO-only worker. Pages binds NonceManager via [[durable_objects.bindings]] with
-# script_name = "bugcat-test-nonce-manager". The class lives here because Pages Functions
-# can only bind to external DO classes, not define them.
-name = "bugcat-test-nonce-manager"
+# PRODUCTION nonce-manager (Ethereum mainnet). Bound by the production Pages project
+# (website/wrangler.toml) via script_name = "bugcat-nonce-manager". The class lives here because
+# Pages Functions can only bind to external DO classes, not define them.
+#
+# Deploy:  npx wrangler deploy
+# Secrets: npx wrangler secret put PRIVATE_KEY    # funded sender (same key as the Pages project)
+#          npx wrangler secret put RPC_URL        # mainnet RPC endpoint
+# The DO signs and broadcasts using THIS worker's PRIVATE_KEY / RPC_URL / CHAIN, so they must be
+# set here (the Pages-project secrets are only used for reads + deriving the sender address).
+#
+# Test counterpart: wrangler.bugcat-test.toml (Sepolia).
+name = "bugcat-nonce-manager"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
-CHAIN = "sepolia"
+CHAIN = "mainnet"
 
-# DO inherits this worker's env (PRIVATE_KEY + RPC_URL must be set as secrets:
-#   wrangler secret put PRIVATE_KEY
-#   wrangler secret put RPC_URL
 [[durable_objects.bindings]]
 name = "NM"
 class_name = "NonceManager"

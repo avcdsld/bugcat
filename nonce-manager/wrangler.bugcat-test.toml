@@ -1,0 +1,19 @@
+# TEST nonce-manager (Sepolia). Bound by the test Pages project (website/wrangler.bugcat-test.toml)
+# via script_name = "bugcat-test-nonce-manager". Deploy with:
+#   npx wrangler deploy -c wrangler.bugcat-test.toml
+# Secrets (set with the same -c flag): PRIVATE_KEY, RPC_URL.
+name = "bugcat-test-nonce-manager"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+CHAIN = "sepolia"
+
+[[durable_objects.bindings]]
+name = "NM"
+class_name = "NonceManager"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["NonceManager"]
